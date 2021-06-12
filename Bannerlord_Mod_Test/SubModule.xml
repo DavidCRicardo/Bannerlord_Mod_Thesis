@@ -1,0 +1,25 @@
+﻿<Module>
+  <Name value="Bannerlord_Mod_Test a Bannerlord Mod"/>
+  <Id value="Bannerlord_Mod_Test"/>
+  <Version value="v1.0.0"/>
+  <SingleplayerModule value="true"/>
+  <MultiplayerModule value="false"/>
+  <DependedModules>
+    <DependedModule Id="Native"/>
+    <DependedModule Id="SandBoxCore"/>
+    <DependedModule Id="Sandbox"/>
+    <DependedModule Id="StoryMode" />
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="Bannerlord_Mod_Test"/>
+      <DLLName value="Bannerlord_Mod_Test.dll"/>
+      <SubModuleClassType value="Bannerlord_Mod_Test.SubModule"/>
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+  <Xmls/>
+</Module>
