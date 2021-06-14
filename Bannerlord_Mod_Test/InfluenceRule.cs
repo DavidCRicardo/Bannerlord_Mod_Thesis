@@ -21,19 +21,19 @@ namespace Bannerlord_Mod_Test
             {
                 switch (RelationType)
                 {
-                    case SocialExchangeSE.IntentionEnum.Friendly:
+                    case SocialExchangeSE.IntentionEnum.Positive:
                         if (RelationName == "Compliment")
                         {
                             return RunRulesFriendship();
                         }
                         else { return 0; }
 
-                    case SocialExchangeSE.IntentionEnum.UnFriendly:
+                    case SocialExchangeSE.IntentionEnum.Negative:
                         if (RelationName == "Jealous")
                         {
                             return RunRulesJealous();
                         }
-                        else if (RelationName == "Jealous")
+                        else if (RelationName == "Sabotage")
                         {
                             return RunRulesSabotage();
                         }
@@ -115,7 +115,7 @@ namespace Bannerlord_Mod_Test
             /* End Check Traits */
             
             /* Check Status */
-            sum += IsReacting ? CheckStatus(Receiver, true) : CheckStatus(Initiator, true);
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
             /* End Check Status */
 
             return sum;
@@ -472,43 +472,47 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
-        private int CheckStatus(CustomAgent customAgent, bool SocialTalk = false)
+        private int CheckStatus(CustomAgent customAgent)
         {
             int localSum = 0;
 
+            /* Shame Status */
             Status status = CheckStatusIntensity(customAgent, "Shame");
-            if (status.intensity < 0.6)
+            if (status.intensity > 0.5)
             {
-                localSum += 0;
-            }
-            else
-            {
-                localSum -= 2;
+                localSum += 2;
             }
 
-            if (SocialTalk)
+            /* Courage Status */
+            status = CheckStatusIntensity(customAgent, "Courage");
+            if (status.intensity > 0.5)
             {
-                status = CheckStatusIntensity(customAgent, "SocialTalk");
-                if (status.intensity < 0.6)
-                {
-                    localSum += 0;
-                }
-                else
+                localSum += 2;
+            }
+
+            /* SocialTalk Status */
+            status = CheckStatusIntensity(customAgent, "SocialTalk");
+            if (status.intensity > 0.5)
+            {
+                if (RelationType == SocialExchangeSE.IntentionEnum.Positive)
                 {
                     localSum += 2;
                 }
             }
             
-            status = CheckStatusIntensity(customAgent, "Courage");
-            if (status.intensity < 0.5)
+            /* Anger Status */
+            status = CheckStatusIntensity(customAgent, "Anger");
+            if (status.intensity > 0.5)
             {
-                localSum += 0;
+                if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+                {
+                    localSum -= 2;
+                }
+                else if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+                {
+                    localSum += 2;
+                }
             }
-            else
-            {
-                localSum += 2;
-            }
-
 
             return localSum;
         }

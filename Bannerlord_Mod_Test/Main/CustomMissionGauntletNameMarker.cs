@@ -64,13 +64,13 @@ namespace Bannerlord_Mod_Test
                 CBB_ref.characterRef = _dataSource.characterReftoCampaignBehaviorBase;
                 switch (_dataSource.intentionReftoCampaignBehaviorBase)
                 {
-                    case SocialExchangeSE.IntentionEnum.Friendly:
+                    case SocialExchangeSE.IntentionEnum.Positive:
                         CBB_ref.FriendlyBool = true;
                         break;
                     case SocialExchangeSE.IntentionEnum.Romantic:
                         CBB_ref.RomanticBool = true;
                         break;
-                    case SocialExchangeSE.IntentionEnum.UnFriendly:
+                    case SocialExchangeSE.IntentionEnum.Negative:
                         CBB_ref.UnFriendlyBool = true;
                         break;
                     case SocialExchangeSE.IntentionEnum.Hostile:

@@ -26,9 +26,10 @@ namespace Bannerlord_Mod_Test
             {
                 case "Flirt":
                 case "AskOut": Intention = IntentionEnum.Romantic; break;
-                case "Compliment": Intention = IntentionEnum.Friendly; break;
+                case "Compliment": Intention = IntentionEnum.Positive; break;
                 case "Bully": Intention = IntentionEnum.Hostile; break;
-                case "Jealous": Intention = IntentionEnum.UnFriendly; break;
+                case "Sabotage":
+                case "Jealous": Intention = IntentionEnum.Negative; break;
                 case "Break": Intention = IntentionEnum.Special; break;
                 default: Intention = IntentionEnum.Undefined; break;
             }
@@ -136,38 +137,87 @@ namespace Bannerlord_Mod_Test
         {
             switch (Intention)
             {
-                case IntentionEnum.Friendly:
-                    if (SEName == "Compliment")
+                case IntentionEnum.Positive:
+                    if (CustomAgentReceiver.SE_Accepted)
                     {
-                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                        if (SEName == "Compliment")
+                        {
+                            //Increases Relationship for both
+                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
-                        UpdateThirdNPCsBeliefs("Friends", belief, 1);
+                            UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
-                        RunTriggerRulesForEveryone();
-
-                        CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
-                    }
-                    break;
-                case IntentionEnum.Romantic:
-                    if (!CustomAgentReceiver.SE_Accepted)
-                    {
-                        CustomAgentInitiator.UpdateStatus("Anger", 1);
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
+                            CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
+                        }
                     }
                     else
                     {
-                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
-
-                        UpdateThirdNPCsBeliefs("Dating", belief, 1);
-
-                        RunTriggerRulesForEveryone();
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
+                        //Decreases SocialTalk & Shame
+                        CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
+                        CustomAgentInitiator.UpdateStatus("Shame", -1);
+                    }
+                    
+                    break;
+                case IntentionEnum.Romantic:
+                    if (CustomAgentReceiver.SE_Accepted)
+                    {
+                        //Increases Relationship for both
+                        if (SEName == "AskOut")
+                        {
+                            //If they are already friends, it updates for dating while keeping the same value
+                            SocialNetworkBelief belief = CustomAgentInitiator.GetBelief("Friends", CustomAgentReceiver);
+                            if (belief != null)
+                            {
+                                belief.relationship = "Dating";
+                                foreach (CustomAgent customAgent in CustomAgentList)
+                                {
+                                    customAgent.Change("Dating", belief);
+                                }
+                            }
+                            else 
+                            {
+                                //if they are not friends so start dating with a new belief
+                                belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                                UpdateThirdNPCsBeliefs("Dating", belief, 1);
+                            }
+                            InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
+                        }
+                        else if (SEName == "Flirt")
+                        {
+                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                            UpdateThirdNPCsBeliefs("Dating", belief, 1);
+                        }
+                    }
+                    else
+                    {           
+                        //Anger Increases
+                        CustomAgentInitiator.UpdateStatus("Anger", 1);
+                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
                     }
                     break;
-                case IntentionEnum.UnFriendly:
-                    if (!CustomAgentReceiver.SE_Accepted)
+                case IntentionEnum.Negative:
+                    if (CustomAgentReceiver.SE_Accepted)
+                    {
+                        //Decreases relation with Initiator
+                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
+
+                        if (SEName == "Sabotage")
+                        {
+                            //
+                        }
+                    }
+                    else
                     {
                         CustomAgentReceiver.UpdateStatus("Anger", 1);
+
+                        if (SEName == "Sabotage")
+                        {
+                            //Decreases relation dating
+                            InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
+                            SocialNetworkBelief belief = CustomAgentReceiver.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
+                            CustomAgentReceiver.UpdateBelief(belief,-1);
+                        }
                     }
                     break;
                 case IntentionEnum.Hostile:
@@ -185,6 +235,7 @@ namespace Bannerlord_Mod_Test
                     }
                     else
                     {
+                        //It will decrease the friendship
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
@@ -196,20 +247,32 @@ namespace Bannerlord_Mod_Test
                     }
                     break;
                 case IntentionEnum.Special:
-                    CustomAgentInitiator.UpdateStatus("Anger", -1);
-                    CustomAgentInitiator.UpdateStatus("Courage", -1);
+                    if (true)
+                    {
+                        CustomAgentInitiator.UpdateStatus("Anger", -1);
+                        CustomAgentInitiator.UpdateStatus("Courage", -1);
 
-                    SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
-                    UpdateThirdNPCsBeliefs("Dating", _belief, -1);
+                        SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
+                        UpdateThirdNPCsBeliefs("Dating", _belief, -1);
 
-                    RunTriggerRulesForEveryone();
+                        _belief.relationship = "Friends";
+                        foreach (CustomAgent customAgent in CustomAgentList)
+                        {
+                            customAgent.Change("Friends", _belief);
+                        }
 
-                    InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
+
+                        RunTriggerRulesForEveryone();
+
+                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
+                    }
+
                     break;
                 default:
                     break;
             }
         }
+
         private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName, int _value)
         {
             SocialNetworkBelief belief = CustomAgentInitiator.GetBelief(_relationName, CustomAgentReceiver);
@@ -231,6 +294,7 @@ namespace Bannerlord_Mod_Test
 
             return belief;
         }
+
         private void UpdateThirdNPCsBeliefs(string _relationName, SocialNetworkBelief _belief, int _value)
         {
             foreach (CustomAgent customAgent in CustomAgentList)
@@ -256,21 +320,16 @@ namespace Bannerlord_Mod_Test
         {
             int initialValue = 0;
 
-            InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, false, initialValue);
-
-            IR.RelationName = SEName;
-            IR.RelationType = Intention;
+            InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, false, initialValue)
+            {
+                RelationName = SEName,
+                RelationType = Intention
+            };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
 
-            //
             if (CustomAgentInitiator.MemorySEs.Exists(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName))
             {
-                //if (rnd.NextDouble() < 0.5)
-                //{
-                //    finalVolition -= 2; // rnd.Next(2);
-                //}
             }
-            //
 
             CustomAgentInitiator.SEVolition = finalVolition;
             return CustomAgentInitiator.SEVolition;
@@ -279,14 +338,15 @@ namespace Bannerlord_Mod_Test
         {
             int initialValue = 0;
 
-            InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, true, initialValue);
-
-            IR.RelationName = SEName;
-            IR.RelationType = Intention;
+            InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, true, initialValue)
+            {
+                RelationName = SEName,
+                RelationType = Intention
+            };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
 
             CustomAgentReceiver.SEVolition = finalVolition;
-            ComputeOutcome(CustomAgentReceiver.SEVolition, 20, -20);
+            ComputeOutcome(CustomAgentReceiver.SEVolition, 15, 5);
 
             return CustomAgentReceiver.SEVolition;
         }
@@ -295,8 +355,8 @@ namespace Bannerlord_Mod_Test
             string relation = "";
             switch (IR.RelationType)
             {  
-                case IntentionEnum.Friendly: 
-                case IntentionEnum.UnFriendly: relation = "Friends";
+                case IntentionEnum.Positive: 
+                case IntentionEnum.Negative: relation = "Friends";
                     break;
                 case IntentionEnum.Romantic: relation = "Dating";
                     break;
@@ -310,6 +370,8 @@ namespace Bannerlord_Mod_Test
             IR.InitialValue = IR.CheckGoals(relation);
             IR.InitialValue += IR.GetValueParticipantsRelation();
             IR.InitialValue += IR.SRunRules();
+
+            InformationManager.DisplayMessage(new InformationMessage(IR.InitialValue.ToString()));
             return IR.InitialValue;
         }
 
@@ -347,9 +409,9 @@ namespace Bannerlord_Mod_Test
         public enum IntentionEnum 
         { 
             Undefined = -1, 
-            Friendly, 
+            Positive, 
             Romantic, 
-            UnFriendly, 
+            Negative, 
             Hostile, 
             Special, 
             AllTypes

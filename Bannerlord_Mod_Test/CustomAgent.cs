@@ -363,6 +363,11 @@ namespace Bannerlord_Mod_Test
                 && b.value > 0);
         }
 
+        public void Change(string _newRelation, SocialNetworkBelief belief)
+        {
+            belief.relationship = _newRelation;
+        }
+
         #endregion
         #region /* Add / Update / Remove Goals */
         public void AddGoal(string _relationship, string _target, int _value)

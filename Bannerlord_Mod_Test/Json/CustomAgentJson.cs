@@ -23,7 +23,7 @@ namespace Bannerlord_Mod_Test
         public List<Trait> TraitList { get; set; }
         [JsonProperty("GoalsList")]
         public List<Goal> GoalsList { get; set; }
-        [JsonProperty("BeliefsList")]
+        [JsonProperty("SocialNetworkBeliefs")]
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         [JsonProperty("ItemsList")]
         public List<Item> ItemsList { get; set; }

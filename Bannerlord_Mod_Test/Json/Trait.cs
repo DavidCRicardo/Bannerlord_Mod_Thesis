@@ -61,12 +61,12 @@ namespace Bannerlord_Mod_Test
             switch (traitName)
             {
                 case "Friendly":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Friendly;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.UnFriendly;
+                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Positive;
+                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Negative;
                     break;
                 case "Hostile":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.UnFriendly;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Friendly;
+                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Negative;
+                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Positive;
                     break;
                 case "Charming":
                     intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
@@ -85,12 +85,12 @@ namespace Bannerlord_Mod_Test
                     intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.AllTypes; // increase for all
                     break;
                 case "Calm":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Friendly;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.UnFriendly;
+                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Positive;
+                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Negative;
                     break;
                 case "Aggressive":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.UnFriendly;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Friendly;
+                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Negative;
+                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Positive;
                     break;
                 case "Faithful":
                     intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Romantic;

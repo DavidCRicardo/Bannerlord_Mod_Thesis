@@ -53,7 +53,7 @@ namespace Bannerlord_Mod_Test
                     this._firstTick = false;
                 }
 
-               InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
+               //InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
@@ -142,7 +142,7 @@ namespace Bannerlord_Mod_Test
             maximumSEs = 1;
             /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Insult", "Jealous", "Break" };
+            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Sabotage", "Insult", "Jealous", "Break" };
 
             SocialExchangeSEList = new List<SocialExchangeSE>();
             foreach (String seName in SocialExchangeListString)
@@ -417,7 +417,7 @@ namespace Bannerlord_Mod_Test
         }
         private List<Trait> InitializeListWithAllTraits()
         {
-            TraitsListString = new List<string>() { "Friendly", "Hostile", "Charming", "UnCharming", "Shy", "Brave", "Calm", "Aggressive" };
+            TraitsListString = new List<string>() { "Friendly", "Hostile", "Charming", "UnCharming", "Shy", "Brave", "Calm", "Aggressive", "Faithful", "Unfaithful"};
             List<Trait> AllTraitList = new List<Trait>();
 
             foreach (var traitName in TraitsListString)
@@ -616,7 +616,7 @@ namespace Bannerlord_Mod_Test
             {
                 if (customAgent.SocialMove == "Compliment")
                 {
-                    return SocialExchangeSE.IntentionEnum.Friendly;
+                    return SocialExchangeSE.IntentionEnum.Positive;
                 }
                 else if (customAgent.SocialMove == "Flirt")
                 {
@@ -628,7 +628,7 @@ namespace Bannerlord_Mod_Test
                 }
                 else if (customAgent.SocialMove == "Jealous")
                 {
-                    return SocialExchangeSE.IntentionEnum.UnFriendly;
+                    return SocialExchangeSE.IntentionEnum.Negative;
                 }
                 else if (customAgent.SocialMove == "Break")
                 {
