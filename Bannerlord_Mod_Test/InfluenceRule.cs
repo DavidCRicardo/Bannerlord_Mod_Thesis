@@ -16,6 +16,7 @@ namespace Bannerlord_Mod_Test
         }
         public int SRunRules()
         {
+            // Is Receiver || Is Initiator
             if (IsReacting || !IsReacting)
             {
                 switch (RelationType)
@@ -23,7 +24,7 @@ namespace Bannerlord_Mod_Test
                     case SocialExchangeSE.IntentionEnum.Friendly:
                         if (RelationName == "Compliment")
                         {
-                            return RunRulesFriendship();
+                            return RunRulesFriendship(IsReacting);
                         }
                         else { return 0; }
 
@@ -101,9 +102,11 @@ namespace Bannerlord_Mod_Test
         }
 
         //Positive SE
-        private int RunRulesFriendship()
+        private int RunRulesFriendship(bool IsReacting)
         {
             int sum = InitialValue;
+
+            /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
@@ -138,8 +141,10 @@ namespace Bannerlord_Mod_Test
 
                 return acc;
             });
+            /* End Check Traits */
 
-            sum += CheckStatus(Initiator);
+            /* Check Status */
+            /* End Check Status */
 
             return sum;
         }
@@ -158,7 +163,7 @@ namespace Bannerlord_Mod_Test
                 { "Brave"     , agent =>  2 },
                 { "Calm"      , agent =>  0 },
                 { "Aggressive", agent =>  0 },
-                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(agent, Receiver) : CheckFaithful(agent, Initiator) },
+                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(agent, Initiator) : CheckFaithful(agent, Receiver) },
                 { "Unfaithful", agent =>  2 }
             };
             sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
@@ -184,7 +189,8 @@ namespace Bannerlord_Mod_Test
             });
 
             /* Check Status */
-            sum += CheckStatus(Initiator);
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+            /* End Check Status */
 
             if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
                 ||
@@ -225,7 +231,40 @@ namespace Bannerlord_Mod_Test
                 return acc;
             });
 
-            sum += Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            {
+                Func<CustomAgent, int> TraitFunc;
+                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                {
+                    acc += TraitFunc(Receiver);
+                }
+
+                return acc;
+            });
+
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+
+            return sum;
+        }
+        private int RunRulesSabotage()
+        {
+            int sum = InitialValue;
+
+            /* Check Traits */
+            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                { "Friendly"  , agent => -2 },
+                { "Hostile"   , agent =>  2 },
+                { "Charming"  , agent =>  0 },
+                { "UnCharming", agent =>  0 },
+                { "Shy"       , agent => -2 },
+                { "Brave"     , agent =>  2 },
+                { "Calm"      , agent => -2 },
+                { "Aggressive", agent =>  2 },
+                { "Faithful"  , agent =>  0 },
+                { "Unfaithful", agent =>  0 }
+            };
+
+            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
             {
                 Func<CustomAgent, int> TraitFunc;
                 if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
@@ -236,7 +275,18 @@ namespace Bannerlord_Mod_Test
                 return acc;
             });
 
-            sum += CheckStatus(Initiator);
+            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            {
+                Func<CustomAgent, int> TraitFunc;
+                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                {
+                    acc += TraitFunc(Receiver);
+                }
+
+                return acc;
+            });
+
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
             return sum;
         }
@@ -280,7 +330,7 @@ namespace Bannerlord_Mod_Test
                 return acc;
             });
 
-            sum += CheckStatus(Initiator);
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
             return sum;
         }
@@ -324,7 +374,7 @@ namespace Bannerlord_Mod_Test
                 return acc;
             });
 
-            sum += CheckStatus(Initiator);
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
             if (Initiator.IsDatingWith(Receiver)) { }
 
             return sum;
@@ -418,6 +468,10 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
+        private Belief GetParticipantsRelation()
+        {
+            return Initiator.BeliefsList.Find(b => b.agents.Contains(Initiator.Name) && b.agents.Contains(Receiver.Name));
+        }
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
             Belief belief = agent.BeliefsList.Find(b => b.relationship == "Dating");
@@ -425,7 +479,14 @@ namespace Bannerlord_Mod_Test
             {
                 if (belief.agents.Contains(agent.Name) && belief.agents.Contains(otherAgent.Name))
                 {
-                    return 2; // dating with that specific NPC
+                    if (belief.value > 0)
+                    {
+                        return 2; // dating with that specific NPC
+                    }
+                    else 
+                    { 
+                        return 2; // Contains but not dating anymore
+                    }
                 }
                 else
                 {
@@ -438,10 +499,6 @@ namespace Bannerlord_Mod_Test
             }
         }
         public string RelationTypeString { get; set; }
-        private Belief GetParticipantsRelation()
-        {
-            return Initiator.BeliefsList.Find(b => b.agents.Contains(Initiator.Name) && b.agents.Contains(Receiver.Name));
-        }
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }
         public int InitialValue { get; set; }
