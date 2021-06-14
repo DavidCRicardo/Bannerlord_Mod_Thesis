@@ -280,7 +280,7 @@
     <Compile Include="SE\SocialExchangeSE.cs" />
     <Compile Include="Main\SubModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NPC_Conversation\SocialExchangeM.cs" />
+    <Compile Include="NPC_Conversation\DialogsRoot.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="Json\TriggerRule.cs" />
     <Compile Include="Json\Trait.cs" />

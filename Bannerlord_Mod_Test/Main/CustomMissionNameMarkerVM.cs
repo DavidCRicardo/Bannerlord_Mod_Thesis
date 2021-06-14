@@ -439,7 +439,8 @@ namespace Bannerlord_Mod_Test
             Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
 
             fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
-            foreach (SocialExchangeM _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
+            //Only 1 DialogsRoot
+            foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
             {
                 fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
                 foreach (Culture _culture in _socialExchange.CultureList)
@@ -464,7 +465,7 @@ namespace Bannerlord_Mod_Test
                     fromCultureGetID.Add(_culture.CultureCode, fromIDGetListMessages);
 
                 }
-                fromIntentionGetCulture.Add(_socialExchange.Intention, fromCultureGetID);
+                fromIntentionGetCulture.Add(_socialExchange.SocialExchange, fromCultureGetID);
             }
 
             MegaDictionary = fromIntentionGetCulture;

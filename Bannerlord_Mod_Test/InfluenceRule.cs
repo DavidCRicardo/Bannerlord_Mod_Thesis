@@ -231,13 +231,14 @@ namespace Bannerlord_Mod_Test
                 sum -= 2;
             }
 
-
+            #region Check Condition to AskOut
             //If dating already with the receiver, so decrease drastically the sum to not AskOut again
             SocialNetworkBelief socialNetworkBelief = Initiator.GetBelief("Dating", Receiver);
             if (socialNetworkBelief != null)
             {
                 sum -= 100;
             }
+            #endregion
 
             return sum;
         }
@@ -328,6 +329,20 @@ namespace Bannerlord_Mod_Test
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
+            #region Check Condition To Sabotage
+            /* Check if there is anyone dating and sabotage */
+            SocialNetworkBelief belief = Initiator.CheckIfAgentIsDatingWithAnyone(Receiver);
+            /* If noone is dating, there is no need to sabotage */
+            if (belief != null)
+            {
+                sum += 2;
+            }
+            else
+            {
+                sum -= 2;
+            }
+            #endregion
+
             return sum;
         }
         //Hostile SE
@@ -415,7 +430,7 @@ namespace Bannerlord_Mod_Test
             });
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            if (Initiator.IsDatingWith(Receiver)) { }
+            if (Initiator.HasRelationWith("Dating", Receiver)) { }
 
             return sum;
         }
@@ -429,7 +444,7 @@ namespace Bannerlord_Mod_Test
                     if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
                     {
                         /* Add Belief to check if belief value < goal value */
-                        if (!Initiator.IsFriendOf(Receiver))
+                        if (!Initiator.HasRelationWith(_relation, Receiver))
                         {
                             SocialNetworkBelief belief = Initiator.GetBelief(_relation, Receiver);
                             if (belief == null)
@@ -542,7 +557,6 @@ namespace Bannerlord_Mod_Test
                 return 2; //not dating with anyone
             }
         }
-        public string RelationTypeString { get; set; }
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }
         public int InitialValue { get; set; }

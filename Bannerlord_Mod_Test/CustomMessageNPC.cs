@@ -6,12 +6,11 @@ namespace Bannerlord_Mod_Test
 {
     class CustomMessageNPC
     {
-        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, RootMessageJson rootMessageJson, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary, int receiverVolition = 0)
+        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary, int receiverVolition = 0)
         {
             SE = se;
             Rnd = rnd;
             IsInitiator = _isInitiator;
-            RootMessage = rootMessageJson;
             CurrentCulture = culture;
             ReceiverVolition = receiverVolition;
             MegaDictionary = megaDictionary;
@@ -62,7 +61,6 @@ namespace Bannerlord_Mod_Test
         public bool IsAccepted { get; private set; }
         public string[] sentences { get; private set; }
         private CultureCode CurrentCulture { get; set; }
-        private RootMessageJson RootMessage { get; set; }
 
         private string GetAMessage(SocialExchangeSE SE, CultureCode culture, string id, Random rnd)
         {

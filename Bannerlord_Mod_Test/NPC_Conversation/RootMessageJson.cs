@@ -5,7 +5,7 @@ namespace Bannerlord_Mod_Test
 {
      class RootMessageJson
     {
-        [JsonProperty("SocialExchangeM")]
-        public List<SocialExchangeM> SocialExchangeListFromJson { get; set; }
+        [JsonProperty("DialogsRoot")]
+        public List<DialogsRoot> SocialExchangeListFromJson { get; set; }
     }
 }

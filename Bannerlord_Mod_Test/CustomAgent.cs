@@ -156,7 +156,7 @@ namespace Bannerlord_Mod_Test
             if (FullMessage == null)
             {
                 CultureCode cultureCode = customAgentInitiator.selfAgent.Character.Culture.GetCultureCode();
-                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, true, rootMessageJson, cultureCode, megaDictionary);
+                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, true, cultureCode, megaDictionary);
 
                 FullMessage = messageNPC.MainSocialMove();
             }
@@ -169,7 +169,7 @@ namespace Bannerlord_Mod_Test
             if (FullMessage == null)
             {
                 CultureCode cultureCode = customAgentReceptor.selfAgent.Character.Culture.GetCultureCode();
-                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, false, rootMessageJson, cultureCode, megaDictionary, customAgentReceptor.SEVolition);
+                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, false, cultureCode, megaDictionary, customAgentReceptor.SEVolition);
                 FullMessage = messageNPC.MainSocialMove();
 
                 SE_Accepted = messageNPC.IsAccepted;
@@ -346,6 +346,22 @@ namespace Bannerlord_Mod_Test
                 && b.agents.Contains(_otherCustomAgent.Name)
                 );
         }
+        public SocialNetworkBelief GetBeliefFrom(CustomAgent customAgent1, CustomAgent customAgent2, string relation)
+        {
+            return this.SocialNetworkBeliefs.Find
+                (b => b.relationship == relation 
+                && b.agents.Contains(customAgent1.Name)
+                && b.agents.Contains(customAgent2.Name)
+                );
+        }
+
+        public SocialNetworkBelief CheckIfAgentIsDatingWithAnyone(CustomAgent customAgentToCheck)
+        {
+            return this.SocialNetworkBeliefs.Find
+                (b => b.relationship == "Dating"
+                && b.agents.Contains(customAgentToCheck.Name)
+                && b.value > 0);
+        }
 
         #endregion
         #region /* Add / Update / Remove Goals */
@@ -399,26 +415,16 @@ namespace Bannerlord_Mod_Test
             selfAgent.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
-        public bool IsFriendOf(CustomAgent customAgentReceiver)
+
+        public bool HasRelationWith(string relation, CustomAgent customAgentReceiver)
         {
             return this.SocialNetworkBeliefs.Exists
-                (b => b.relationship == "Friends" 
+                (b => b.relationship == relation
                 && b.agents.Contains(Name)
                 && b.agents.Contains(customAgentReceiver.Name)
                 && b.value > 0);
         }
-        public bool IsDatingWith(CustomAgent customAgentReceiver)
-        {
-            return this.SocialNetworkBeliefs.Exists
-                (b => b.relationship == "Dating"
-                && b.agents.Contains(Name)
-                && b.agents.Contains(customAgentReceiver.Name)
-                && b.value > 0);
-        }
-        public bool HasTrait(string name)
-        {
-            return TraitList.Exists(t => t.traitName == name);
-        }
+
         public void AddToMemory(MemorySE _newMemory)
         {
             MemorySEs.Clear();

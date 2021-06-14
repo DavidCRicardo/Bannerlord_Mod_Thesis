@@ -286,13 +286,28 @@ namespace Bannerlord_Mod_Test
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
 
             CustomAgentReceiver.SEVolition = finalVolition;
-            ComputeOutcome(CustomAgentReceiver.SEVolition, -0.5f, 0.5f);
+            ComputeOutcome(CustomAgentReceiver.SEVolition, 20, -20);
 
             return CustomAgentReceiver.SEVolition;
         }
         private static int ComputeVolitionWithInfluenceRule(InfluenceRule IR)
         {
-            IR.InitialValue = IR.CheckGoals(IR.RelationTypeString);
+            string relation = "";
+            switch (IR.RelationType)
+            {  
+                case IntentionEnum.Friendly: 
+                case IntentionEnum.UnFriendly: relation = "Friends";
+                    break;
+                case IntentionEnum.Romantic: relation = "Dating";
+                    break;
+                case IntentionEnum.Hostile:
+                    break;
+                case IntentionEnum.Special:
+                    break;
+                default:
+                    break;
+            }
+            IR.InitialValue = IR.CheckGoals(relation);
             IR.InitialValue += IR.GetValueParticipantsRelation();
             IR.InitialValue += IR.SRunRules();
             return IR.InitialValue;
@@ -305,7 +320,7 @@ namespace Bannerlord_Mod_Test
         }
 
         //*
-        private void ComputeOutcome(int _SEVolition, float minThreshold, float maxThreshold)
+        private void ComputeOutcome(int _SEVolition, int minThreshold, int maxThreshold)
         {
             if (_SEVolition > maxThreshold)
             {
