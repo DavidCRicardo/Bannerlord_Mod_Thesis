@@ -142,7 +142,7 @@ namespace Bannerlord_Mod_Test
             maximumSEs = 1;
             /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-            SocialExchangeListString = new List<string>() { "Compliment", "Flirt", "Bully", "Insult", "Jealous", "Break" };
+            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Insult", "Jealous", "Break" };
 
             SocialExchangeSEList = new List<SocialExchangeSE>();
             foreach (String seName in SocialExchangeListString)
@@ -445,7 +445,7 @@ namespace Bannerlord_Mod_Test
                 foreach (Culture _culture in _socialExchange.CultureList)
                 {
                     fromIDGetListMessages = new Dictionary<string, List<string>>();
-                    
+
                     foreach (NPCDialog _npcDialog in _culture.NPCDialogs)
                     {
                         if (_npcDialog.id == "start")
@@ -469,90 +469,6 @@ namespace Bannerlord_Mod_Test
 
             MegaDictionary = fromIntentionGetCulture;
         }
-        private void LoadAllInfoFromJSON()
-        {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
-            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
-
-            foreach (SettlementJson item in myDeserializedClass.SettlementJson)
-            {
-                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
-                {
-                    foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
-                    {
-                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
-                        if (x != null)
-                        {
-                            x.TraitList = _customAgentJson.TraitList;
-                            x.GoalsList = _customAgentJson.GoalsList;
-                            x.BeliefsList = _customAgentJson.BeliefsList;
-                            x.ItemList = _customAgentJson.ItemsList;
-                            x.MemorySEs = _customAgentJson.MemoriesList;
-                            x.TriggerRuleList = _customAgentJson.TriggerRulesList;
-
-                            foreach (Trait trait in x.TraitList)
-                            {
-                                trait.SetSEsToIncreaseDecrease(trait.traitName);
-                                trait.SetCountdownToIncreaseDecrease(trait.traitName);
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        public void SaveToJson()
-        {
-            SaveAllInfoToJSON();
-        }
-        private void SaveAllInfoToJSON()
-        {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
-            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
-
-            foreach (SettlementJson item in myDeserializedClass.SettlementJson)
-            {
-                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
-                {
-                    foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
-                    {
-                        var x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
-                        if (x != null)
-                        {
-                            _customAgentJson.TraitList = x.TraitList;
-                            _customAgentJson.GoalsList = x.GoalsList;
-                            _customAgentJson.BeliefsList = x.BeliefsList;
-                            _customAgentJson.ItemsList = x.ItemList;
-                            _customAgentJson.MemoriesList = x.MemorySEs;
-                            _customAgentJson.TriggerRulesList = x.TriggerRuleList;
-                        }
-                    }
-                    //break;
-                }
-            }
-
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
-        }
-        private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
-        {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
-            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
-
-            List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
-            foreach (CustomAgent customAgent in customAgentsList)
-            {
-                if (customAgent.selfAgent.IsHero)
-                {
-                    CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.TraitList, customAgent.TriggerRuleList);
-                    jsonlist.Add(json1);
-                }
-            }
-
-            myDeserializedClass.SettlementJson.Add(new SettlementJson(_currentSettlement, _currentLocation, jsonlist));
-
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
-        }
-
         private void CheckIfFileExists()
         {
             try
@@ -584,6 +500,89 @@ namespace Bannerlord_Mod_Test
             {
                 return false;
             }
+        }
+        private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
+            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
+
+            List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
+            foreach (CustomAgent customAgent in customAgentsList)
+            {
+                if (customAgent.selfAgent.IsHero)
+                {
+                    CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.TraitList, customAgent.TriggerRuleList);
+                    jsonlist.Add(json1);
+                }
+            }
+
+            myDeserializedClass.SettlementJson.Add(new SettlementJson(_currentSettlement, _currentLocation, jsonlist));
+
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+        }
+        private void LoadAllInfoFromJSON()
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
+            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
+
+            foreach (SettlementJson item in myDeserializedClass.SettlementJson)
+            {
+                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
+                {
+                    foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
+                    {
+                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
+                        if (x != null)
+                        {
+                            x.TraitList = _customAgentJson.TraitList;
+                            x.GoalsList = _customAgentJson.GoalsList;
+                            x.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
+                            x.ItemList = _customAgentJson.ItemsList;
+                            x.MemorySEs = _customAgentJson.MemoriesList;
+                            x.TriggerRuleList = _customAgentJson.TriggerRulesList;
+
+                            foreach (Trait trait in x.TraitList)
+                            {
+                                trait.SetSEsToIncreaseDecrease(trait.traitName);
+                                trait.SetCountdownToIncreaseDecrease(trait.traitName);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        private void SaveAllInfoToJSON()
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
+            RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
+
+            foreach (SettlementJson item in myDeserializedClass.SettlementJson)
+            {
+                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
+                {
+                    foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
+                    {
+                        var x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
+                        if (x != null)
+                        {
+                            _customAgentJson.TraitList = x.TraitList;
+                            _customAgentJson.GoalsList = x.GoalsList;
+                            _customAgentJson.SocialNetworkBeliefs = x.SocialNetworkBeliefs;
+                            _customAgentJson.ItemsList = x.ItemList;
+                            _customAgentJson.MemoriesList = x.MemorySEs;
+                            _customAgentJson.TriggerRulesList = x.TriggerRuleList;
+                        }
+                    }
+                    //break;
+                }
+            }
+
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+        }
+        public void SaveToJson()
+        {
+            SaveAllInfoToJSON();
         }
 
         public bool SecsDelay(float dt, int seconds)

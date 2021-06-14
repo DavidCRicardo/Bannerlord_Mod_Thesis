@@ -24,7 +24,8 @@ namespace Bannerlord_Mod_Test
 
             switch (SEName)
             {
-                case "Flirt": Intention = IntentionEnum.Romantic; break;
+                case "Flirt":
+                case "AskOut": Intention = IntentionEnum.Romantic; break;
                 case "Compliment": Intention = IntentionEnum.Friendly; break;
                 case "Bully": Intention = IntentionEnum.Hostile; break;
                 case "Jealous": Intention = IntentionEnum.UnFriendly; break;
@@ -138,9 +139,9 @@ namespace Bannerlord_Mod_Test
                 case IntentionEnum.Friendly:
                     if (SEName == "Compliment")
                     {
-                        Belief belief = UpdateParticipantNPCBeliefs("Friendship", 1);
+                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
-                        UpdateThirdNPCsBeliefs("Friendship", belief, 1);
+                        UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                         RunTriggerRulesForEveryone();
 
@@ -155,7 +156,7 @@ namespace Bannerlord_Mod_Test
                     }
                     else
                     {
-                        Belief belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
 
                         UpdateThirdNPCsBeliefs("Dating", belief, 1);
 
@@ -187,9 +188,9 @@ namespace Bannerlord_Mod_Test
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
-                        Belief belief = UpdateParticipantNPCBeliefs("Friendship", -1);
+                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
 
-                        UpdateThirdNPCsBeliefs("Friendship", belief, -1);
+                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
 
                         RunTriggerRulesForEveryone();
                     }
@@ -198,7 +199,7 @@ namespace Bannerlord_Mod_Test
                     CustomAgentInitiator.UpdateStatus("Anger", -1);
                     CustomAgentInitiator.UpdateStatus("Courage", -1);
 
-                    Belief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
+                    SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
                     UpdateThirdNPCsBeliefs("Dating", _belief, -1);
 
                     RunTriggerRulesForEveryone();
@@ -209,13 +210,13 @@ namespace Bannerlord_Mod_Test
                     break;
             }
         }
-        private Belief UpdateParticipantNPCBeliefs(string _relationName, int _value)
+        private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName, int _value)
         {
-            Belief belief = CustomAgentInitiator.GetBelief(_relationName, CustomAgentReceiver);
+            SocialNetworkBelief belief = CustomAgentInitiator.GetBelief(_relationName, CustomAgentReceiver);
             if (belief == null)
             {
                 List<string> a = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
-                Belief newBelief = new Belief(_relationName, a, _value);
+                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, a, _value);
 
                 CustomAgentInitiator.AddBelief(newBelief);
                 CustomAgentReceiver.AddBelief(newBelief);
@@ -230,13 +231,13 @@ namespace Bannerlord_Mod_Test
 
             return belief;
         }
-        private void UpdateThirdNPCsBeliefs(string _relationName, Belief _belief, int _value)
+        private void UpdateThirdNPCsBeliefs(string _relationName, SocialNetworkBelief _belief, int _value)
         {
             foreach (CustomAgent customAgent in CustomAgentList)
             {
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
-                    Belief belief = customAgent.BeliefsList.Find(b => b.relationship == _relationName
+                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => b.relationship == _relationName
                     && b.agents.Contains(CustomAgentInitiator.Name)
                     && b.agents.Contains(CustomAgentReceiver.Name));
 
@@ -299,7 +300,7 @@ namespace Bannerlord_Mod_Test
 
         public void PlayerConversationWithNPC(string relation, int value)
         {
-            Belief belief = UpdateParticipantNPCBeliefs(relation, value);
+            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
         }
 

@@ -24,7 +24,7 @@ namespace Bannerlord_Mod_Test
                     case SocialExchangeSE.IntentionEnum.Friendly:
                         if (RelationName == "Compliment")
                         {
-                            return RunRulesFriendship(IsReacting);
+                            return RunRulesFriendship();
                         }
                         else { return 0; }
 
@@ -33,12 +33,20 @@ namespace Bannerlord_Mod_Test
                         {
                             return RunRulesJealous();
                         }
+                        else if (RelationName == "Jealous")
+                        {
+                            return RunRulesSabotage();
+                        }
                         else { return 0; }
 
                     case SocialExchangeSE.IntentionEnum.Romantic:
                         if (RelationName == "Flirt")
                         {
                             return RunRulesRomantic();
+                        }
+                        else if (RelationName == "AskOut")
+                        {
+                            return RunRulesAskOut();
                         }
                         else { return 0; }
 
@@ -60,49 +68,12 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-            //    switch (RelationType)
-            //    {
-            //        case SocialExchangeSE.IntentionEnum.Friendly:
-            //            if (RelationName == "Compliment")
-            //            {
-            //                return RunRulesFriendship();
-            //            }
-            //            else { return 0; }
-            //        case SocialExchangeSE.IntentionEnum.UnFriendly:
-            //            if (RelationName == "Jealous")
-            //            {
-            //                return RunRulesJealous();
-            //            }
-            //            else { return 0; }
-
-            //        case SocialExchangeSE.IntentionEnum.Romantic:
-            //            if (RelationName == "Flirt")
-            //            {
-            //                return RunRulesRomantic();
-            //            }
-            //            else { return 0; }
-
-            //        case SocialExchangeSE.IntentionEnum.Hostile:
-            //            if (RelationName == "Bully")
-            //            {
-            //                return RunRulesHostile();
-            //            }
-            //            else { return 0; }
-
-            //        case SocialExchangeSE.IntentionEnum.Special:
-            //            if (RelationName == "Break")
-            //            {
-            //                return RunRulesSpecial();
-            //            }
-            //            else { return 0; }
-            //        default:
-                        return 0;
-            //    }
+                 return 0;
             }
         }
 
         //Positive SE
-        private int RunRulesFriendship(bool IsReacting)
+        private int RunRulesFriendship()
         {
             int sum = InitialValue;
 
@@ -142,8 +113,9 @@ namespace Bannerlord_Mod_Test
                 return acc;
             });
             /* End Check Traits */
-
+            
             /* Check Status */
+            sum += IsReacting ? CheckStatus(Receiver, true) : CheckStatus(Initiator, true);
             /* End Check Status */
 
             return sum;
@@ -197,6 +169,74 @@ namespace Bannerlord_Mod_Test
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
                 sum -= 2;
+            }
+
+
+            //If not dating with the receiver, so decrease drastically the sum to not Flirt 
+            SocialNetworkBelief socialNetworkBelief = Initiator.GetBelief("Dating", Receiver);
+            if (socialNetworkBelief == null)
+            {
+                sum -= 100;
+            }
+
+            return sum;
+        }
+        private int RunRulesAskOut()
+        {
+            int sum = InitialValue;
+
+            /* Check Initiator & Receiver Traits */
+            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                { "Friendly"  , agent =>  0 },
+                { "Hostile"   , agent =>  0 },
+                { "Charming"  , agent =>  2 },
+                { "UnCharming", agent => -2 },
+                { "Shy"       , agent => -2 },
+                { "Brave"     , agent =>  2 },
+                { "Calm"      , agent =>  0 },
+                { "Aggressive", agent =>  0 },
+                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(agent, Initiator) : CheckFaithful(agent, Receiver) },
+                { "Unfaithful", agent =>  2 }
+            };
+            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            {
+                Func<CustomAgent, int> TraitFunc;
+                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                {
+                    acc += TraitFunc(Initiator);
+                }
+
+                return acc;
+            });
+
+            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            {
+                Func<CustomAgent, int> TraitFunc;
+                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                {
+                    acc += TraitFunc(Receiver);
+                }
+
+                return acc;
+            });
+
+            /* Check Status */
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+            /* End Check Status */
+
+            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
+                ||
+                (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
+            {
+                sum -= 2;
+            }
+
+
+            //If dating already with the receiver, so decrease drastically the sum to not AskOut again
+            SocialNetworkBelief socialNetworkBelief = Initiator.GetBelief("Dating", Receiver);
+            if (socialNetworkBelief != null)
+            {
+                sum -= 100;
             }
 
             return sum;
@@ -391,16 +431,16 @@ namespace Bannerlord_Mod_Test
                         /* Add Belief to check if belief value < goal value */
                         if (!Initiator.IsFriendOf(Receiver))
                         {
-                            Belief belief = Initiator.GetBelief(_relation, Receiver);
+                            SocialNetworkBelief belief = Initiator.GetBelief(_relation, Receiver);
                             if (belief == null)
                             {
                                 List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
-                                Belief newBelief = new Belief(_relation, a, 0);
+                                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, 0);
                                 Initiator.AddBelief(newBelief);
                             }
                         }
                         /* */
-                        foreach (var _belief in Initiator.BeliefsList)
+                        foreach (var _belief in Initiator.SocialNetworkBeliefs)
                         {
                             if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name))
                             {
@@ -417,7 +457,7 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
-        private int CheckStatus(CustomAgent customAgent)
+        private int CheckStatus(CustomAgent customAgent, bool SocialTalk = false)
         {
             int localSum = 0;
 
@@ -431,16 +471,19 @@ namespace Bannerlord_Mod_Test
                 localSum -= 2;
             }
 
-            status = CheckStatusIntensity(customAgent, "SocialTalk");
-            if (status.intensity < 0.6)
+            if (SocialTalk)
             {
-                localSum += 0;
+                status = CheckStatusIntensity(customAgent, "SocialTalk");
+                if (status.intensity < 0.6)
+                {
+                    localSum += 0;
+                }
+                else
+                {
+                    localSum += 2;
+                }
             }
-            else
-            {
-                localSum += 2;
-            }
-
+            
             status = CheckStatusIntensity(customAgent, "Courage");
             if (status.intensity < 0.5)
             {
@@ -460,7 +503,7 @@ namespace Bannerlord_Mod_Test
         }
         internal int GetValueParticipantsRelation()
         {
-            Belief localBelief = GetParticipantsRelation();
+            SocialNetworkBelief localBelief = GetParticipantsRelation();
             if (localBelief != null)
             {
                 return localBelief.value;
@@ -468,13 +511,14 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
-        private Belief GetParticipantsRelation()
+        private SocialNetworkBelief GetParticipantsRelation()
         {
-            return Initiator.BeliefsList.Find(b => b.agents.Contains(Initiator.Name) && b.agents.Contains(Receiver.Name));
+            // Relation between the Initiator and the Receiver
+            return Initiator.SocialNetworkBeliefs.Find(b => b.agents.Contains(Initiator.Name) && b.agents.Contains(Receiver.Name));
         }
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
-            Belief belief = agent.BeliefsList.Find(b => b.relationship == "Dating");
+            SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
             if (belief != null)
             {
                 if (belief.agents.Contains(agent.Name) && belief.agents.Contains(otherAgent.Name))

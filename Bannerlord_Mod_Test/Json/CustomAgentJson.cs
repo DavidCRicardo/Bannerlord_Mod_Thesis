@@ -11,7 +11,7 @@ namespace Bannerlord_Mod_Test
             Name = name;
             TraitList = traitList;
             GoalsList = new List<Goal>();
-            BeliefsList = new List<Belief>();
+            SocialNetworkBeliefs = new List<SocialNetworkBelief>();
             ItemsList = new List<Item>();
             MemoriesList = new List<MemorySE>();
             TriggerRulesList = triggerRules;
@@ -24,7 +24,7 @@ namespace Bannerlord_Mod_Test
         [JsonProperty("GoalsList")]
         public List<Goal> GoalsList { get; set; }
         [JsonProperty("BeliefsList")]
-        public List<Belief> BeliefsList { get; set; }
+        public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         [JsonProperty("ItemsList")]
         public List<Item> ItemsList { get; set; }
         [JsonProperty("MemorySEList")]

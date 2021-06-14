@@ -25,7 +25,7 @@ namespace Bannerlord_Mod_Test
         public List<CustomAgent> customAgentsList { get; set; }
         public List<Trait> TraitList { get; set; }
         public List<Goal> GoalsList { get; set; }
-        public List<Belief> BeliefsList { get; set; }
+        public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         public List<Item> ItemList { get; set; }
         public List<MemorySE> MemorySEs { get; set; }
         public List<TriggerRule> TriggerRuleList { get; set; }
@@ -49,7 +49,7 @@ namespace Bannerlord_Mod_Test
             this.customAgentsList = new List<CustomAgent>(); // reference to NPCs around 
             this.TraitList = new List<Trait>();
             this.GoalsList = new List<Goal>();
-            this.BeliefsList = new List<Belief>();
+            this.SocialNetworkBeliefs = new List<SocialNetworkBelief>();
             this.ItemList = new List<Item>();
             this.MemorySEs = new List<MemorySE>();
             this.TriggerRuleList = new List<TriggerRule>();
@@ -179,14 +179,14 @@ namespace Bannerlord_Mod_Test
             message = (message == null) ? message = "" : message;
         }
 
-        public void UpdateBeliefWithPlayer(Belief _belief, bool FromCampaing, CustomAgent _customAgent)
+        public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CustomAgent _customAgent)
         {
             if (FromCampaing)
             {
-                Belief localBelief = _belief;
+                SocialNetworkBelief localBelief = _belief;
                 LoadDataFromJsonToAgent(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
 
-                Belief belief = GetBelief(_belief.relationship, _customAgent);
+                SocialNetworkBelief belief = GetBelief(_belief.relationship, _customAgent);
                 UpdateBelief(localBelief, localBelief.value);
                 SaveDataFromAgentToJson(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
             }
@@ -205,7 +205,7 @@ namespace Bannerlord_Mod_Test
                 if (_customAgentJson != null)
                 {
                     _customAgentJson.TraitList = TraitList;
-                    _customAgentJson.BeliefsList = BeliefsList;
+                    _customAgentJson.SocialNetworkBeliefs = SocialNetworkBeliefs;
                     _customAgentJson.GoalsList = GoalsList;
                     _customAgentJson.ItemsList = ItemList;
                 }
@@ -227,7 +227,7 @@ namespace Bannerlord_Mod_Test
                 if (_customAgentJson != null)
                 {
                     TraitList = _customAgentJson.TraitList;
-                    BeliefsList = _customAgentJson.BeliefsList;
+                    SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                     GoalsList = _customAgentJson.GoalsList;
                     ItemList = _customAgentJson.ItemsList;
                 }
@@ -311,13 +311,13 @@ namespace Bannerlord_Mod_Test
             behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
         }
         #region /* Add / Update Beliefs */ 
-        public void AddBelief(Belief belief)
+        public void AddBelief(SocialNetworkBelief belief)
         {
-            BeliefsList.Add(new Belief(belief.relationship, belief.agents, belief.value));
+            SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.value));
         }
-        public void UpdateBelief(Belief belief, int _value)
+        public void UpdateBelief(SocialNetworkBelief belief, int _value)
         {
-                Belief _belief = BeliefsList.Find(b => b.relationship == belief.relationship && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1]));
+            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(b => b.relationship == belief.relationship && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1]));
 
                 if (_belief == null)
                 {
@@ -338,9 +338,9 @@ namespace Bannerlord_Mod_Test
                     }
                 }
         }
-        public Belief GetBelief(string relation, CustomAgent _otherCustomAgent)
+        public SocialNetworkBelief GetBelief(string relation, CustomAgent _otherCustomAgent)
         {
-            return this.BeliefsList.Find
+            return this.SocialNetworkBeliefs.Find
                 (b => b.relationship == relation 
                 && b.agents.Contains(Name)
                 && b.agents.Contains(_otherCustomAgent.Name)
@@ -401,15 +401,15 @@ namespace Bannerlord_Mod_Test
         #endregion
         public bool IsFriendOf(CustomAgent customAgentReceiver)
         {
-            return this.BeliefsList.Exists
-                (b => b.relationship == "Friendship" 
+            return this.SocialNetworkBeliefs.Exists
+                (b => b.relationship == "Friends" 
                 && b.agents.Contains(Name)
                 && b.agents.Contains(customAgentReceiver.Name)
                 && b.value > 0);
         }
         public bool IsDatingWith(CustomAgent customAgentReceiver)
         {
-            return this.BeliefsList.Exists
+            return this.SocialNetworkBeliefs.Exists
                 (b => b.relationship == "Dating"
                 && b.agents.Contains(Name)
                 && b.agents.Contains(customAgentReceiver.Name)
@@ -438,7 +438,7 @@ namespace Bannerlord_Mod_Test
         }
         private void CheckRule(TriggerRule TRule)
         {
-            foreach (Belief belief in BeliefsList)
+            foreach (SocialNetworkBelief belief in SocialNetworkBeliefs)
             {
                 if (belief.relationship == TRule.RelationshipName
                     && TRule.NPCsOnRule == belief.agents

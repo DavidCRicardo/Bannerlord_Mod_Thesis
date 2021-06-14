@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-public class Belief
+public class SocialNetworkBelief
 {
-    public Belief(string _relationship, List<string> _agents, int _value)
+    public SocialNetworkBelief(string _relationship, List<string> _agents, int _value)
     {
         relationship = _relationship;
         agents = _agents;

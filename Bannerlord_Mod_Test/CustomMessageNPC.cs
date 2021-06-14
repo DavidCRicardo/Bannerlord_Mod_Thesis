@@ -30,7 +30,7 @@ namespace Bannerlord_Mod_Test
         }
         internal string[] CheckSocialMoveInitiator()
         {
-            Message = GetAMessage(SE.Intention, CurrentCulture, "start", Rnd);
+            Message = GetAMessage(SE, CurrentCulture, "start", Rnd);
 
             //char[] delimiterChars = { '.', '!', '?' };
             char delimiterChar = '/';
@@ -43,7 +43,7 @@ namespace Bannerlord_Mod_Test
             SetIsAccepted();
             string id = (IsAccepted) ? "accept" : "reject";
 
-            Message = GetAMessage(SE.Intention, CurrentCulture, id, Rnd);
+            Message = GetAMessage(SE, CurrentCulture, id, Rnd);
             //char[] delimiterChars = { '.', '!', '?' };
             char delimiterChar = '/';
             sentences = Message.Split(delimiterChar);
@@ -64,14 +64,14 @@ namespace Bannerlord_Mod_Test
         private CultureCode CurrentCulture { get; set; }
         private RootMessageJson RootMessage { get; set; }
 
-        private string GetAMessage(SocialExchangeSE.IntentionEnum intention, CultureCode culture, string id, Random rnd)
+        private string GetAMessage(SocialExchangeSE SE, CultureCode culture, string id, Random rnd)
         {
             if (culture == CultureCode.Invalid)
             {
                 culture = CultureCode.AnyOtherCulture;
             }
 
-            bool containsIntention = MegaDictionary.TryGetValue(intention.ToString(), out Dictionary<string, Dictionary<string, List<string>>> a);
+            bool containsIntention = MegaDictionary.TryGetValue(SE.SEName, out Dictionary<string, Dictionary<string, List<string>>> a);
             if (containsIntention)
             {
                 bool containsCulture = a.TryGetValue(culture.ToString(), out Dictionary<string, List<string>> b);
