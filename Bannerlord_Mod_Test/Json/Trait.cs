@@ -11,7 +11,6 @@ namespace Bannerlord_Mod_Test
         {
             traitName = _traitName;
 
-            SetSEsToIncreaseDecrease(traitName);
             SetCountdownToIncreaseDecrease(traitName);
         }
         [JsonProperty("traitName")]
@@ -38,72 +37,6 @@ namespace Bannerlord_Mod_Test
             increaseCountdown = value;
         }
 
-
-        private SocialExchangeSE.IntentionEnum intentionToIncreasePoints { get; set; }
-        private SocialExchangeSE.IntentionEnum intentionToDecreasePoints { get; set; }
-        public int GetValue(SocialExchangeSE.IntentionEnum _currentIntention)
-        {
-            if (_currentIntention == intentionToIncreasePoints)
-            {
-                return 2;
-            }
-            else if (_currentIntention == intentionToDecreasePoints)
-            {
-                return -2;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-        public void SetSEsToIncreaseDecrease(string traitName)
-        {
-            switch (traitName)
-            {
-                case "Friendly":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Positive;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Negative;
-                    break;
-                case "Hostile":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Negative;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Positive;
-                    break;
-                case "Charming":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Undefined;
-                    break;
-                case "UnCharming":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Undefined;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
-                    break;
-                case "Shy":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Undefined;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.AllTypes; // decrease for all
-                    break;
-                case "Brave":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Undefined;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.AllTypes; // increase for all
-                    break;
-                case "Calm":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Positive;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Negative;
-                    break;
-                case "Aggressive":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Negative;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Positive;
-                    break;
-                case "Faithful":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Romantic; // If its dating
-                    break;
-                case "Unfaithful":
-                    intentionToIncreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
-                    intentionToDecreasePoints = SocialExchangeSE.IntentionEnum.Romantic;
-                    break;
-                default:
-                    break;
-            }
-        }
         public void SetCountdownToIncreaseDecrease(string traitName)
         {
             switch (traitName)

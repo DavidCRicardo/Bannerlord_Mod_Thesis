@@ -202,9 +202,9 @@ namespace Bannerlord_Mod_Test
         {
             foreach (var customAgent in customAgentsList)
             {
-                customAgent.UpdateStatus("SocialTalk", 0.1);
-                customAgent.UpdateStatus("Courage", -0.1);
-                customAgent.UpdateStatus("Shame", -0.1);
+                customAgent.UpdateStatus("SocialTalk", 0.05);
+                customAgent.UpdateStatus("Courage", -0.05);
+                customAgent.UpdateStatus("Shame", -0.05);
 
                 if (customAgent.targetAgent != null)
                 {
@@ -212,7 +212,7 @@ namespace Bannerlord_Mod_Test
                 }
                 else
                 {
-                    customAgent.UpdateStatus("Tiredness", -0.1);
+                    customAgent.UpdateStatus("Tiredness", -0.05);
                 }
             }
         }
@@ -544,7 +544,6 @@ namespace Bannerlord_Mod_Test
 
                             foreach (Trait trait in x.TraitList)
                             {
-                                trait.SetSEsToIncreaseDecrease(trait.traitName);
                                 trait.SetCountdownToIncreaseDecrease(trait.traitName);
                             }
                         }

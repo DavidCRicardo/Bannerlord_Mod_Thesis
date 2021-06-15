@@ -187,7 +187,7 @@ namespace Bannerlord_Mod_Test
                 LoadDataFromJsonToAgent(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
 
                 SocialNetworkBelief belief = GetBelief(_belief.relationship, _customAgent);
-                UpdateBelief(localBelief, localBelief.value);
+                UpdateBeliefWithNewValue(localBelief, localBelief.value);
                 SaveDataFromAgentToJson(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
             }
         }
@@ -310,34 +310,55 @@ namespace Bannerlord_Mod_Test
             DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
             behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
         }
-        #region /* Add / Update Beliefs */ 
+        #region /* Add / Update Beliefs  / Get Beliefs */ 
         public void AddBelief(SocialNetworkBelief belief)
         {
             SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.value));
         }
-        public void UpdateBelief(SocialNetworkBelief belief, int _value)
+        public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
-            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(b => b.relationship == belief.relationship && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1]));
+            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
+                b => b.relationship == belief.relationship 
+                && belief.agents.Contains(b.agents[0]) 
+                && belief.agents.Contains(b.agents[1]));
 
-                if (_belief == null)
-                {
-                    AddBelief(belief);
-                    _belief = belief;
-                }
-                else
-                {
-                    _belief.value += _value;
+            if (_belief == null)
+            {
+                AddBelief(belief);
+                _belief = belief;
+            }
+            else
+            {
+                _belief.value += _value;
 
-                    if (_belief.value >= 10)
-                    {
-                        _belief.value = 10;
-                    }
-                    if (_belief.value <= 0)
-                    {
-                        _belief.value = 0;
-                    }
+                if (_belief.value >= 10)
+                {
+                    _belief.value = 10;
                 }
+                if (_belief.value <= -10)
+                {
+                    _belief.value = -10;
+                }
+            }
         }
+        public void UpdateBeliefWithNewRelation(string _newRelation, SocialNetworkBelief belief)
+        {
+            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
+                b => b.relationship == belief.relationship 
+                && belief.agents.Contains(b.agents[0]) 
+                && belief.agents.Contains(b.agents[1]));
+
+            if (_belief == null)
+            {
+                AddBelief(belief);
+                _belief = belief;
+            }
+            else
+            {
+                belief.relationship = _newRelation;
+            }
+        }
+        //Get Belief from itself with other
         public SocialNetworkBelief GetBelief(string relation, CustomAgent _otherCustomAgent)
         {
             return this.SocialNetworkBeliefs.Find
@@ -346,28 +367,28 @@ namespace Bannerlord_Mod_Test
                 && b.agents.Contains(_otherCustomAgent.Name)
                 );
         }
-        public SocialNetworkBelief GetBeliefFrom(CustomAgent customAgent1, CustomAgent customAgent2, string relation)
+        //Get Belief between 2 other NPCs
+        public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
         {
             return this.SocialNetworkBeliefs.Find
-                (b => b.relationship == relation 
-                && b.agents.Contains(customAgent1.Name)
+                (b => b.agents.Contains(customAgent1.Name)
                 && b.agents.Contains(customAgent2.Name)
                 );
         }
-
-        public SocialNetworkBelief CheckIfAgentIsDatingWithAnyone(CustomAgent customAgentToCheck)
+        public int CheckHowManyTheAgentIsDating(CustomAgent customAgent)
         {
-            return this.SocialNetworkBeliefs.Find
-                (b => b.relationship == "Dating"
-                && b.agents.Contains(customAgentToCheck.Name)
-                && b.value > 0);
+            return customAgent.SocialNetworkBeliefs.Count(
+                b => b.relationship == "Dating"
+                && b.agents.Contains(customAgent.Name));
         }
-
-        public void Change(string _newRelation, SocialNetworkBelief belief)
+        public bool HasSpecificRelationWith(string relation, CustomAgent customAgentReceiver)
         {
-            belief.relationship = _newRelation;
+            return this.SocialNetworkBeliefs.Exists
+                (b => b.relationship == relation
+                && b.agents.Contains(Name)
+                && b.agents.Contains(customAgentReceiver.Name)
+                );
         }
-
         #endregion
         #region /* Add / Update / Remove Goals */
         public void AddGoal(string _relationship, string _target, int _value)
@@ -420,15 +441,6 @@ namespace Bannerlord_Mod_Test
             selfAgent.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
-
-        public bool HasRelationWith(string relation, CustomAgent customAgentReceiver)
-        {
-            return this.SocialNetworkBeliefs.Exists
-                (b => b.relationship == relation
-                && b.agents.Contains(Name)
-                && b.agents.Contains(customAgentReceiver.Name)
-                && b.value > 0);
-        }
 
         public void AddToMemory(MemorySE _newMemory)
         {

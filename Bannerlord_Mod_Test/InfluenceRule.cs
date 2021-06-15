@@ -59,7 +59,7 @@ namespace Bannerlord_Mod_Test
                     case SocialExchangeSE.IntentionEnum.Special:
                         if (RelationName == "Break")
                         {
-                            return RunRulesSpecial();
+                            return RunRulesBreakUp();
                         }
                         else { return 0; }
                     default:
@@ -331,9 +331,9 @@ namespace Bannerlord_Mod_Test
 
             #region Check Condition To Sabotage
             /* Check if there is anyone dating and sabotage */
-            SocialNetworkBelief belief = Initiator.CheckIfAgentIsDatingWithAnyone(Receiver);
+            int datingHowMany = Initiator.CheckHowManyTheAgentIsDating(Receiver);
             /* If noone is dating, there is no need to sabotage */
-            if (belief != null)
+            if (datingHowMany > 0)
             {
                 sum += 2;
             }
@@ -386,11 +386,11 @@ namespace Bannerlord_Mod_Test
             });
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
+           
             return sum;
         }
         //Special SE
-        private int RunRulesSpecial()
+        private int RunRulesBreakUp()
         {
             int sum = InitialValue;
 
@@ -430,7 +430,29 @@ namespace Bannerlord_Mod_Test
             });
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            if (Initiator.HasRelationWith("Dating", Receiver)) { }
+            if (Initiator.HasSpecificRelationWith("Dating", Receiver)) 
+            {
+                //It will check when the value is 0 about dating with the receiver before break up
+                SocialNetworkBelief belief = Receiver.GetBelief("Dating", Initiator);
+                if (belief != null)
+                {
+                    if (belief.value < 1)
+                    {
+                        sum += 100;
+                    }
+                }
+
+            }
+
+            //int datingHowMany = Receiver.DatingHowMany(Receiver);
+            //if (datingHowMany > 1)
+            //{
+            //    sum += datingHowMany *2;
+            //}
+            //else
+            //{
+            //    sum -= 2;
+            //}
 
             return sum;
         }
@@ -444,7 +466,7 @@ namespace Bannerlord_Mod_Test
                     if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
                     {
                         /* Add Belief to check if belief value < goal value */
-                        if (!Initiator.HasRelationWith(_relation, Receiver))
+                        if (!Initiator.HasSpecificRelationWith(_relation, Receiver))
                         {
                             SocialNetworkBelief belief = Initiator.GetBelief(_relation, Receiver);
                             if (belief == null)

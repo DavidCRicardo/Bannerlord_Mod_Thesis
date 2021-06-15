@@ -45,12 +45,12 @@ namespace Bannerlord_Mod_Test
             SocialExchangeDoneAndReacted = false;
 
             if (AgentReceiver.Name == Agent.Main.Name)
-            { 
-                ReceptorIsPlayer = true; count = -1; 
+            {
+                ReceptorIsPlayer = true; count = -1;
             }
-            else 
-            { 
-                ReceptorIsPlayer = false; count = 0; 
+            else
+            {
+                ReceptorIsPlayer = false; count = 0;
             }
 
             CustomAgentInitiator.SEIntention = Intention;
@@ -80,7 +80,7 @@ namespace Bannerlord_Mod_Test
 
                 auxToCheckWhoIsSpeaking++;
             }
-            else 
+            else
             {
                 //CustomAgentInitiator.message = "";
 
@@ -109,7 +109,7 @@ namespace Bannerlord_Mod_Test
             CustomAgentInitiator.NearEnoughToStartConversation = false;
 
             ResetCustomAgentVariables(CustomAgentInitiator);
-            
+
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
             CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.Name, SEName));
@@ -123,7 +123,7 @@ namespace Bannerlord_Mod_Test
         }
 
         private void ResetCustomAgentVariables(CustomAgent customAgent)
-        {    
+        {
             customAgent.FullMessage = null;
             customAgent.busy = false;
             customAgent.message = "";
@@ -156,7 +156,7 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
                         CustomAgentInitiator.UpdateStatus("Shame", -1);
                     }
-                    
+
                     break;
                 case IntentionEnum.Romantic:
                     if (CustomAgentReceiver.SE_Accepted)
@@ -164,32 +164,63 @@ namespace Bannerlord_Mod_Test
                         //Increases Relationship for both
                         if (SEName == "AskOut")
                         {
-                            //If they are already friends, it updates for dating while keeping the same value
-                            SocialNetworkBelief belief = CustomAgentInitiator.GetBelief("Friends", CustomAgentReceiver);
-                            if (belief != null)
-                            {
-                                belief.relationship = "Dating";
+                            ////If they are already friends, it updates for dating while keeping the same value
+                            //SocialNetworkBelief belief = CustomAgentInitiator.GetBelief("Friends", CustomAgentReceiver);
+                            //if (belief != null)
+                            //{
+                                SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                                UpdateThirdNPCsBeliefs("Friends", _belief, 1);
+
+                                CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
+                                CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
+
                                 foreach (CustomAgent customAgent in CustomAgentList)
                                 {
-                                    customAgent.Change("Dating", belief);
+                                    customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
                                 }
-                            }
-                            else 
-                            {
-                                //if they are not friends so start dating with a new belief
-                                belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                                UpdateThirdNPCsBeliefs("Dating", belief, 1);
-                            }
+
+
+
+                                //belief.relationship = "Dating";
+                                //foreach (CustomAgent customAgent in CustomAgentList)
+                                //{
+                                //    customAgent.UpdateBeliefWithNewRelation("Dating", belief);
+                                //}
+                            //}
+                            //else
+                            //{
+                            //    //if they are not friends so start dating with a new belief
+                            //    belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                            //    UpdateThirdNPCsBeliefs("Dating", belief, 1);
+                            //}
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
                         }
                         else if (SEName == "Flirt")
                         {
                             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
                             UpdateThirdNPCsBeliefs("Dating", belief, 1);
+
+
+                        }
+                        foreach (CustomAgent customAgent in CustomAgentList)
+                        {
+                            if (customAgent != CustomAgentInitiator || customAgent != CustomAgentReceiver)
+                            {
+                                SocialNetworkBelief belief = customAgent.GetBelief("Dating", CustomAgentInitiator);
+                                if (belief != null)
+                                {
+                                    customAgent.UpdateBeliefWithNewValue(belief, -1);
+                                }
+                                belief = customAgent.GetBelief("Dating", CustomAgentReceiver);
+                                if (belief != null)
+                                {
+                                    customAgent.UpdateBeliefWithNewValue(belief, -1);
+                                }
+                            }
                         }
                     }
                     else
-                    {           
+                    {
                         //Anger Increases
                         CustomAgentInitiator.UpdateStatus("Anger", 1);
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
@@ -216,7 +247,7 @@ namespace Bannerlord_Mod_Test
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
                             SocialNetworkBelief belief = CustomAgentReceiver.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
-                            CustomAgentReceiver.UpdateBelief(belief,-1);
+                            CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                         }
                     }
                     break;
@@ -242,8 +273,6 @@ namespace Bannerlord_Mod_Test
                         SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
 
                         UpdateThirdNPCsBeliefs("Friends", belief, -1);
-
-                        RunTriggerRulesForEveryone();
                     }
                     break;
                 case IntentionEnum.Special:
@@ -252,17 +281,17 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Anger", -1);
                         CustomAgentInitiator.UpdateStatus("Courage", -1);
 
+
                         SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
                         UpdateThirdNPCsBeliefs("Dating", _belief, -1);
 
-                        _belief.relationship = "Friends";
+                        CustomAgentInitiator.UpdateBeliefWithNewRelation("Friends", _belief);
+                        CustomAgentReceiver.UpdateBeliefWithNewRelation("Friends", _belief);
+
                         foreach (CustomAgent customAgent in CustomAgentList)
                         {
-                            customAgent.Change("Friends", _belief);
+                            customAgent.UpdateBeliefWithNewRelation("Friends", _belief);
                         }
-
-
-                        RunTriggerRulesForEveryone();
 
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
                     }
@@ -288,8 +317,8 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                CustomAgentInitiator.UpdateBelief(belief, _value);
-                CustomAgentReceiver.UpdateBelief(belief, _value);
+                CustomAgentInitiator.UpdateBeliefWithNewValue(belief, _value);
+                CustomAgentReceiver.UpdateBeliefWithNewValue(belief, _value);
             }
 
             return belief;
@@ -311,7 +340,21 @@ namespace Bannerlord_Mod_Test
                     }
                     else
                     {
-                        customAgent.UpdateBelief(_belief, _value);
+                        customAgent.UpdateBeliefWithNewValue(_belief, _value);
+                    }
+
+                    //Decrease Dating relationship if my partner accepted romantic intentions from other
+                    //Otherwise it will increase
+                    if (_relationName == "Dating")
+                    {
+                        int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+                        if (datingHowMany > 0)
+                        {
+                            if (belief.agents.Contains(CustomAgentInitiator.Name) || belief.agents.Contains(CustomAgentReceiver.Name))
+                            {
+                                customAgent.UpdateBeliefWithNewValue(belief, _value * -1);
+                            }
+                        }
                     }
                 }
             }
@@ -329,6 +372,7 @@ namespace Bannerlord_Mod_Test
 
             if (CustomAgentInitiator.MemorySEs.Exists(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName))
             {
+
             }
 
             CustomAgentInitiator.SEVolition = finalVolition;
@@ -354,11 +398,13 @@ namespace Bannerlord_Mod_Test
         {
             string relation = "";
             switch (IR.RelationType)
-            {  
-                case IntentionEnum.Positive: 
-                case IntentionEnum.Negative: relation = "Friends";
+            {
+                case IntentionEnum.Positive:
+                case IntentionEnum.Negative:
+                    relation = "Friends";
                     break;
-                case IntentionEnum.Romantic: relation = "Dating";
+                case IntentionEnum.Romantic:
+                    relation = "Dating";
                     break;
                 case IntentionEnum.Hostile:
                     break;
@@ -367,6 +413,7 @@ namespace Bannerlord_Mod_Test
                 default:
                     break;
             }
+
             IR.InitialValue = IR.CheckGoals(relation);
             IR.InitialValue += IR.GetValueParticipantsRelation();
             IR.InitialValue += IR.SRunRules();
@@ -406,14 +453,14 @@ namespace Bannerlord_Mod_Test
         }
         //*
 
-        public enum IntentionEnum 
-        { 
-            Undefined = -1, 
-            Positive, 
-            Romantic, 
-            Negative, 
-            Hostile, 
-            Special, 
+        public enum IntentionEnum
+        {
+            Undefined = -1,
+            Positive,
+            Romantic,
+            Negative,
+            Hostile,
+            Special,
             AllTypes
         }
         public IntentionEnum Intention { get; private set; }
@@ -483,6 +530,7 @@ namespace Bannerlord_Mod_Test
  * 
  * It is possible to make all the NPCs talk but how we will sabe their data if their don't have any identifier inside of the game? That is a limitation!
  * Also, the "normal" NPCs will only interact with the Heroes because are them who have the traits. It's not supported to give traits to the normal NPCs
+ * During Spawn it's only used the location and the "NPC type" , on this case, Townsman. There is not an identifier, an identity, for them while the heroes have.
  * 
  * > Para o futuro aprodundar interaçoes com o conhecimento de cada NPC em relaçao aos outros e ao ambiente
  * Expandir os diálogos e o CIF para todos os NPCs 

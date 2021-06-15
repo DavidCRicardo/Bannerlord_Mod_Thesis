@@ -146,28 +146,29 @@ namespace Bannerlord_Mod_Test
 
             campaignGameStarter.AddDialogLine("1175", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
             /**/
-            //Friendly
+            //Friendly - Working
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_friendly", "close_window", "Oh...that's nice. Thank you![if:idle_pleased]", null, null, 100, null);
-            //UnFriendly
+            //UnFriendly - Working
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_unfriendly", "close_window", "Oh...that's not nice![if:idle_angry]", null, null, 100, null);
             //Hostile
             //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_hostile", "I need some gold, these coins are enough for now! [Hostile]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "lord_hostile", "close_window", "You don't have a job, or what? [ib:nervous][if:idle_angry]", null, new ConversationSentence.OnConsequenceDelegate(StealFromNPC), 100, null);
             //Romantic
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", " text here ! [Romantic]", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", null, null, 100, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "My day is better with you! [Romantic]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
+            campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Reject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
             /**/
-            campaignGameStarter.AddDialogLine("1", "start", "Friendly_start", "Hi Friend... If you need something just tell me, maybe I can help you.[ib:closed][if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Friendly), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]!", null, null, 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step2", "Do you think that I am a kid or something? I don't need your help. [Reject]!", null, null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "start", "Friendly_start", "Hi Friend... If you need something just tell me, maybe I can help you.[ib:closed][if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Friendly), null, 200, null); //Working
+            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]!", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);                                    //Working
+            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step2", "Do you think that I am a kid or something? I don't need your help. [Reject]!", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step1", "close_window", "It's a pleasure to help you. [if:idle_pleased]", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step2", "close_window", "Take it easy. There is no need to be rude. [rf:idle_angry]", null, null, 100, null);
 
             campaignGameStarter.AddDialogLine("1", "start", "Romantic_start", "You are looking really charming today.[if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Romantic), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step1", "Hehe You're kind as always. [Accept]", null, null, 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step2", "Are you blind? Go away! [Reject]", null, null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step1", "Hehe You're kind as always. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step2", "Are you blind? Go away! [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "Romantic_step1", "close_window", "Thank you Sr.[ib:confident]", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Romantic_step2", "close_window", "Not nice.", null, null, 100, null);
 
@@ -251,7 +252,50 @@ namespace Bannerlord_Mod_Test
             }
             else { return false; }
         }
+        private bool NPC_Reject_Dating_condition()
+        {
+            foreach (Agent agent in Mission.Current.Agents)
+            {
+                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+                {
+                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
 
+                    if (hasTrait != null || datingHowMany > 0)
+                    {
+                        return false;
+                    }
+                    else 
+                    {
+                        return true;
+                    }
+                }
+            }
+            return true;
+        }
+        private bool NPC_Accept_Dating_condition()
+        {
+            foreach (Agent agent in Mission.Current.Agents)
+            {
+                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+                {
+                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+
+                    if (hasTrait != null || datingHowMany > 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
         public bool giveCourage { get; set; }
         private void Increase_Courage()
         {
@@ -268,7 +312,16 @@ namespace Bannerlord_Mod_Test
         {
             DecreaseFriendshipWithPlayer = true;
         }
-
+        public bool DecreaseDatingWithPlayer { get; set; }
+        public bool IncreaseDatingWithPlayer { get; set; }
+        private void Increase_Dating()
+        {
+            IncreaseDatingWithPlayer = true;
+        }
+        private void Decrease_Dating()
+        {
+            DecreaseDatingWithPlayer = true;
+        }
         public bool AskWhatsGoinOn { get; set; }
         private bool Condition_EmergencyCallGoingOn()
         {

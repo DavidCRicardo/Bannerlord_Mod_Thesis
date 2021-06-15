@@ -109,12 +109,12 @@ namespace Bannerlord_Mod_Test
 
             if (CBB_ref.IncreaseFriendshipWithPlayer)
             {
-                UpdateRelationWithPlayerChoice(characterObject, "Friendship", 1);
+                UpdateRelationWithPlayerChoice(characterObject, "Friends", 1);
                 CBB_ref.IncreaseFriendshipWithPlayer = false;
             }
             if (CBB_ref.DecreaseFriendshipWithPlayer)
             {
-                UpdateRelationWithPlayerChoice(characterObject, "Friendship", -1);
+                UpdateRelationWithPlayerChoice(characterObject, "Friends", -1);
                 CBB_ref.DecreaseFriendshipWithPlayer = false;
             }
         }
