@@ -21,7 +21,7 @@ namespace Bannerlord_Mod_Test
 
             _dataSource = new CustomMissionNameMarkerVM(base.Mission, base.MissionScreen.CombatCamera);
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
-            this._gauntletLayer.LoadMovie("NameMarker", this._dataSource);
+            this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
             CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
         }

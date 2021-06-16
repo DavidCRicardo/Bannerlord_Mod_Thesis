@@ -53,8 +53,12 @@ namespace Bannerlord_Mod_Test
                     this._firstTick = false;
                 }
 
-               //InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
+                //InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
 
+                if (onGoingSEs > 1 || onGoingSEs < 0)
+                {
+                    InformationManager.DisplayMessage(new InformationMessage("Message"));
+                }
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
                     _firstTick2 = true;
@@ -736,13 +740,14 @@ namespace Bannerlord_Mod_Test
 
         public void EnableDataSource(CustomMissionNameMarkerVM _dataSource)
         {
-            //_dataSource.IsEnabled = true;
             foreach (CustomMissionNameMarkerTargetVM item in _dataSource.Targets)
             {
-                CustomAgent ca = customAgentsList.Find(c => c.Name == item.TargetAgent.Name);
-                if (ca.message != "")
+                //code here
+            
+                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.TargetAgent.Name);
+                if (customAgent.message != "")
                 {
-                    item.Name = ca.message;
+                    item.Name = customAgent.message;
                     item.IsEnabled = true;
                 }
                 else
@@ -785,7 +790,6 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        //internal Dictionary<SocialExchangeM, Dictionary<Culture, Dictionary<string, List<string>>>> MegaDictionary { get; private set; }
         internal Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> MegaDictionary { get; private set; }
 
         private readonly Camera _missionCamera;

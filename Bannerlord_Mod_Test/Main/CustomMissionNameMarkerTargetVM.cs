@@ -184,10 +184,10 @@ namespace Bannerlord_Mod_Test
 
         public CustomMissionNameMarkerTargetVM(Agent agent)
         {
-            this.Text = "";
+            //this.Text = "";
             this.IsMovingTarget = true; //1;
             this.TargetAgent = agent;
-            this.Name = "";// agent.Name.ToString();
+            this.Name = agent.Name.ToString();
             this.MarkerType = 1;
             this.QuestMarkerType = 0;
             this.IssueMarkerType = 0;

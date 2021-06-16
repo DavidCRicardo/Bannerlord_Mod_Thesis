@@ -14,7 +14,7 @@ namespace Bannerlord_Mod_Test
     public class CustomAgent : CampaignBehaviorBase
     {
         public Agent selfAgent;
-        public Agent targetAgent; 
+        public Agent targetAgent;
         public string Name { get; set; } // ID
         public string message { get; set; } // Output Message
         public string[] FullMessage { get; set; } // Output Full Message
@@ -39,6 +39,7 @@ namespace Bannerlord_Mod_Test
         public bool IsInitiator { get; set; }
         public SocialExchangeSE socialExchangeSE { get; set; }
         public SocialExchangeSE.IntentionEnum SEIntention { get; set; }
+        private int memorySize = 3;
         public CustomAgent(Agent agent, List<string> auxStatusList = null)
         {
             this.selfAgent = agent; // reference to self
@@ -87,7 +88,7 @@ namespace Bannerlord_Mod_Test
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
         public void startSE(string _SEName, string _ReceiverName, int _Volition)
-        {       
+        {
             UpdateTarget(_ReceiverName);
             //this.selfAgent.SetLookAgent(targetAgent);
             GetCustomAgentByName(targetAgent.Name).busy = true;
@@ -130,7 +131,7 @@ namespace Bannerlord_Mod_Test
             {
                 socialExchangeSE.OnGoingSocialExchange(rootMessageJson, megaDictionary);
 
-                if (socialExchangeSE.SocialExchangeDoneAndReacted) 
+                if (socialExchangeSE.SocialExchangeDoneAndReacted)
                 {
                     if (!socialExchangeSE.ReceptorIsPlayer)
                     {
@@ -148,8 +149,7 @@ namespace Bannerlord_Mod_Test
             NearEnoughToStartConversation = false;
             EndingSocialExchange = true;
 
-            IsInitiator = false;
-            EnoughRest = false;     
+            EnoughRest = false;
         }
         internal void InitiatorToSocialMove(CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, RootMessageJson rootMessageJson, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
@@ -209,7 +209,7 @@ namespace Bannerlord_Mod_Test
                     _customAgentJson.GoalsList = GoalsList;
                     _customAgentJson.ItemsList = ItemList;
                 }
-            }           
+            }
 
             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
@@ -235,6 +235,8 @@ namespace Bannerlord_Mod_Test
         }
         internal void AbortSocialExchange()
         {
+            IsInitiator = false;
+            SocialMove = "";
             targetAgent = null;
             if (selfAgent != Agent.Main)
             {
@@ -279,7 +281,7 @@ namespace Bannerlord_Mod_Test
                 if (item.Name == name) { agent = item; break; }
             }
             return agent;
-        }     
+        }
         private CustomAgent GetCustomAgentByName(string name)
         {
             CustomAgent customAgent = null;
@@ -318,8 +320,8 @@ namespace Bannerlord_Mod_Test
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
             SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
-                b => b.relationship == belief.relationship 
-                && belief.agents.Contains(b.agents[0]) 
+                b => b.relationship == belief.relationship
+                && belief.agents.Contains(b.agents[0])
                 && belief.agents.Contains(b.agents[1]));
 
             if (_belief == null)
@@ -343,26 +345,32 @@ namespace Bannerlord_Mod_Test
         }
         public void UpdateBeliefWithNewRelation(string _newRelation, SocialNetworkBelief belief)
         {
+            //It will check if have that belief
             SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
-                b => b.relationship == belief.relationship 
-                && belief.agents.Contains(b.agents[0]) 
+                b => belief.agents.Contains(b.agents[0])
                 && belief.agents.Contains(b.agents[1]));
 
+            // If belief not found so add it to prevent error
             if (_belief == null)
             {
                 AddBelief(belief);
-                _belief = belief;
             }
-            else
-            {
-                belief.relationship = _newRelation;
-            }
+
+            //Get Belief Index
+            //int tempBeliefIndex = SocialNetworkBeliefs.IndexOf(belief);
+
+            //Change RelationName
+            _belief.relationship = _newRelation;
+
+            //Add the new belief on the same index to overrride 
+            //SocialNetworkBeliefs.Insert(tempBeliefIndex, belief);
         }
+
         //Get Belief from itself with other
         public SocialNetworkBelief GetBelief(string relation, CustomAgent _otherCustomAgent)
         {
             return this.SocialNetworkBeliefs.Find
-                (b => b.relationship == relation 
+                (b => b.relationship == relation
                 && b.agents.Contains(Name)
                 && b.agents.Contains(_otherCustomAgent.Name)
                 );
@@ -410,8 +418,8 @@ namespace Bannerlord_Mod_Test
         public void UpdateStatus(string statusName, double _value)
         {
             Status status = StatusList.Find(s => s.statusName == statusName);
-            if (status != null) 
-            { 
+            if (status != null)
+            {
                 status.intensity += _value;
                 if (status.intensity < 0)
                 {
@@ -444,7 +452,11 @@ namespace Bannerlord_Mod_Test
 
         public void AddToMemory(MemorySE _newMemory)
         {
-            MemorySEs.Clear();
+            if (MemorySEs.Count >= memorySize)
+            {
+                MemorySEs.RemoveAt(0);
+            }            
+
             MemorySEs.Add(_newMemory);
         }
         public void AddToTriggerRulesList(TriggerRule triggerRule)

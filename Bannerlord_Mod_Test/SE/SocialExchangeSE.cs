@@ -105,16 +105,12 @@ namespace Bannerlord_Mod_Test
         }
         internal void OnFinalize()
         {
-            CustomAgentInitiator.SocialMove = "";
-            CustomAgentInitiator.NearEnoughToStartConversation = false;
-
-            ResetCustomAgentVariables(CustomAgentInitiator);
-
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
             CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.Name, SEName));
             CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.Name, SEName));
 
+            ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
             {
                 ResetCustomAgentVariables(CustomAgentReceiver);
@@ -124,6 +120,8 @@ namespace Bannerlord_Mod_Test
 
         private void ResetCustomAgentVariables(CustomAgent customAgent)
         {
+            customAgent.SocialMove = "";
+            customAgent.IsInitiator = false;
             customAgent.FullMessage = null;
             customAgent.busy = false;
             customAgent.message = "";
@@ -164,59 +162,26 @@ namespace Bannerlord_Mod_Test
                         //Increases Relationship for both
                         if (SEName == "AskOut")
                         {
+                            //if they are not friends so start dating with a new belief
                             ////If they are already friends, it updates for dating while keeping the same value
-                            //SocialNetworkBelief belief = CustomAgentInitiator.GetBelief("Friends", CustomAgentReceiver);
-                            //if (belief != null)
-                            //{
-                                SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                                UpdateThirdNPCsBeliefs("Friends", _belief, 1);
 
-                                CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
-                                CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
+                            SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                            UpdateThirdNPCsBeliefs("Friends", _belief, 1);
 
-                                foreach (CustomAgent customAgent in CustomAgentList)
-                                {
-                                    customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
-                                }
+                            CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
+                            CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
 
+                            foreach (CustomAgent customAgent in CustomAgentList)
+                            {
+                                customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
+                            }
 
-
-                                //belief.relationship = "Dating";
-                                //foreach (CustomAgent customAgent in CustomAgentList)
-                                //{
-                                //    customAgent.UpdateBeliefWithNewRelation("Dating", belief);
-                                //}
-                            //}
-                            //else
-                            //{
-                            //    //if they are not friends so start dating with a new belief
-                            //    belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                            //    UpdateThirdNPCsBeliefs("Dating", belief, 1);
-                            //}
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
                         }
                         else if (SEName == "Flirt")
                         {
                             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
                             UpdateThirdNPCsBeliefs("Dating", belief, 1);
-
-
-                        }
-                        foreach (CustomAgent customAgent in CustomAgentList)
-                        {
-                            if (customAgent != CustomAgentInitiator || customAgent != CustomAgentReceiver)
-                            {
-                                SocialNetworkBelief belief = customAgent.GetBelief("Dating", CustomAgentInitiator);
-                                if (belief != null)
-                                {
-                                    customAgent.UpdateBeliefWithNewValue(belief, -1);
-                                }
-                                belief = customAgent.GetBelief("Dating", CustomAgentReceiver);
-                                if (belief != null)
-                                {
-                                    customAgent.UpdateBeliefWithNewValue(belief, -1);
-                                }
-                            }
                         }
                     }
                     else
@@ -225,6 +190,22 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Anger", 1);
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
                     }
+
+                    //Independentemente se aceitou ou nao.. o parceiro de quem começou a social exchange nao vai gostar da SE
+                    foreach (CustomAgent customAgent in CustomAgentList)
+                    {
+                        if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
+                        {
+                            bool customAgentDatingWithInitiator = customAgent.HasSpecificRelationWith("Dating", CustomAgentInitiator);
+                            if (customAgentDatingWithInitiator)
+                            {
+                                SocialNetworkBelief belief = customAgent.GetBelief("Dating", CustomAgentInitiator);
+                                customAgent.UpdateBeliefWithNewValue(belief, -1);
+
+                            }
+                        }
+                    }
+
                     break;
                 case IntentionEnum.Negative:
                     if (CustomAgentReceiver.SE_Accepted)
@@ -370,9 +351,11 @@ namespace Bannerlord_Mod_Test
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
 
-            if (CustomAgentInitiator.MemorySEs.Exists(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName))
+            int howManyTimes = CustomAgentInitiator.MemorySEs.Count(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName);
+            if (howManyTimes > 0)
             {
-
+                //Maybe it will check how many times is in the memory and decrease 2 points for each time
+                finalVolition -= howManyTimes * 2;
             }
 
             CustomAgentInitiator.SEVolition = finalVolition;
