@@ -173,11 +173,11 @@ namespace Bannerlord_Mod_Test
                 ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 2;
+                sum -= 100;
             }
 
             //If not dating with the receiver, so decrease drastically the sum to not Flirt because it has noone to flirt
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
             if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
             {
                 sum -= 100;
@@ -239,12 +239,12 @@ namespace Bannerlord_Mod_Test
                 ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 2;
+                sum -= 100;
             }
 
             #region Check Condition to AskOut
             //If dating already with the receiver, so decrease drastically the sum to not AskOut again
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
             if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating")
             {
                 sum -= 100;
@@ -476,7 +476,7 @@ namespace Bannerlord_Mod_Test
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
             //It will check when the value is 0 about dating with the receiver before break up
-            SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
             if (belief != null && belief.relationship == "Dating" && belief.value < 1)
             {
                 sum += 100;
@@ -494,7 +494,7 @@ namespace Bannerlord_Mod_Test
                     if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
                     {
                         /* Belief = Null? So Add Belief to check if belief value < goal value */
-                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
                         if (belief == null)
                         {
                             List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
@@ -567,21 +567,17 @@ namespace Bannerlord_Mod_Test
         {
             return customAgent.StatusList.Find(s => s.statusName == statusName);
         }
-        internal int GetValueParticipantsRelation()
+        internal int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
-            SocialNetworkBelief localBelief = GetParticipantsRelation();
-            if (localBelief != null)
+            SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
+            if (belief != null)
             {
-                return localBelief.value;
+                return belief.value;
             }
 
             return 0;
         }
-        private SocialNetworkBelief GetParticipantsRelation()
-        {
-            // Relation between the Initiator and the Receiver
-            return Initiator.SocialNetworkBeliefs.Find(b => b.agents.Contains(Initiator.Name) && b.agents.Contains(Receiver.Name));
-        }
+
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
             SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");

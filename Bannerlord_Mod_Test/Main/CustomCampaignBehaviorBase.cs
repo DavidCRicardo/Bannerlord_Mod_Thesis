@@ -162,9 +162,9 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Reject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
             /* NPC Friendly Interactions With Player */  //Working
             campaignGameStarter.AddDialogLine("1", "start", "Friendly_start", "Hi Friend... If you need something just tell me, maybe I can help you.[ib:closed][if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Friendly), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]!", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null); 
-            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step2", "Do you think that I am a kid or something? I don't need your help. [Reject]!", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "Friendly_start", "close_window", "Huh.. Someone is calling me!", null, null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step2", "Do you think that I am a kid or something? I don't need your help! [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step1", "close_window", "It's a pleasure to help you. [if:idle_pleased]", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step2", "close_window", "Take it easy. There is no need to be rude. [rf:idle_angry]", null, null, 100, null);
             /**/

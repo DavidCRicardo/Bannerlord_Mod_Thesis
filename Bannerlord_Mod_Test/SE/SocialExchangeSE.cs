@@ -176,7 +176,7 @@ namespace Bannerlord_Mod_Test
                         if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                         {
                             //tem alguma espécie de relaçao? ou a relaçao que tiver é Dating?
-                            SocialNetworkBelief belief = customAgent.SelfGetBeliefWithAgent2(CustomAgentInitiator);
+                            SocialNetworkBelief belief = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
                             if (belief != null && belief.relationship == "Dating")
                             {
                                 customAgent.UpdateBeliefWithNewValue(belief, -1);
@@ -218,7 +218,7 @@ namespace Bannerlord_Mod_Test
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
                             CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent);
-                            SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent2(CAtoDecrease);
+                            SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
 
                             CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                         }
@@ -242,8 +242,9 @@ namespace Bannerlord_Mod_Test
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
-                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                        SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
+                        belief = UpdateParticipantNPCBeliefs(belief.relationship, -1);
+                        UpdateThirdNPCsBeliefs(belief.relationship, belief, -1);
                     }
                     break;
                 case IntentionEnum.Special:
@@ -269,7 +270,7 @@ namespace Bannerlord_Mod_Test
         }
         private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName = "", int _value = 0)
         {
-            SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent2(CustomAgentReceiver);
+            SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
             if (belief == null)
             {
                 List<string> a = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
@@ -332,12 +333,12 @@ namespace Bannerlord_Mod_Test
                 RelationName = SEName,
                 RelationType = Intention
             };
-            int finalVolition = ComputeVolitionWithInfluenceRule(IR);
-            finalVolition = CheckMemory(finalVolition, 3);
+            int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentReceiver, CustomAgentInitiator);
+            finalVolition = CheckMemory(finalVolition, 2);
 
             CustomAgentInitiator.SEVolition = finalVolition;
 
-            InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
+            //InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
             return CustomAgentInitiator.SEVolition;
         }
@@ -360,15 +361,15 @@ namespace Bannerlord_Mod_Test
                 RelationName = SEName,
                 RelationType = Intention
             };
-            int finalVolition = ComputeVolitionWithInfluenceRule(IR);
+            int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentReceiver, CustomAgentInitiator);
 
             CustomAgentReceiver.SEVolition = finalVolition;
 
-            InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
+            //InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
             return CustomAgentReceiver.SEVolition;
         }
-        private static int ComputeVolitionWithInfluenceRule(InfluenceRule IR)
+        private static int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
             string relation = "";
             switch (IR.RelationType)
@@ -389,7 +390,7 @@ namespace Bannerlord_Mod_Test
             }
 
             IR.InitialValue = IR.CheckGoals(relation);
-            IR.InitialValue += IR.GetValueParticipantsRelation();
+            IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
             IR.InitialValue += IR.SRunRules();
 
             return IR.InitialValue;

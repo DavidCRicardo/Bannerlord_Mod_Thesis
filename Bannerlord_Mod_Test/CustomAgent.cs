@@ -372,7 +372,7 @@ namespace Bannerlord_Mod_Test
                 : SocialNetworkBeliefs.FindAll(b => b.relationship == _relation && b.value < 0);
         }
         //Get Belief from itself with other
-        public SocialNetworkBelief SelfGetBeliefWithAgent2(CustomAgent _otherCustomAgent)
+        public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
             return SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name));
         }
