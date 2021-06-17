@@ -34,43 +34,29 @@ namespace Bannerlord_Mod_Test
                 default: Intention = IntentionEnum.Undefined; break;
             }
         }
-        private Random rnd { get; set; }
 
-        internal int auxToCheckWhoIsSpeaking;
-        internal int index;
-
-        internal void OnInitialize(Random Rnd)
+        internal void OnInitialize(Random _rnd)
         {
-            rnd = Rnd;
+            Rnd = _rnd;
             SocialExchangeDoneAndReacted = false;
 
-            if (AgentReceiver.Name == Agent.Main.Name)
-            {
-                ReceptorIsPlayer = true; count = -1;
-            }
-            else
-            {
-                ReceptorIsPlayer = false; count = 0;
-            }
+            ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
 
             CustomAgentInitiator.SEIntention = Intention;
 
             CustomAgentReceiver.busy = true;
             CustomAgentReceiver.SEIntention = Intention;
             CustomAgentReceiver.SocialMove = SEName;
-
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
-        internal bool ReduceDelay { get; set; }
-        internal void OnGoingSocialExchange(RootMessageJson rootMessageJson, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public bool ReduceDelay { get; set; }
+        internal void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
                 index++;
 
-                //CustomAgentReceiver.message = "";
-
-                CustomAgentInitiator.InitiatorToSocialMove(CustomAgentInitiator, CustomAgentReceiver, rootMessageJson, rnd, index, megaDictionary);
+                CustomAgentInitiator.AgentGetMessage(true, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
                 if (CustomAgentInitiator.message != "")
                 {
                     CustomAgentReceiver.message = "";
@@ -82,10 +68,8 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                //CustomAgentInitiator.message = "";
-
                 CustomAgentReceiver.SEVolition = ReceiverVolition();
-                CustomAgentReceiver.ReceiverToSocialMove(CustomAgentInitiator, CustomAgentReceiver, rootMessageJson, rnd, index, megaDictionary);
+                CustomAgentReceiver.AgentGetMessage(false, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
 
                 if (CustomAgentReceiver.message != "")
                 {
@@ -99,7 +83,7 @@ namespace Bannerlord_Mod_Test
 
             if ((CustomAgentInitiator.message == "" && CustomAgentReceiver.message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { /*Check Booleans on CampaignBehavior*/ AgentInitiator.OnUse(AgentReceiver); }
+                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
                 SocialExchangeDoneAndReacted = true;
             }
         }
@@ -140,19 +124,15 @@ namespace Bannerlord_Mod_Test
                     {
                         if (SEName == "Compliment")
                         {
-                            //Increases Relationship for both
                             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-
                             UpdateThirdNPCsBeliefs("Friends", belief, 1);
-
                             CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
                         }
                     }
                     else
                     {
-                        //Decreases SocialTalk & Shame
                         CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
-                        CustomAgentInitiator.UpdateStatus("Shame", -1);
+                        CustomAgentInitiator.UpdateStatus("Shame", 1);
                     }
 
                     break;
@@ -163,13 +143,12 @@ namespace Bannerlord_Mod_Test
                         if (SEName == "AskOut")
                         {
                             //if they are not friends so start dating with a new belief
-                            ////If they are already friends, it updates for dating while keeping the same value
-
+                            ////If they are already friends, it updates for dating while keeping the same value 
                             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
                             UpdateThirdNPCsBeliefs("Friends", _belief, 1);
 
-                            CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
-                            CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
+                            //CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
+                            //CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
 
                             foreach (CustomAgent customAgent in CustomAgentList)
                             {
@@ -186,20 +165,20 @@ namespace Bannerlord_Mod_Test
                     }
                     else
                     {
-                        //Anger Increases
                         CustomAgentInitiator.UpdateStatus("Anger", 1);
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
                     }
 
-                    //Independentemente se aceitou ou nao.. o parceiro de quem começou a social exchange nao vai gostar da SE
+                    //Independentemente se aceitou ou nao.. o parceiro (se existir) de quem começou a social exchange nao vai gostar da SE
                     foreach (CustomAgent customAgent in CustomAgentList)
                     {
+                        // verificar para todos menos para aqueles que estavam envolvidos na SE
                         if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                         {
-                            bool customAgentDatingWithInitiator = customAgent.HasSpecificRelationWith("Dating", CustomAgentInitiator);
-                            if (customAgentDatingWithInitiator)
+                            //tem alguma espécie de relaçao? ou a relaçao que tiver é Dating?
+                            SocialNetworkBelief belief = customAgent.SelfGetBeliefWithAgent2(CustomAgentInitiator);
+                            if (belief != null && belief.relationship == "Dating")
                             {
-                                SocialNetworkBelief belief = customAgent.GetBelief("Dating", CustomAgentInitiator);
                                 customAgent.UpdateBeliefWithNewValue(belief, -1);
                             }
                         }
@@ -209,27 +188,38 @@ namespace Bannerlord_Mod_Test
                 case IntentionEnum.Negative:
                     if (CustomAgentReceiver.SE_Accepted)
                     {
-                        //Decreases relation with Initiator
-                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                        if (SEName == "Jealous")
+                        {
+                            //Decreases relation with Initiator
+                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                            UpdateThirdNPCsBeliefs("Friends", belief, -1);
+
+                            CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                        }
 
                         if (SEName == "Sabotage")
                         {
-                            //
+                            //Decreases relation with Initiator
+                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                            UpdateThirdNPCsBeliefs("Friends", belief, -1);
                         }
                     }
                     else
                     {
-                        CustomAgentReceiver.UpdateStatus("Anger", 1);
-
+                        if (SEName == "Jealous")
+                        {
+                            CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                            CustomAgentInitiator.UpdateStatus("Shame", 1);
+                            CustomAgentReceiver.UpdateStatus("Courage", -0.2);
+                        }
+                        
                         if (SEName == "Sabotage")
                         {
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
                             CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent);
-                            SocialNetworkBelief belief = CustomAgentReceiver.GetBelief("", CAtoDecrease);
-                            
-                            //SocialNetworkBelief belief = CustomAgentReceiver.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
+                            SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent2(CAtoDecrease);
+
                             CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                         }
                     }
@@ -249,7 +239,6 @@ namespace Bannerlord_Mod_Test
                     }
                     else
                     {
-                        //It will decrease the friendship
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
@@ -263,12 +252,8 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Anger", -1);
                         CustomAgentInitiator.UpdateStatus("Courage", -1);
 
-
                         SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
                         UpdateThirdNPCsBeliefs("Dating", _belief, -1);
-
-                        CustomAgentInitiator.UpdateBeliefWithNewRelation("Friends", _belief);
-                        CustomAgentReceiver.UpdateBeliefWithNewRelation("Friends", _belief);
 
                         foreach (CustomAgent customAgent in CustomAgentList)
                         {
@@ -277,16 +262,14 @@ namespace Bannerlord_Mod_Test
 
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
                     }
-
                     break;
                 default:
                     break;
             }
         }
-
-        private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName, int _value)
+        private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName = "", int _value = 0)
         {
-            SocialNetworkBelief belief = CustomAgentInitiator.GetBelief(_relationName, CustomAgentReceiver);
+            SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent2(CustomAgentReceiver);
             if (belief == null)
             {
                 List<string> a = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
@@ -305,7 +288,6 @@ namespace Bannerlord_Mod_Test
 
             return belief;
         }
-
         private void UpdateThirdNPCsBeliefs(string _relationName, SocialNetworkBelief _belief, int _value)
         {
             foreach (CustomAgent customAgent in CustomAgentList)
@@ -351,19 +333,23 @@ namespace Bannerlord_Mod_Test
                 RelationType = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
-
-            int howManyTimes = CustomAgentInitiator.MemorySEs.Count(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName);
-            if (howManyTimes > 0)
-            {
-                //Maybe it will check how many times is in the memory and decrease 2 points for each time
-                finalVolition -= howManyTimes * 3;
-            }
+            finalVolition = CheckMemory(finalVolition, 3);
 
             CustomAgentInitiator.SEVolition = finalVolition;
 
-            InformationManager.DisplayMessage(new InformationMessage(SEName + " > "+ finalVolition.ToString()));
+            InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
             return CustomAgentInitiator.SEVolition;
+        }
+        private int CheckMemory(int finalVolition, int multiplyToDecrease)
+        {
+            int howManyTimes = CustomAgentInitiator.MemorySEs.Count(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName);
+            if (howManyTimes > 0)
+            {
+                finalVolition -= howManyTimes * multiplyToDecrease;
+            }
+
+            return finalVolition;
         }
         internal int ReceiverVolition()
         {
@@ -377,7 +363,6 @@ namespace Bannerlord_Mod_Test
             int finalVolition = ComputeVolitionWithInfluenceRule(IR);
 
             CustomAgentReceiver.SEVolition = finalVolition;
-            ComputeOutcome(CustomAgentReceiver.SEVolition, 15, 5);
 
             InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
@@ -409,12 +394,35 @@ namespace Bannerlord_Mod_Test
 
             return IR.InitialValue;
         }
-
         public void PlayerConversationWithNPC(string relation, int value)
         {
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
         }
+
+        public enum IntentionEnum
+        {
+            Undefined = -1,
+            Positive,
+            Romantic,
+            Negative,
+            Hostile,
+            Special,
+            AllTypes
+        }
+        public IntentionEnum Intention { get; private set; }
+        public bool SocialExchangeDoneAndReacted { get; set; }
+        public bool ReceptorIsPlayer { get; set; }
+        public string SEName { get; set; }
+        private Random Rnd { get; set; }
+        private int auxToCheckWhoIsSpeaking;
+        private int index;
+
+        private List<CustomAgent> CustomAgentList { get; set; }
+        public CustomAgent CustomAgentInitiator { get; set; }
+        public CustomAgent CustomAgentReceiver { get; set; }
+        private Agent AgentInitiator { get; set; }
+        private Agent AgentReceiver { get; set; }
 
         //*
         private void ComputeOutcome(int _SEVolition, int minThreshold, int maxThreshold)
@@ -440,89 +448,5 @@ namespace Bannerlord_Mod_Test
             }
         }
         //*
-
-        public enum IntentionEnum
-        {
-            Undefined = -1,
-            Positive,
-            Romantic,
-            Negative,
-            Hostile,
-            Special,
-            AllTypes
-        }
-        public IntentionEnum Intention { get; private set; }
-        public bool SocialExchangeDoneAndReacted { get; set; }
-        public bool ReceptorIsPlayer { get; set; }
-        public int count { get; set; }
-        public string SEName { get; set; }
-
-        private List<CustomAgent> CustomAgentList { get; set; }
-        public CustomAgent CustomAgentInitiator { get; set; }
-        public CustomAgent CustomAgentReceiver { get; set; }
-        private Agent AgentInitiator { get; set; }
-        private Agent AgentReceiver { get; set; }
     }
 }
-
-
-/*
- * Friendly - The volition for Positive SEs is increased. [The Social Exchange cooldown for this character will also be reduced]
- * Hostile - The volition for Negative SEs is increased
- * 
- * Charming - The volition for Romantic SEs is increased
- * UnCharming - The volition for Romantic SEs is decreaed
- * 
- * Shy - The volition for SEs in general is decreased. [The Social Exchange cooldown for this character will also be increased]
- * Brave - The  volition for SEs in general is increased
- *
- * Faithful - If they are in a relationship, the volition for Romantic SEs with other participators that aren't their partner is decreased
- * Unfaithful - The volition for Romantic SEs is increased
- * 
- * Calm - The volition for Positive SEs is increased
- * Aggressive - The volition for Negative SEs is increased
- * 
- * Coward - The  volition for SEs in general is decreased
- * Gossiper - The volition for SEs in general is increased.
- * Obnoxious - The character will be more compelled to repeat SEs that they have just performed
- * Humble - The volition for Negative SEs is decreased along with the Brag Social Exchange
- */
-
-/* 
- * Friendly - Hostile
- * Shy - Brave
- * Faithful - Unfaithful
- * Calm - Aggressive
- */
-
-
-
-/* > Limitação 
- * todos os NPCs podem movimentar-se e ir de encontro a um outro npc mas
- * apenas os heroes podem conversar entre si devido ao missionScreen que foi desenvolvido para divulgar os locais e os Heroes relevantes 
- * e foi adaptado para mostrar as conversas. Os Townsman , por exemplo, não são considerados pelo jogo como personagens relevantes e então 
- * não estão incluidos no missionScreen que por sua vez não possibilita a divulgaçao da sua suposta mensagem, permanecendo calado junto do seu target.
- * Mas eventualmente quando a "silenciosa" interaçao termina, eles voltam cada um para a sua vida. Mas irá ser feito uma adaptação que permite a esses NPCs considerados
- * "normais" puderem conversar entre si mas levando a outras limitações maiores.
- 
- * Jogo em earlier access
- * ainda nao foi lançado oficialmente o que pode influenciar no numero de jogadores
- * 
- * > Implementação
- * When a NPC it's calculating the new dialog to say, the receiver is reseting his sentence, and vice-versa.
- * If a NPC has more sentences to say than the receiver, so it will end the conversation because in some time both sentences will be resetted , and when both are resetted the conversation ends.
- *
- * if it is desire that a NPC speaks more sentences than the other, so the message it will be displayed on screen for a bigger time because it has the delay of himself and the delay of the receiver who doesn't have anything to say.
- * 
- * When a NPC comes to interact with Player, if they didn't have any first impression yet, so it will skip the social exchange to start the default dialog about the first impression between the NPC and the Player.
- * 
- * It is possible to make all the NPCs talk but how we will sabe their data if their don't have any identifier inside of the game? That is a limitation!
- * Also, the "normal" NPCs will only interact with the Heroes because are them who have the traits. It's not supported to give traits to the normal NPCs
- * During Spawn it's only used the location and the "NPC type" , on this case, Townsman. There is not an identifier, an identity, for them while the heroes have.
- * 
- * > Para o futuro aprodundar interaçoes com o conhecimento de cada NPC em relaçao aos outros e ao ambiente
- * Expandir os diálogos e o CIF para todos os NPCs 
- * 
- * 
- * testes controlados e depois lançamento do mod
- */

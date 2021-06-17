@@ -10,7 +10,7 @@ namespace Bannerlord_Mod_Test
             relationship = _relationship;
             targetName = _targetName;
             value = _value;
-        }
+        }   
 
         [JsonProperty("relationship")]
         public string relationship { get; set; }

@@ -99,18 +99,18 @@ namespace Bannerlord_Mod_Test
 
             busy = true;
         }
-        internal void CustomAgentHasDesire(float dt, string SEName, CustomAgent customAgent, RootMessageJson rootMessageJson, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        internal void CustomAgentHasDesire(float dt, string SEName, CustomAgent customAgent, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             if (NearEnoughToStartConversation)
             {
-                ConversationBetweenCustomAgents(dt, rootMessageJson, rnd, megaDictionary);
+                ConversationBetweenCustomAgents(dt, megaDictionary);
             }
             else
             {
-                CheckDistanceBetweenAgentsToSocialExchange(dt, SEName, customAgent, rnd);
+                CheckDistanceBetweenAgentsToSocialExchange(SEName, customAgent, rnd);
             }
         }
-        internal void CheckDistanceBetweenAgentsToSocialExchange(float dt, string SEName, CustomAgent customAgent, Random rnd)
+        internal void CheckDistanceBetweenAgentsToSocialExchange(string SEName, CustomAgent customAgent, Random rnd)
         {
             if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.targetAgent != null)
             {
@@ -124,13 +124,13 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
-        internal void ConversationBetweenCustomAgents(float dt, RootMessageJson rootMessageJson, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        internal void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             int seconds = socialExchangeSE.ReduceDelay ? 0 : 3;
 
             if (SecsDelay(dt, seconds) || socialExchangeSE.ReceptorIsPlayer)
             {
-                socialExchangeSE.OnGoingSocialExchange(rootMessageJson, megaDictionary);
+                socialExchangeSE.OnGoingSocialExchange(megaDictionary);
 
                 if (socialExchangeSE.SocialExchangeDoneAndReacted)
                 {
@@ -152,35 +152,28 @@ namespace Bannerlord_Mod_Test
 
             EnoughRest = false;
         }
-        internal void InitiatorToSocialMove(CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, RootMessageJson rootMessageJson, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        internal void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
-            if (FullMessage == null)
+            if (_isInitiator)
             {
-                CultureCode cultureCode = customAgentInitiator.selfAgent.Character.Culture.GetCultureCode();
-                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, true, cultureCode, megaDictionary);
+                if (FullMessage == null)
+                {
+                    CultureCode cultureCode = customAgentInitiator.selfAgent.Character.Culture.GetCultureCode();
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, megaDictionary);
 
-                FullMessage = messageNPC.MainSocialMove();
+                    FullMessage = messageNPC.MainSocialMove();
+                }
             }
-
-            message = FullMessage.ElementAtOrDefault(_index);
-            message = (message == null) ? message = "" : message;
-
-            if (message.Contains("{PERSON}"))
+            else 
             {
-                StringBuilder builder = new StringBuilder(message);
-                builder.Replace("{PERSON}", customAgentInitiator.thirdAgent);
-                message = builder.ToString();
-            }
-        }
-        internal void ReceiverToSocialMove(CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, RootMessageJson rootMessageJson, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
-        {
-            if (FullMessage == null)
-            {
-                CultureCode cultureCode = customAgentReceptor.selfAgent.Character.Culture.GetCultureCode();
-                CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, false, cultureCode, megaDictionary, customAgentReceptor.SEVolition);
-                FullMessage = messageNPC.MainSocialMove();
+                if (FullMessage == null)
+                {
+                    CultureCode cultureCode = customAgentReceptor.selfAgent.Character.Culture.GetCultureCode();
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, megaDictionary, customAgentReceptor.SEVolition);
+                    FullMessage = messageNPC.MainSocialMove();
 
-                SE_Accepted = messageNPC.IsAccepted;
+                    SE_Accepted = messageNPC.IsAccepted;
+                }
             }
 
             message = FullMessage.ElementAtOrDefault(_index);
@@ -201,7 +194,7 @@ namespace Bannerlord_Mod_Test
                 SocialNetworkBelief localBelief = _belief;
                 LoadDataFromJsonToAgent(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
 
-                SocialNetworkBelief belief = GetBelief(_belief.relationship, _customAgent);
+                //SocialNetworkBelief belief = SelfGetBeliefWithAgent(_belief.relationship, _customAgent);
                 UpdateBeliefWithNewValue(localBelief, localBelief.value);
                 SaveDataFromAgentToJson(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
             }
@@ -289,15 +282,6 @@ namespace Bannerlord_Mod_Test
         private float dtControl;
         public string thirdAgent;
 
-        private Agent GetAgentByName(string name)
-        {
-            Agent agent = null;
-            foreach (Agent item in Mission.Current.Agents)
-            {
-                if (item.Name == name) { agent = item; break; }
-            }
-            return agent;
-        }
         public CustomAgent GetCustomAgentByName(string name)
         {
             CustomAgent customAgent = null;
@@ -310,7 +294,7 @@ namespace Bannerlord_Mod_Test
         public void UpdateTarget(string _targetName)
         {
             busy = true;
-            targetAgent = GetAgentByName(_targetName);
+            targetAgent = GetCustomAgentByName(_targetName).selfAgent;
             StartFollowBehavior(selfAgent, targetAgent);
         }
         public void StartFollowBehavior(Agent _agent, Agent _agentTarget)
@@ -381,25 +365,16 @@ namespace Bannerlord_Mod_Test
             //Add the new belief on the same index to overrride 
             //SocialNetworkBeliefs.Insert(tempBeliefIndex, belief);
         }
-        public List<SocialNetworkBelief> GetNegativeRelations(string _relation = "")
+        public List<SocialNetworkBelief> SelfGetNegativeRelations(string _relation = "")
         {
             return _relation == ""
                 ? SocialNetworkBeliefs.FindAll(b => b.value < 0)
                 : SocialNetworkBeliefs.FindAll(b => b.relationship == _relation && b.value < 0);
         }
         //Get Belief from itself with other
-        public SocialNetworkBelief GetBelief(string relation, CustomAgent _otherCustomAgent)
+        public SocialNetworkBelief SelfGetBeliefWithAgent2(CustomAgent _otherCustomAgent)
         {
-            return relation == ""
-                ? SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name))
-                : SocialNetworkBeliefs.Find(b => b.relationship == relation && b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name));
-
-
-            /*return this.SocialNetworkBeliefs.Find
-                (b => b.relationship == relation
-                && b.agents.Contains(Name)
-                && b.agents.Contains(_otherCustomAgent.Name)
-                );*/
+            return SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name));
         }
         //Get Belief between 2 other NPCs
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
@@ -415,14 +390,7 @@ namespace Bannerlord_Mod_Test
                 b => b.relationship == "Dating"
                 && b.agents.Contains(customAgent.Name));
         }
-        public bool HasSpecificRelationWith(string relation, CustomAgent customAgentReceiver)
-        {
-            return this.SocialNetworkBeliefs.Exists
-                (b => b.relationship == relation
-                && b.agents.Contains(Name)
-                && b.agents.Contains(customAgentReceiver.Name)
-                );
-        }
+
         #endregion
         #region /* Add / Update / Remove Goals */
         public void AddGoal(string _relationship, string _target, int _value)
@@ -475,7 +443,6 @@ namespace Bannerlord_Mod_Test
             selfAgent.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
-
         public void AddToMemory(MemorySE _newMemory)
         {
             if (MemorySEs.Count >= memorySize)

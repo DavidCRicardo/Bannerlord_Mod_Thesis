@@ -14,11 +14,8 @@ namespace Bannerlord_Mod_Test
             InitialValue = initialValue;
             IsReacting = reacting;
         }
-        public int SRunRules()
+        public int SRunRules() // (IsReacting || !IsReacting)
         {
-            // Is Receiver || Is Initiator
-            if (IsReacting || !IsReacting)
-            {
                 switch (RelationType)
                 {
                     case SocialExchangeSE.IntentionEnum.Positive:
@@ -65,11 +62,6 @@ namespace Bannerlord_Mod_Test
                     default:
                         return 0;
                 }
-            }
-            else
-            {
-                 return 0;
-            }
         }
 
         //Positive SE
@@ -78,7 +70,7 @@ namespace Bannerlord_Mod_Test
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
-            /* Check Traits */
+            #region /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
@@ -118,12 +110,10 @@ namespace Bannerlord_Mod_Test
                     return acc;
                 });
             }
-            
-            /* End Check Traits */
-            
+            #endregion /* End Check Traits */
+
             /* Check Status */
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            /* End Check Status */
 
             return sum;
         }
@@ -133,7 +123,7 @@ namespace Bannerlord_Mod_Test
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
-            /* Check Initiator & Receiver Traits */
+            #region /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  0 },
                 { "Hostile"   , agent =>  0 },
@@ -172,11 +162,13 @@ namespace Bannerlord_Mod_Test
                     return acc;
                 });
             }
+            #endregion
 
             /* Check Status */
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
             /* End Check Status */
 
+            /* Check Extra Rules */
             if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
                 ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
@@ -184,13 +176,13 @@ namespace Bannerlord_Mod_Test
                 sum -= 2;
             }
 
-
-            //If not dating with the receiver, so decrease drastically the sum to not Flirt 
-            SocialNetworkBelief socialNetworkBelief = Initiator.GetBelief("Dating", Receiver);
-            if (socialNetworkBelief == null)
+            //If not dating with the receiver, so decrease drastically the sum to not Flirt because it has noone to flirt
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
             {
                 sum -= 100;
             }
+            /* Extra Rules */
 
             return sum;
         }
@@ -252,8 +244,8 @@ namespace Bannerlord_Mod_Test
 
             #region Check Condition to AskOut
             //If dating already with the receiver, so decrease drastically the sum to not AskOut again
-            SocialNetworkBelief socialNetworkBelief = Initiator.GetBelief("Dating", Receiver);
-            if (socialNetworkBelief != null)
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating")
             {
                 sum -= 100;
             }
@@ -360,7 +352,7 @@ namespace Bannerlord_Mod_Test
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
-            List<SocialNetworkBelief> tempList = Initiator.GetNegativeRelations();
+            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
             if (tempList != null && tempList.Count > 0)
             {
                 // get one randomly to sabotage
@@ -382,18 +374,6 @@ namespace Bannerlord_Mod_Test
                     }
                 }
             }
-
-            ///* Check if there is anyone dating and sabotage */
-            //int datingHowMany = Initiator.CheckHowManyTheAgentIsDating(Receiver);
-            ///* If noone is dating, there is no need to sabotage */
-            //if (datingHowMany > 0)
-            //{
-            //    sum += 2;
-            //}
-            //else
-            //{
-            //    sum -= 2;
-            //}
 
             return sum;
         }
@@ -494,28 +474,13 @@ namespace Bannerlord_Mod_Test
             }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            if (Initiator.HasSpecificRelationWith("Dating", Receiver)) 
-            {
-                //It will check when the value is 0 about dating with the receiver before break up
-                SocialNetworkBelief belief = Receiver.GetBelief("Dating", Initiator);
-                if (belief != null)
-                {
-                    if (belief.value < 1)
-                    {
-                        sum += 100;
-                    }
-                }
-            }
 
-            //int datingHowMany = Receiver.DatingHowMany(Receiver);
-            //if (datingHowMany > 1)
-            //{
-            //    sum += datingHowMany *2;
-            //}
-            //else
-            //{
-            //    sum -= 2;
-            //}
+            //It will check when the value is 0 about dating with the receiver before break up
+            SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+            if (belief != null && belief.relationship == "Dating" && belief.value < 1)
+            {
+                sum += 100;
+            }
 
             return sum;
         }
@@ -528,16 +493,13 @@ namespace Bannerlord_Mod_Test
                 {
                     if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
                     {
-                        /* Add Belief to check if belief value < goal value */
-                        if (!Initiator.HasSpecificRelationWith(_relation, Receiver))
+                        /* Belief = Null? So Add Belief to check if belief value < goal value */
+                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent2(Receiver);
+                        if (belief == null)
                         {
-                            SocialNetworkBelief belief = Initiator.GetBelief(_relation, Receiver);
-                            if (belief == null)
-                            {
-                                List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
-                                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, 0);
-                                Initiator.AddBelief(newBelief);
-                            }
+                            List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
+                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, 0);
+                            Initiator.AddBelief(newBelief);
                         }
                         /* */
                         foreach (var _belief in Initiator.SocialNetworkBeliefs)
@@ -546,7 +508,7 @@ namespace Bannerlord_Mod_Test
                             {
                                 if (_belief.value < _goal.value)
                                 {
-                                    return 3;
+                                    return 100;
                                 }
                             }
                         }
@@ -565,7 +527,7 @@ namespace Bannerlord_Mod_Test
             Status status = CheckStatusIntensity(customAgent, "Shame");
             if (status.intensity > 0.5)
             {
-                localSum += 2;
+                localSum -= 2;
             }
 
             /* Courage Status */

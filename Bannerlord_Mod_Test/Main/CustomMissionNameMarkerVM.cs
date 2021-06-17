@@ -58,9 +58,8 @@ namespace Bannerlord_Mod_Test
                 if (onGoingSEs > 1 || onGoingSEs < 0)
                 {
                     InformationManager.DisplayMessage(new InformationMessage("Message"));
-
-
                 }
+
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
                     _firstTick2 = true;
@@ -75,7 +74,7 @@ namespace Bannerlord_Mod_Test
                                 intentionReftoCampaignBehaviorBase = GetIntentionToCampaignBehaviorBase(customAgent);
                             }
 
-                            customAgent.CustomAgentHasDesire(dt, customAgent.SocialMove, customAgent, myDeserializedClassConversations, rnd, MegaDictionary);
+                            customAgent.CustomAgentHasDesire(dt, customAgent.SocialMove, customAgent, rnd, MegaDictionary);
                             if (customAgent.EndingSocialExchange)
                             {
                                 onGoingSEs--;
@@ -99,8 +98,7 @@ namespace Bannerlord_Mod_Test
                     {
                         _firstTick2 = false;
 
-                        //CustomAgent ca = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-                        //AbortOnGoingSE(ca);
+                        //
                     }
                 }
                 UpdateTargetScreen(dt);
@@ -434,11 +432,10 @@ namespace Bannerlord_Mod_Test
 
             return AllTraitList;
         }
-        private RootMessageJson myDeserializedClassConversations { get; set; }
         private void LoadDialogsFromJSON()
         {
             string myJsonResponse = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/npc_conversations.json");
-            myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(myJsonResponse);
+            RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(myJsonResponse);
 
             Dictionary<string, List<string>> fromIDGetListMessages = new Dictionary<string, List<string>>();
             Dictionary<string, Dictionary<string, List<string>>> fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
