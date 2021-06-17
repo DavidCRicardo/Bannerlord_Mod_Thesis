@@ -201,7 +201,6 @@ namespace Bannerlord_Mod_Test
                             {
                                 SocialNetworkBelief belief = customAgent.GetBelief("Dating", CustomAgentInitiator);
                                 customAgent.UpdateBeliefWithNewValue(belief, -1);
-
                             }
                         }
                     }
@@ -227,7 +226,10 @@ namespace Bannerlord_Mod_Test
                         {
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
-                            SocialNetworkBelief belief = CustomAgentReceiver.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
+                            CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent);
+                            SocialNetworkBelief belief = CustomAgentReceiver.GetBelief("", CAtoDecrease);
+                            
+                            //SocialNetworkBelief belief = CustomAgentReceiver.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
                             CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                         }
                     }
@@ -252,7 +254,6 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
                         SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-
                         UpdateThirdNPCsBeliefs("Friends", belief, -1);
                     }
                     break;
@@ -355,10 +356,13 @@ namespace Bannerlord_Mod_Test
             if (howManyTimes > 0)
             {
                 //Maybe it will check how many times is in the memory and decrease 2 points for each time
-                finalVolition -= howManyTimes * 2;
+                finalVolition -= howManyTimes * 3;
             }
 
             CustomAgentInitiator.SEVolition = finalVolition;
+
+            InformationManager.DisplayMessage(new InformationMessage(SEName + " > "+ finalVolition.ToString()));
+
             return CustomAgentInitiator.SEVolition;
         }
         internal int ReceiverVolition()
@@ -374,6 +378,8 @@ namespace Bannerlord_Mod_Test
 
             CustomAgentReceiver.SEVolition = finalVolition;
             ComputeOutcome(CustomAgentReceiver.SEVolition, 15, 5);
+
+            InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
             return CustomAgentReceiver.SEVolition;
         }
@@ -401,7 +407,6 @@ namespace Bannerlord_Mod_Test
             IR.InitialValue += IR.GetValueParticipantsRelation();
             IR.InitialValue += IR.SRunRules();
 
-            InformationManager.DisplayMessage(new InformationMessage(IR.InitialValue.ToString()));
             return IR.InitialValue;
         }
 

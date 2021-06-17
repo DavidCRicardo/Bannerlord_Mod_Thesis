@@ -58,6 +58,8 @@ namespace Bannerlord_Mod_Test
                 if (onGoingSEs > 1 || onGoingSEs < 0)
                 {
                     InformationManager.DisplayMessage(new InformationMessage("Message"));
+
+
                 }
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {

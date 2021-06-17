@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -163,6 +164,13 @@ namespace Bannerlord_Mod_Test
 
             message = FullMessage.ElementAtOrDefault(_index);
             message = (message == null) ? message = "" : message;
+
+            if (message.Contains("{PERSON}"))
+            {
+                StringBuilder builder = new StringBuilder(message);
+                builder.Replace("{PERSON}", customAgentInitiator.thirdAgent);
+                message = builder.ToString();
+            }
         }
         internal void ReceiverToSocialMove(CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, RootMessageJson rootMessageJson, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
@@ -177,6 +185,13 @@ namespace Bannerlord_Mod_Test
 
             message = FullMessage.ElementAtOrDefault(_index);
             message = (message == null) ? message = "" : message;
+
+            if (message.Contains("{PERSON}"))
+            {
+                StringBuilder builder = new StringBuilder(message);
+                builder.Replace("{PERSON}", customAgentInitiator.thirdAgent);
+                message = builder.ToString();
+            }
         }
 
         public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CustomAgent _customAgent)
@@ -272,6 +287,7 @@ namespace Bannerlord_Mod_Test
             return false;
         }
         private float dtControl;
+        public string thirdAgent;
 
         private Agent GetAgentByName(string name)
         {
@@ -282,7 +298,7 @@ namespace Bannerlord_Mod_Test
             }
             return agent;
         }
-        private CustomAgent GetCustomAgentByName(string name)
+        public CustomAgent GetCustomAgentByName(string name)
         {
             CustomAgent customAgent = null;
             foreach (CustomAgent item in customAgentsList)
@@ -365,15 +381,25 @@ namespace Bannerlord_Mod_Test
             //Add the new belief on the same index to overrride 
             //SocialNetworkBeliefs.Insert(tempBeliefIndex, belief);
         }
-
+        public List<SocialNetworkBelief> GetNegativeRelations(string _relation = "")
+        {
+            return _relation == ""
+                ? SocialNetworkBeliefs.FindAll(b => b.value < 0)
+                : SocialNetworkBeliefs.FindAll(b => b.relationship == _relation && b.value < 0);
+        }
         //Get Belief from itself with other
         public SocialNetworkBelief GetBelief(string relation, CustomAgent _otherCustomAgent)
         {
-            return this.SocialNetworkBeliefs.Find
+            return relation == ""
+                ? SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name))
+                : SocialNetworkBeliefs.Find(b => b.relationship == relation && b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name));
+
+
+            /*return this.SocialNetworkBeliefs.Find
                 (b => b.relationship == relation
                 && b.agents.Contains(Name)
                 && b.agents.Contains(_otherCustomAgent.Name)
-                );
+                );*/
         }
         //Get Belief between 2 other NPCs
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)

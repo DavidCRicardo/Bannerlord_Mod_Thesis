@@ -24,7 +24,7 @@ namespace Bannerlord_Mod_Test
                     case SocialExchangeSE.IntentionEnum.Positive:
                         if (RelationName == "Compliment")
                         {
-                            return RunRulesFriendship();
+                            return RunRulesCompliment();
                         }
                         else { return 0; }
 
@@ -42,7 +42,7 @@ namespace Bannerlord_Mod_Test
                     case SocialExchangeSE.IntentionEnum.Romantic:
                         if (RelationName == "Flirt")
                         {
-                            return RunRulesRomantic();
+                            return RunRulesFlirt();
                         }
                         else if (RelationName == "AskOut")
                         {
@@ -73,9 +73,10 @@ namespace Bannerlord_Mod_Test
         }
 
         //Positive SE
-        private int RunRulesFriendship()
+        private int RunRulesCompliment()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -91,27 +92,33 @@ namespace Bannerlord_Mod_Test
                 { "Unfaithful", agent =>  0 }
             };
 
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
+            
             /* End Check Traits */
             
             /* Check Status */
@@ -121,9 +128,10 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
         //Romantic SE
-        private int RunRulesRomantic()
+        private int RunRulesFlirt()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Initiator & Receiver Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -135,30 +143,35 @@ namespace Bannerlord_Mod_Test
                 { "Brave"     , agent =>  2 },
                 { "Calm"      , agent =>  0 },
                 { "Aggressive", agent =>  0 },
-                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(agent, Initiator) : CheckFaithful(agent, Receiver) },
+                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(Initiator, Receiver) : CheckFaithful(Initiator, Receiver) },
                 { "Unfaithful", agent =>  2 }
             };
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
 
             /* Check Status */
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
@@ -183,7 +196,8 @@ namespace Bannerlord_Mod_Test
         }
         private int RunRulesAskOut()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Initiator & Receiver Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -195,30 +209,35 @@ namespace Bannerlord_Mod_Test
                 { "Brave"     , agent =>  2 },
                 { "Calm"      , agent =>  0 },
                 { "Aggressive", agent =>  0 },
-                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(agent, Initiator) : CheckFaithful(agent, Receiver) },
+                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(Initiator, Receiver) : CheckFaithful(Receiver, Initiator) },
                 { "Unfaithful", agent =>  2 }
             };
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
 
             /* Check Status */
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
@@ -245,7 +264,8 @@ namespace Bannerlord_Mod_Test
         //Negative SE
         private int RunRulesJealous()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -261,27 +281,32 @@ namespace Bannerlord_Mod_Test
                 { "Unfaithful", agent =>  0 }
             };
 
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
@@ -289,7 +314,8 @@ namespace Bannerlord_Mod_Test
         }
         private int RunRulesSabotage()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1; 
 
             /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -305,50 +331,77 @@ namespace Bannerlord_Mod_Test
                 { "Unfaithful", agent =>  0 }
             };
 
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-            {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                {
-                    acc += TraitFunc(Receiver);
-                }
-
-                return acc;
-            });
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            #region Check Condition To Sabotage
-            /* Check if there is anyone dating and sabotage */
-            int datingHowMany = Initiator.CheckHowManyTheAgentIsDating(Receiver);
-            /* If noone is dating, there is no need to sabotage */
-            if (datingHowMany > 0)
-            {
-                sum += 2;
+                    return acc;
+                });
             }
             else
             {
-                sum -= 2;
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                {
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
+
+                    return acc;
+                });
             }
-            #endregion
+
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+
+            List<SocialNetworkBelief> tempList = Initiator.GetNegativeRelations();
+            if (tempList != null && tempList.Count > 0)
+            {
+                // get one randomly to sabotage
+                Random rnd = new Random();
+                int index = rnd.Next(tempList.Count);
+                //get the name of the agent with the negative relation
+                List<string> agentsOnRelation = tempList[index].agents;
+                // it will skip if the agent will be the same as Initiator
+                // it will catch the other agent who the initiator has the negative relation
+                if (agentsOnRelation.Contains(Initiator.Name))
+                {
+                    foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
+                    {
+                        char delimiterChar = ' ';
+                        string[] sentences = agent.Split(delimiterChar);
+                        Initiator.thirdAgent = sentences[0];
+
+                        sum += 2;
+                    }
+                }
+            }
+
+            ///* Check if there is anyone dating and sabotage */
+            //int datingHowMany = Initiator.CheckHowManyTheAgentIsDating(Receiver);
+            ///* If noone is dating, there is no need to sabotage */
+            //if (datingHowMany > 0)
+            //{
+            //    sum += 2;
+            //}
+            //else
+            //{
+            //    sum -= 2;
+            //}
 
             return sum;
         }
         //Hostile SE
         private int RunRulesHostile()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -363,27 +416,32 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent =>  0 },
                 { "Unfaithful", agent =>  0 }
             };
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
            
@@ -392,7 +450,8 @@ namespace Bannerlord_Mod_Test
         //Special SE
         private int RunRulesBreakUp()
         {
-            int sum = InitialValue;
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
 
             /* Check Traits */
             Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
@@ -407,27 +466,32 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent =>  0 },
                 { "Unfaithful", agent =>  0 }
             };
-            sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+            if (!IsReacting)
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Initiator);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
 
-                return acc;
-            });
-
-            sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                    return acc;
+                });
+            }
+            else
             {
-                Func<CustomAgent, int> TraitFunc;
-                if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    acc += TraitFunc(Receiver);
-                }
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
 
-                return acc;
-            });
+                    return acc;
+                });
+            }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
             if (Initiator.HasSpecificRelationWith("Dating", Receiver)) 
@@ -441,7 +505,6 @@ namespace Bannerlord_Mod_Test
                         sum += 100;
                     }
                 }
-
             }
 
             //int datingHowMany = Receiver.DatingHowMany(Receiver);
