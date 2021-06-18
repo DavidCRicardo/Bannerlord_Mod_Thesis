@@ -45,7 +45,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddPlayerLine("tavernmaid_introduction", "tavernmaid_greeting", "close_window", "Thank you. ", null, null, 100, null, null);
 
             //Dialog
-            campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), new ConversationSentence.OnConsequenceDelegate(this.Conversation2), 100, null, null);
+            campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), null, 100, null, null);
             campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_test1", "AI - Can you say 'Hello World'? {GOLD_ICON}", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_test1", "tavernmaid_order_test2", "Social Engagement? That sounds interesting.", null, null, 100, null);
 
@@ -485,11 +485,6 @@ namespace Bannerlord_Mod_Test
             InformationManager.DisplayMessage(new InformationMessage("Testing OnConditionDelegate conversation1"));
 
             return true;
-        }
-
-        private void Conversation2()
-        {
-            InformationManager.DisplayMessage(new InformationMessage("Testing OnConsequenceDelegate conversation2"));
         }
 
         public void SetPersonalRelation(Hero otherHero, int value)
