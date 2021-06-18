@@ -141,7 +141,7 @@ namespace Bannerlord_Mod_Test
             maximumSEs = 1;
             /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Sabotage", "Insult", "Jealous", "Break" };
+            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Sabotage", "Jealous", "JealousRomantic", "Break" };
 
             SocialExchangeSEList = new List<SocialExchangeSE>();
             foreach (String seName in SocialExchangeListString)
@@ -165,7 +165,6 @@ namespace Bannerlord_Mod_Test
                         //if (agent.IsHuman) //to allow all the NPCs
                         if (agent.IsHuman && agent.IsHero)
                         {                            
-                            //InformationManager.DisplayMessage(new InformationMessage(agent.Character.Id.ToString()));
                             CustomAgent customAgent = new CustomAgent(agent, StatusListString) { Name = agent.Name };
                             customAgentsList.Add(customAgent);
 
@@ -179,7 +178,8 @@ namespace Bannerlord_Mod_Test
                     if (letsRandom)
                     {
                         GiveRandomTraitsToAgents();
-                        GiveRandomRulesToAgents();
+                        //GiveRandomRulesToAgents();
+                        SaveNewAgentsInfoToJSON(customAgentsList);
                     }
 
                     LoadAllInfoFromJSON();
@@ -345,7 +345,7 @@ namespace Bannerlord_Mod_Test
         private void GiveRandomRulesToAgents()
         {
             //Random rnd = new Random();
-            foreach (var customAgent in customAgentsList)
+            /*foreach (var customAgent in customAgentsList)
             {
                 string randomRule = SocialExchangeListString[rnd.Next(SocialExchangeListString.Count)];
                 List<string> a = new List<string>();
@@ -367,8 +367,7 @@ namespace Bannerlord_Mod_Test
                 {
                     customAgent.TriggerRuleList.Add(new TriggerRule(randomRule, a, v));
                 }
-            }
-            SaveNewAgentsInfoToJSON(customAgentsList);
+            }*/
         }
         private void GiveRandomEnergyToAgents()
         {
@@ -384,7 +383,6 @@ namespace Bannerlord_Mod_Test
         }
         private void GiveRandomTraitsToAgents()
         {
-            //Random rnd = new Random();
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
 
             foreach (var customAgent in customAgentsList)
@@ -411,8 +409,6 @@ namespace Bannerlord_Mod_Test
                     }
                 }
             }
-
-            SaveNewAgentsInfoToJSON(customAgentsList);
         }
         private List<Trait> InitializeListWithAllTraits()
         {

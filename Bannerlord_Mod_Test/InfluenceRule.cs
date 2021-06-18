@@ -177,7 +177,7 @@ namespace Bannerlord_Mod_Test
                 ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 100;
+                sum -= 10;
             }
 
             //If not dating with the receiver, so decrease drastically the sum to not Flirt because it has noone to flirt
@@ -243,7 +243,7 @@ namespace Bannerlord_Mod_Test
                 ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 100;
+                sum -= 10;
             }
 
             #region Check Condition to AskOut
@@ -434,33 +434,6 @@ namespace Bannerlord_Mod_Test
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
-            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
-            if (tempList != null && tempList.Count > 0)
-            {
-                // get one randomly to sabotage
-                Random rnd = new Random();
-                int index = rnd.Next(tempList.Count);
-                //get the name of the agent with the negative relation
-                List<string> agentsOnRelation = tempList[index].agents;
-                // it will skip if the agent will be the same as Initiator
-                // it will catch the other agent who the initiator has the negative relation
-                if (agentsOnRelation.Contains(Initiator.Name))
-                {
-                    foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
-                    {
-                        char delimiterChar = ' ';
-                        string[] sentences = agent.Split(delimiterChar);
-                        Initiator.thirdAgent = sentences[0];
-
-                        sum += 2;
-                    }
-                }
-            }
-            else
-            {
-                sum -= 100;
-            }
-
             return sum;
         }
         //Hostile SE
@@ -571,6 +544,19 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
 
+        internal int CheckInitiatorTriggerRules(CustomAgent agentWhoWillCheck, CustomAgent agentChecked, string relationName)
+        {
+            if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
+            {
+                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.SocialExchangeToDo == relationName);
+                if (triggerRule != null)
+                {
+                    return 100;
+                }
+            }
+            
+            return 0;
+        }
         internal int CheckGoals(string _relation)
         {
             if (!Initiator.GoalsList.IsEmpty())
@@ -587,7 +573,7 @@ namespace Bannerlord_Mod_Test
                             SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, 0);
                             Initiator.AddBelief(newBelief);
                         }
-                        /* */
+
                         foreach (var _belief in Initiator.SocialNetworkBeliefs)
                         {
                             if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name))
@@ -663,7 +649,6 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
-
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
             SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");

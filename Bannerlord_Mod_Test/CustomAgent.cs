@@ -185,6 +185,20 @@ namespace Bannerlord_Mod_Test
                 builder.Replace("{PERSON}", customAgentInitiator.thirdAgent);
                 message = builder.ToString();
             }
+
+            if (message.Contains("{PARTNER}"))
+            {
+                StringBuilder builder = new StringBuilder(message);
+                if (customAgentInitiator.selfAgent.IsFemale)
+                {
+                    builder.Replace("{PARTNER}", "husband");
+                }
+                else
+                {
+                    builder.Replace("{PARTNER}", "wife");
+                }
+                message = builder.ToString();
+            }
         }
 
         public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CustomAgent _customAgent)
@@ -456,27 +470,27 @@ namespace Bannerlord_Mod_Test
         {
             TriggerRuleList.Add(triggerRule);
         }
-        public void RunTriggerRules()
-        {
-            foreach (TriggerRule TRule in TriggerRuleList)
-            {
-                CheckRule(TRule);
-                break;
-            }
-        }
-        private void CheckRule(TriggerRule TRule)
-        {
-            foreach (SocialNetworkBelief belief in SocialNetworkBeliefs)
-            {
-                if (belief.relationship == TRule.RelationshipName
-                    && TRule.NPCsOnRule == belief.agents
-                    && TRule.Value <= belief.value)
-                {
-                    InformationManager.DisplayMessage(new InformationMessage("."));
+        //public void RunTriggerRules()
+        //{
+        //    foreach (TriggerRule TRule in TriggerRuleList)
+        //    {
+        //        CheckRule(TRule);
+        //        break;
+        //    }
+        //}
+        //private void CheckRule(TriggerRule TRule)
+        //{
+        //    foreach (SocialNetworkBelief belief in SocialNetworkBeliefs)
+        //    {
+        //        if (belief.relationship == TRule.RelationshipName
+        //            && TRule.NPCsOnRule == belief.agents
+        //            && TRule.Value <= belief.value)
+        //        {
+        //            InformationManager.DisplayMessage(new InformationMessage("."));
 
-                    break;
-                }
-            }
-        }
+        //            break;
+        //        }
+        //    }
+        //}
     }
 }

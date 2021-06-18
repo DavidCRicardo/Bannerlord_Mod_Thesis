@@ -27,6 +27,7 @@ namespace Bannerlord_Mod_Test
                 case "Flirt":
                 case "AskOut": Intention = IntentionEnum.Romantic; break;
                 case "Compliment": Intention = IntentionEnum.Positive; break;
+                case "JealousRomantic":
                 case "Bully": Intention = IntentionEnum.Hostile; break;
                 case "Sabotage":
                 case "Jealous": Intention = IntentionEnum.Negative; break;
@@ -135,6 +136,7 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Shame", 1);
                     }
 
+
                     break;
                 case IntentionEnum.Romantic:
                     if (CustomAgentReceiver.SE_Accepted)
@@ -169,17 +171,26 @@ namespace Bannerlord_Mod_Test
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
                     }
 
-                    //Independentemente se aceitou ou nao.. o parceiro (se existir) de quem começou a social exchange nao vai gostar da SE
+                    //Independentemente se aceitou ou nao.. 
                     foreach (CustomAgent customAgent in CustomAgentList)
                     {
                         // verificar para todos menos para aqueles que estavam envolvidos na SE
                         if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                         {
-                            //tem alguma espécie de relaçao? ou a relaçao que tiver é Dating?
-                            SocialNetworkBelief belief = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
-                            if (belief != null && belief.relationship == "Dating")
+                            //se o initiator é o seu parceiro (dating) que começou a Romantic SE // nao vai gostar da SE e vai decrementar 1 ponto
+                            SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
+                            if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Dating")
                             {
-                                customAgent.UpdateBeliefWithNewValue(belief, -1);
+                                customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
+                            }
+
+                            //se o receiver é o seu parceiro (dating) de que foi alvo de Romantic SE // vai ter ciumes do Initiator 
+                            SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
+                            if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
+                            {
+                                //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
+                                TriggerRule triggerRule = new TriggerRule("JealousRomantic", CustomAgentInitiator.Name);
+                                customAgent.AddToTriggerRulesList(triggerRule);
                             }
                         }
                     }
@@ -295,8 +306,8 @@ namespace Bannerlord_Mod_Test
             {
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
-                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => /*b.relationship == _relationName
-                    && */b.agents.Contains(CustomAgentInitiator.Name)
+                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => 
+                    b.agents.Contains(CustomAgentInitiator.Name)
                     && b.agents.Contains(CustomAgentReceiver.Name));
 
                     if (belief == null)
@@ -333,7 +344,7 @@ namespace Bannerlord_Mod_Test
                 RelationName = SEName,
                 RelationType = Intention
             };
-            int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentReceiver, CustomAgentInitiator);
+            int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
             finalVolition = CheckMemory(finalVolition, 2);
 
             CustomAgentInitiator.SEVolition = finalVolition;
@@ -369,7 +380,27 @@ namespace Bannerlord_Mod_Test
 
             return CustomAgentReceiver.SEVolition;
         }
-        private static int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
+        private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
+        {
+            string relation = GetRelationType(IR);
+
+            IR.InitialValue = IR.CheckGoals(relation);
+
+            IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.RelationName) : 0;
+
+            IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
+            IR.InitialValue += IR.SRunRules();
+
+            return IR.InitialValue;
+        }
+
+
+        public void PlayerConversationWithNPC(string relation, int value)
+        {
+            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
+            UpdateThirdNPCsBeliefs(relation, belief, value);
+        }
+        private static string GetRelationType(InfluenceRule IR)
         {
             string relation = "";
             switch (IR.RelationType)
@@ -389,16 +420,7 @@ namespace Bannerlord_Mod_Test
                     break;
             }
 
-            IR.InitialValue = IR.CheckGoals(relation);
-            IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
-            IR.InitialValue += IR.SRunRules();
-
-            return IR.InitialValue;
-        }
-        public void PlayerConversationWithNPC(string relation, int value)
-        {
-            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
-            UpdateThirdNPCsBeliefs(relation, belief, value);
+            return relation;
         }
 
         public enum IntentionEnum
@@ -441,13 +463,13 @@ namespace Bannerlord_Mod_Test
                 //Rejected
             }
         }
-        private void RunTriggerRulesForEveryone()
-        {
-            foreach (CustomAgent _customAgent in CustomAgentList)
-            {
-                _customAgent.RunTriggerRules();
-            }
-        }
+        //private void RunTriggerRulesForEveryone()
+        //{
+        //    foreach (CustomAgent _customAgent in CustomAgentList)
+        //    {
+        //        _customAgent.RunTriggerRules();
+        //    }
+        //}
         //*
     }
 }
