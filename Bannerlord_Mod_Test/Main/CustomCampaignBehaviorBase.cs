@@ -16,14 +16,10 @@ namespace Bannerlord_Mod_Test
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnGameLoaded));
-            CampaignEvents.OnNewGameCreatedEvent5.AddNonSerializedListener(this, new Action(this.CampaignStart));
             CampaignEvents.AfterSettlementEntered.AddNonSerializedListener(this, new Action<MobileParty, Settlement, Hero>(this.Tick2)); // Working
         }
 
         private void Tick2(MobileParty mobileParty, Settlement settlement, Hero hero)
-        {
-        }
-        private void CampaignStart()
         {
         }
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -157,7 +153,7 @@ namespace Bannerlord_Mod_Test
             //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_hostile", "I need some gold, these coins are enough for now! [Hostile]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "lord_hostile", "close_window", "You don't have a job, or what? [ib:nervous][if:idle_angry]", null, new ConversationSentence.OnConsequenceDelegate(StealFromNPC), 100, null);
             //Romantic
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "My day is better with you! [Romantic]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfIsDatingWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
             campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Reject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
             /* NPC Friendly Interactions With Player */  //Working
@@ -186,11 +182,11 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddDialogLine("1", "Hostile_step1", "close_window", "Thank you, friend hehe.", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Hostile_step2", "close_window", "Hum... maybe next time.", null, null, 100, null);
 
-            campaignGameStarter.AddDialogLine("1", "start", "Special_start", "Special", new ConversationSentence.OnConditionDelegate(Special), null, 200, null);
+            /*campaignGameStarter.AddDialogLine("1", "start", "Special_start", "Special", new ConversationSentence.OnConditionDelegate(Special), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step1", "[Accept]!", null, null, 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step2", "[Reject]!", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("1", "Special_step1", "close_window", "SpecialAccept", null, null, 100, null);
-            campaignGameStarter.AddDialogLine("1", "Special_step2", "close_window", "SpecialReject", null, null, 100, null);
+            campaignGameStarter.AddDialogLine("1", "Special_step2", "close_window", "SpecialReject", null, null, 100, null);*/
         }
 
         internal BasicCharacterObject characterRef { get; set; }
@@ -324,6 +320,35 @@ namespace Bannerlord_Mod_Test
         {
             DecreaseDatingWithPlayer = true;
         }
+        /// <summary>
+        /// //////////////////////////////////
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckIfIsDatingWithNPC_condition()
+        {
+            foreach (Agent agent in Mission.Current.Agents)
+            {
+                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+                {
+                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+
+                    if (hasTrait != null || datingHowMany > 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
+            return true;
+        }
+        /// <summary>
+        /// /////////////////////////
+        /// </summary>
         public bool AskWhatsGoinOn { get; set; }
         private bool Condition_EmergencyCallGoingOn()
         {

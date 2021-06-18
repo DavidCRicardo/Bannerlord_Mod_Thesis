@@ -53,12 +53,7 @@ namespace Bannerlord_Mod_Test
                     this._firstTick = false;
                 }
 
-                InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
-
-                /*if (onGoingSEs > 1 || onGoingSEs < 0)
-                {
-                    InformationManager.DisplayMessage(new InformationMessage("Message"));
-                }*/
+                //InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {

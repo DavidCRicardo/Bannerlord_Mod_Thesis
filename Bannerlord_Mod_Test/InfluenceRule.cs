@@ -27,7 +27,7 @@ namespace Bannerlord_Mod_Test
 
                     case SocialExchangeSE.IntentionEnum.Negative:
                         if (RelationName == "Jealous")
-                        {
+                        {//Insult
                             return RunRulesJealous();
                         }
                         else if (RelationName == "Sabotage")
@@ -51,6 +51,10 @@ namespace Bannerlord_Mod_Test
                         if (RelationName == "Bully")
                         {
                             return RunRulesHostile();
+                        }
+                        else if (RelationName == "JealousRomantic")
+                        {//Jealous
+                            return RunRulesJealousRomantic();
                         }
                         else { return 0; }
                     case SocialExchangeSE.IntentionEnum.Special:
@@ -373,6 +377,88 @@ namespace Bannerlord_Mod_Test
                         sum += 2;
                     }
                 }
+            }
+            else
+            {
+                sum -= 100;
+            }
+
+            return sum;
+        }
+        // Go talk with someone if that someone talked with his wife/husband
+        private int RunRulesJealousRomantic()
+        {
+            int sum = 0;
+            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
+
+            /* Check Traits */
+            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                { "Friendly"  , agent => -2 },
+                { "Hostile"   , agent =>  2 },
+                { "Charming"  , agent =>  0 },
+                { "UnCharming", agent =>  0 },
+                { "Shy"       , agent => -2 },
+                { "Brave"     , agent =>  2 },
+                { "Calm"      , agent => -2 },
+                { "Aggressive", agent =>  2 },
+                { "Faithful"  , agent =>  0 },
+                { "Unfaithful", agent =>  0 }
+            };
+
+            if (!IsReacting)
+            {
+                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                {
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Initiator);
+                    }
+
+                    return acc;
+                });
+            }
+            else
+            {
+                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                {
+                    Func<CustomAgent, int> TraitFunc;
+                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
+                    {
+                        acc += TraitFunc(Receiver);
+                    }
+
+                    return acc;
+                });
+            }
+
+            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+
+            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
+            if (tempList != null && tempList.Count > 0)
+            {
+                // get one randomly to sabotage
+                Random rnd = new Random();
+                int index = rnd.Next(tempList.Count);
+                //get the name of the agent with the negative relation
+                List<string> agentsOnRelation = tempList[index].agents;
+                // it will skip if the agent will be the same as Initiator
+                // it will catch the other agent who the initiator has the negative relation
+                if (agentsOnRelation.Contains(Initiator.Name))
+                {
+                    foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
+                    {
+                        char delimiterChar = ' ';
+                        string[] sentences = agent.Split(delimiterChar);
+                        Initiator.thirdAgent = sentences[0];
+
+                        sum += 2;
+                    }
+                }
+            }
+            else
+            {
+                sum -= 100;
             }
 
             return sum;
