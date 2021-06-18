@@ -6,7 +6,7 @@ namespace Bannerlord_Mod_Test
 {
     public class CustomAgentJson
     {
-        public CustomAgentJson(string name, List<Trait> traitList, List<TriggerRule> triggerRules)
+        public CustomAgentJson(string name, List<Trait> traitList)
         {
             Name = name;
             TraitList = traitList;
@@ -14,7 +14,7 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBeliefs = new List<SocialNetworkBelief>();
             ItemsList = new List<Item>();
             MemoriesList = new List<MemorySE>();
-            TriggerRulesList = triggerRules;
+            TriggerRulesList = new List<TriggerRule>();
         }
 
         [JsonProperty("Name")]

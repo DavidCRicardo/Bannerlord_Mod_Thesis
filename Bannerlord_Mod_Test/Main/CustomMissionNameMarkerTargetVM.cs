@@ -182,12 +182,21 @@ namespace Bannerlord_Mod_Test
             this.MarkerType = 5;
         }
 
-        public CustomMissionNameMarkerTargetVM(Agent agent)
+        public CustomMissionNameMarkerTargetVM(Agent agent, int id = -1)
         {
-            //this.Text = "";
+            if (id != -1)
+            {
+                //juntar as 2 strings
+                this.Name = agent.Name.ToString() + id.ToString();
+            }
+            else
+            {
+                this.Name = agent.Name.ToString();
+            }
+            this.Text = "";
             this.IsMovingTarget = true; //1;
             this.TargetAgent = agent;
-            this.Name = agent.Name.ToString();
+            //this.Name = agent.Name.ToString();
             this.MarkerType = 1;
             this.QuestMarkerType = 0;
             this.IssueMarkerType = 0;

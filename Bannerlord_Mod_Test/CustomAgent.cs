@@ -16,6 +16,7 @@ namespace Bannerlord_Mod_Test
     {
         public Agent selfAgent;
         public Agent targetAgent;
+        public CustomAgent customTargetAgent;
         public string Name { get; set; } // ID
         public string message { get; set; } // Output Message
         public string[] FullMessage { get; set; } // Output Full Message
@@ -48,6 +49,7 @@ namespace Bannerlord_Mod_Test
             this.message = "";
             this.SocialMove = "";
             this.targetAgent = null;
+            this.customTargetAgent = null;
             this.customAgentsList = new List<CustomAgent>(); // reference to NPCs around 
             this.TraitList = new List<Trait>();
             this.GoalsList = new List<Goal>();
@@ -92,7 +94,9 @@ namespace Bannerlord_Mod_Test
         {
             UpdateTarget(_ReceiverName);
             //this.selfAgent.SetLookAgent(targetAgent);
-            GetCustomAgentByName(targetAgent.Name).busy = true;
+
+            customTargetAgent.busy = true;
+            //GetCustomAgentByName(targetAgent.Name).busy = true;
 
             IsInitiator = true;
             SocialMove = _SEName;
@@ -112,9 +116,12 @@ namespace Bannerlord_Mod_Test
         }
         internal void CheckDistanceBetweenAgentsToSocialExchange(string SEName, CustomAgent customAgent, Random rnd)
         {
-            if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.targetAgent != null)
+            //if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.targetAgent != null)
+            if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.customTargetAgent != null)
             {
-                if (customAgent.selfAgent.Position.Distance(customAgent.targetAgent.Position) < 3)
+                //if (customAgent.selfAgent.Position.Distance(customAgent.targetAgent.Position) < 3)
+                InformationManager.DisplayMessage(new InformationMessage(customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position).ToString()));
+                if (customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
                     socialExchangeSE = new SocialExchangeSE(SEName, customAgent, customAgentsList);
@@ -308,8 +315,12 @@ namespace Bannerlord_Mod_Test
         public void UpdateTarget(string _targetName)
         {
             busy = true;
-            targetAgent = GetCustomAgentByName(_targetName).selfAgent;
-            StartFollowBehavior(selfAgent, targetAgent);
+            
+            //targetAgent = GetCustomAgentByName(_targetName).selfAgent;
+            customTargetAgent = GetCustomAgentByName(_targetName);
+
+            //StartFollowBehavior(selfAgent, targetAgent);
+            StartFollowBehavior(selfAgent, customTargetAgent.selfAgent);
         }
         public void StartFollowBehavior(Agent _agent, Agent _agentTarget)
         {

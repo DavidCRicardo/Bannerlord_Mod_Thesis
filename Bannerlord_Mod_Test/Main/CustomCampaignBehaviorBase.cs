@@ -42,7 +42,7 @@ namespace Bannerlord_Mod_Test
 
             //Start Dialog
             //campaignGameStarter.AddDialogLine("tavernmaid_introduction", "start", "tavernmaid_greeting", "Hello Adventure! ", new ConversationSentence.OnConditionDelegate(testing_intro_tavernmaid), null, 101, null);
-            campaignGameStarter.AddPlayerLine("tavernmaid_introduction", "tavernmaid_greeting", "close_window", "Thank you. ", null, null, 100, null, null);
+            //campaignGameStarter.AddPlayerLine("tavernmaid_introduction", "tavernmaid_greeting", "close_window", "Thank you. ", null, null, 100, null, null);
 
             //Dialog
             campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), null, 100, null, null);
@@ -129,7 +129,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddDialogLine("1175", "hero_increase_courage", "close_window", "Ok, I will try.", null, new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null);
 
             /*Hero Dialog*/
-            campaignGameStarter.AddPlayerLine("caravan_create_conversation_1", "hero_main_options", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "start", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
             campaignGameStarter.AddDialogLine("1175", "lord_date", "close_window", "I don't know... Well, why not.", null, null, 100, null);
          
             campaignGameStarter.AddDialogLine("1175", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);

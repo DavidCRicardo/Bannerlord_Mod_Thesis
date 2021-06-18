@@ -63,7 +63,8 @@ namespace Bannerlord_Mod_Test
                     {
                         if (customAgent.busy && customAgent.IsInitiator)
                         {
-                            if (customAgent.targetAgent == Agent.Main)
+                            //if (customAgent.targetAgent == Agent.Main)
+                            if (customAgent.customTargetAgent.selfAgent == Agent.Main)
                             {
                                 characterReftoCampaignBehaviorBase = customAgent.selfAgent.Character;
                                 intentionReftoCampaignBehaviorBase = GetIntentionToCampaignBehaviorBase(customAgent);
@@ -153,27 +154,28 @@ namespace Bannerlord_Mod_Test
             {
                 if (customAgentsList == null)
                 {
-                    /* Reference to Next SE & Most Wanted SE*/
+                    /* Reference to Next SE & Most Wanted SE */
                     nextSE = new NextSE("", "", "", 0);
                     mostWantedSEList = new List<mostWantedSE>();
 
                     /* Reference to CustomAgent */
                     customAgentsList = new List<CustomAgent>();
-                    int i = 0;
+                    int id = -1;
                     foreach (Agent agent in Mission.Current.Agents)
                     {
+                        id++;
                         if (agent.IsHuman) //to allow all the NPCs
-                        //if (agent.IsHuman && agent.IsHero)
                         {
                             string nameTemp = "";
                             if (agent.IsHero)
                             {
-                                nameTemp = agent.Name;
+                                nameTemp = agent.Name + id;
+                                //id++;
                             }
                             else
                             {
-                                nameTemp = agent.Name + i;
-                                i++;
+                                nameTemp = agent.Name + id;
+                                //id++;
                             }
 
                             CustomAgent customAgent = new CustomAgent(agent, StatusListString) { Name = nameTemp };
@@ -182,7 +184,7 @@ namespace Bannerlord_Mod_Test
                             mostWantedSE sE = new mostWantedSE(customAgent.Name, new NextSE("", "", "", 0));
                             mostWantedSEList.Add(sE);
 
-                            AddAgentTarget(agent);
+                            AddAgentTarget(agent, id);
                         }
                     }
 
@@ -336,10 +338,12 @@ namespace Bannerlord_Mod_Test
         }
         internal void OnConversationEnd2()
         {
-            CustomAgent customAgent = customAgentsList.Find(c => c.Name == CharacterObject.OneToOneConversationCharacter.Name.ToString());
+            //CustomAgent customAgent = customAgentsList.Find(c => c.Name == CharacterObject.OneToOneConversationCharacter.Name.ToString());
+            CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()));
             if (customAgent != null)
             {
-                if (customAgent.targetAgent == Agent.Main)
+                //if (customAgent.targetAgent == Agent.Main)
+                if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name.Contains(Agent.Main.Name))
                 {
                     intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
                     characterReftoCampaignBehaviorBase = null;
@@ -349,6 +353,7 @@ namespace Bannerlord_Mod_Test
                     customAgent.EndingSocialExchange = false;
                     customAgent.FinalizeSocialExchange();
                     customAgent.targetAgent = null;
+                    customAgent.customTargetAgent = null;
                 }
             }
         }
@@ -487,11 +492,8 @@ namespace Bannerlord_Mod_Test
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                //if (customAgent.selfAgent.IsHero)
-                //{
-                    CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.TraitList, customAgent.TriggerRuleList);
-                    jsonlist.Add(json1);
-                //}
+                CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.TraitList);
+                jsonlist.Add(json1);
             }
 
             myDeserializedClass.SettlementJson.Add(new SettlementJson(_currentSettlement, _currentLocation, jsonlist));
@@ -503,32 +505,65 @@ namespace Bannerlord_Mod_Test
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
-            foreach (SettlementJson item in myDeserializedClass.SettlementJson)
+            foreach (SettlementJson _settlement in myDeserializedClass.SettlementJson)
             {
-                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
+                if (_settlement.Name == _currentSettlement && _settlement.LocationWithId == _currentLocation)
                 {
-                    foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
+                    // Check if there is any companion/NPC new to add to the file
+                    foreach (CustomAgent customAgent in customAgentsList)
                     {
-                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
-                        if (x != null)
+                        CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.Name);
+                        if (_customAgentJson != null)
                         {
-                            x.TraitList = _customAgentJson.TraitList;
-                            x.GoalsList = _customAgentJson.GoalsList;
-                            x.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
-                            x.ItemList = _customAgentJson.ItemsList;
-                            x.MemorySEs = _customAgentJson.MemoriesList;
-                            x.TriggerRuleList = _customAgentJson.TriggerRulesList;
+                            customAgent.TraitList = _customAgentJson.TraitList;
+                            customAgent.GoalsList = _customAgentJson.GoalsList;
+                            customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
+                            customAgent.ItemList = _customAgentJson.ItemsList;
+                            customAgent.MemorySEs = _customAgentJson.MemoriesList;
+                            customAgent.TriggerRuleList = _customAgentJson.TriggerRulesList;
 
-                            foreach (Trait trait in x.TraitList)
+                            foreach (Trait trait in customAgent.TraitList)
                             {
                                 trait.SetCountdownToIncreaseDecrease(trait.traitName);
                             }
+                        }
+                        else
+                        {
+                            //Checking if there is any NPC new on the town who hasn't on the 1st time when the file was generated
+                            GenerateRandomTraitsForThisNPC(customAgent);
+                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.TraitList));
+
+                            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
                     }
                     break;
                 }
             }
         }
+        private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)
+        {
+            List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
+
+            for (int i = 0; i < ListWithAllTraits.Count; i++)
+            {
+                if (rnd.NextDouble() > 0.5)
+                {
+                    if (i % 2 == 0)
+                    {
+                        customAgent.TraitList.Add(ListWithAllTraits[i]);
+                    }
+                    else
+                    {
+                        bool agentHasTrait = !customAgent.TraitList.Contains(ListWithAllTraits[i - 1]);
+                        if (agentHasTrait)
+                        {
+                            customAgent.TraitList.Add(ListWithAllTraits[i]);
+                        }
+                    }
+                }
+            }
+        }
+
         private void SaveAllInfoToJSON()
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
@@ -540,7 +575,8 @@ namespace Bannerlord_Mod_Test
                 {
                     foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
                     {
-                        var x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
+                        //var x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
+                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
                         if (x != null)
                         {
                             _customAgentJson.TraitList = x.TraitList;
@@ -621,13 +657,13 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        private void AddAgentTarget(Agent agent)
+        private void AddAgentTarget(Agent agent, int id = -1)
         {
             if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent))
             {
                 if (agent.IsHuman/* agent.Character.IsHero*/)
                 {
-                    CustomMissionNameMarkerTargetVM item = new CustomMissionNameMarkerTargetVM(agent);
+                    CustomMissionNameMarkerTargetVM item = new CustomMissionNameMarkerTargetVM(agent, id);
                     this.Targets.Add(item);
                     return;
                 }
@@ -717,17 +753,20 @@ namespace Bannerlord_Mod_Test
             {
                 //code here
 
-                //CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.TargetAgent.Name);
-                CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(item.TargetAgent.Name));
-                if (customAgent.message != "")
+                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name);
+                if (customAgent != null)
                 {
-                    item.Name = customAgent.message;
-                    item.IsEnabled = true;
-                }
-                else
-                {
-                    item.IsEnabled = false;
-                }
+                    if (customAgent.message != "")
+                    {
+                        //item.Name = 
+                        item.Text = customAgent.message;
+                        item.IsEnabled = true;
+                    }
+                    else
+                    {
+                        item.IsEnabled = false;
+                    }
+                }    
             }            
         }
 

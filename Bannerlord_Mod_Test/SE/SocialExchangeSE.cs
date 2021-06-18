@@ -15,10 +15,12 @@ namespace Bannerlord_Mod_Test
             if (_customAgentinitiator != null)
             {
                 this.AgentInitiator = _customAgentinitiator.selfAgent;
-                this.AgentReceiver = _customAgentinitiator.targetAgent;
+                //this.AgentReceiver = _customAgentinitiator.targetAgent;
                 this.CustomAgentInitiator = _customAgentinitiator;
                 this.CustomAgentList = customAgents;
-                this.CustomAgentReceiver = CustomAgentList.Single(item => item.Name == AgentReceiver.Name);
+                //this.CustomAgentReceiver = CustomAgentList.Single(item => item.Name == AgentReceiver.Name);
+                this.CustomAgentReceiver = CustomAgentInitiator.customTargetAgent;
+                this.AgentReceiver = CustomAgentReceiver.selfAgent; ;
                 this.index = -1;
             }
 
@@ -112,6 +114,7 @@ namespace Bannerlord_Mod_Test
             customAgent.message = "";
             customAgent.cooldown = true;
             customAgent.targetAgent = null;
+            customAgent.customTargetAgent = null;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
         }
@@ -253,9 +256,8 @@ namespace Bannerlord_Mod_Test
                         InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                         CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
-                        SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
-                        belief = UpdateParticipantNPCBeliefs(belief.relationship, -1);
-                        UpdateThirdNPCsBeliefs(belief.relationship, belief, -1);
+                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
                     }
                     break;
                 case IntentionEnum.Special:

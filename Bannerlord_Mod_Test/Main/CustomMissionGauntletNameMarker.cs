@@ -109,20 +109,26 @@ namespace Bannerlord_Mod_Test
 
             if (CBB_ref.IncreaseFriendshipWithPlayer)
             {
-                UpdateRelationWithPlayerChoice(characterObject, "Friends", 1);
+                UpdateRelationWithPlayerChoice(characterObject, "Friends", 1, Agent.Main);
                 CBB_ref.IncreaseFriendshipWithPlayer = false;
             }
             if (CBB_ref.DecreaseFriendshipWithPlayer)
             {
-                UpdateRelationWithPlayerChoice(characterObject, "Friends", -1);
+                UpdateRelationWithPlayerChoice(characterObject, "Friends", -1, Agent.Main);
                 CBB_ref.DecreaseFriendshipWithPlayer = false;
             }
         }
-        private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value)
+        private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value , Agent agent = null)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
-            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name == Agent.Main.Name);
-            MainCustomAgent.targetAgent = customAgent.selfAgent;
+            //CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
+
+            //CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name == Agent.Main.Name);
+            //MainCustomAgent.targetAgent = customAgent.selfAgent;
+            //MainCustomAgent.targetAgent = customAgent.selfAgent;
+            
+            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(characterObject.Name.ToString()) && agent == Agent.Main);
+            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(Agent.Main.Name));
+            MainCustomAgent.customTargetAgent = customAgent;
 
             SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
             {
