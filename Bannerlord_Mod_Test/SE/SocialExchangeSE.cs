@@ -273,8 +273,8 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
             if (belief == null)
             {
-                List<string> a = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
-                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, a, _value);
+                List<string> agents = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
+                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _value);
 
                 CustomAgentInitiator.AddBelief(newBelief);
                 CustomAgentReceiver.AddBelief(newBelief);
@@ -295,8 +295,8 @@ namespace Bannerlord_Mod_Test
             {
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
-                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => b.relationship == _relationName
-                    && b.agents.Contains(CustomAgentInitiator.Name)
+                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => /*b.relationship == _relationName
+                    && */b.agents.Contains(CustomAgentInitiator.Name)
                     && b.agents.Contains(CustomAgentReceiver.Name));
 
                     if (belief == null)
