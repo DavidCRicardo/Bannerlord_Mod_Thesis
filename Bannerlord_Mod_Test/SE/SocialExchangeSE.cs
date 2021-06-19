@@ -15,12 +15,13 @@ namespace Bannerlord_Mod_Test
             if (_customAgentinitiator != null)
             {
                 this.AgentInitiator = _customAgentinitiator.selfAgent;
-                //this.AgentReceiver = _customAgentinitiator.targetAgent;
                 this.CustomAgentInitiator = _customAgentinitiator;
-                this.CustomAgentList = customAgents;
+
+                //this.AgentReceiver = _customAgentinitiator.targetAgent;
                 //this.CustomAgentReceiver = CustomAgentList.Single(item => item.Name == AgentReceiver.Name);
+                this.CustomAgentList = customAgents;
                 this.CustomAgentReceiver = CustomAgentInitiator.customTargetAgent;
-                this.AgentReceiver = CustomAgentReceiver.selfAgent; ;
+                this.AgentReceiver = CustomAgentReceiver.selfAgent;
                 this.index = -1;
             }
 
@@ -87,7 +88,7 @@ namespace Bannerlord_Mod_Test
             if ((CustomAgentInitiator.message == "" && CustomAgentReceiver.message == "") || ReceptorIsPlayer)
             {
                 if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
-                SocialExchangeDoneAndReacted = true;
+                SocialExchangeDoneAndReacted = true; 
             }
         }
         internal void OnFinalize()

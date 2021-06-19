@@ -217,11 +217,12 @@ namespace Bannerlord_Mod_Test
                 customAgent.UpdateStatus("Courage", -0.05);
                 customAgent.UpdateStatus("Shame", -0.05);
 
-                if (customAgent.targetAgent != null)
+                //if (customAgent.targetAgent != null)
+                if (customAgent.customTargetAgent != null) // se tiver target entao fica cansado
                 {
                     customAgent.UpdateStatus("Tiredness", 0.1);
                 }
-                else
+                else // senão descansa
                 {
                     customAgent.UpdateStatus("Tiredness", -0.05);
                 }
@@ -310,13 +311,15 @@ namespace Bannerlord_Mod_Test
             // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
             // o player e o NPC interagido sao considerados como busy
             // se algum outro NPC viria para interagir com o player ou o npc, então aborta a social exchange 
-            if (customAgent != null && customAgent.targetAgent != null && customAgent.targetAgent != Agent.Main)
+            //if (customAgent != null && customAgent.targetAgent != null && customAgent.targetAgent != Agent.Main)
+            if (customAgent != null && customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent != Agent.Main)
             {
                 if (customAgent.busy) // busy // target or not
                 {
                     customAgent.AbortSocialExchange();
 
-                    if (customAgent.targetAgent != null) // if has target // its the initiator
+                    //if (customAgent.targetAgent != null) // if has target // its the initiator
+                    if (customAgent.customTargetAgent != null) // if has target // its the initiator
                     {
                         if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
                         if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); onGoingSEs--; }
@@ -339,7 +342,7 @@ namespace Bannerlord_Mod_Test
         internal void OnConversationEnd2()
         {
             //CustomAgent customAgent = customAgentsList.Find(c => c.Name == CharacterObject.OneToOneConversationCharacter.Name.ToString());
-            CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()));
+            CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()) && c.IsInitiator && c.busy);
             if (customAgent != null)
             {
                 //if (customAgent.targetAgent == Agent.Main)

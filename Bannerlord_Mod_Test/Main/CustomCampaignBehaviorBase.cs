@@ -105,12 +105,26 @@ namespace Bannerlord_Mod_Test
         {
             //campaignGameStarter.AddDialogLine("village_farmer_talk_start", "start", "village_farmer_talk", "Greetings", null, null, 100, null);
             //campaignGameStarter.AddDialogLine("village_farmer_pretalk_start", "village_farmer_pretalk", "village_farmer_talk", "Hello, you are crazy?", null, null, 100, null);
-            //campaignGameStarter.AddPlayerLine("village_farmer_buy_products", "village_farmer_talk", "village_farmer_player_trade", "I'm going to market too. Bye bye bye", null, null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("village_farmer_buy_products", "village_farmer_talk", "village_farmer_player_trade", "I'm going to market too. Bye bye bye", null, null, 100, null, null);
         }
+        //TaleWorlds.CampaignSystem.dll : CampaignSystem.SandBox.Source.Towns.CommonVillagersCampaignBehavior
         private void AddTownspersonAndVillagerDialogs(CampaignGameStarter campaignGameStarter)
         {
             /*Child or Teenager*/
-            campaignGameStarter.AddPlayerLine("player_run_along_children_test1", "town_or_village_player_children_post_rhyme", "close_window", "Bye kid.", null, null, 100, null, null);
+            //TavernKeeper
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            //TavernMaid
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            //Child
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            //Town Or Village
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
         }
         private void LordConversationsCampaignBehavior(CampaignGameStarter campaignGameStarter)
         {
@@ -119,28 +133,23 @@ namespace Bannerlord_Mod_Test
                 PlayerEncounter.LeaveEncounter = true;
             }, 100, null);*/
 
-            /* Hero Compliment */
-            //campaignGameStarter.AddDialogLine("1175", "start", "hero_compliment", "You did a good job outside!", new ConversationSentence.OnConditionDelegate(testing_hero_compliment), null, 101, null);
-            //campaignGameStarter.AddPlayerLine("1175", "hero_compliment", "hero_compliment2", "Thank you so much! [Friendship +1]", null, new ConversationSentence.OnConsequenceDelegate(hero_increase_friendship), 100, null, null);
-            //campaignGameStarter.AddPlayerLine("1175", "hero_compliment", "close_window", "I have things to do, we talk later.", null, null, 100, null, null);
-            //campaignGameStarter.AddDialogLine("1175", "hero_compliment2", "close_window", "Your welcome!", null, null, 100, null);
-
+            /* Increase Courage */
             campaignGameStarter.AddPlayerLine("1175", "hero_main_options", "hero_increase_courage", "You can fight against the bully. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Weak), null, 100, null, null);
             campaignGameStarter.AddDialogLine("1175", "hero_increase_courage", "close_window", "Ok, I will try.", null, new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null);
 
             /*Hero Dialog*/
             campaignGameStarter.AddPlayerLine("1", "start", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
-            campaignGameStarter.AddDialogLine("1175", "lord_date", "close_window", "I don't know... Well, why not.", null, null, 100, null);
+            campaignGameStarter.AddDialogLine("1", "lord_date", "close_window", "I don't know... Well, why not.", null, null, 100, null);
          
-            campaignGameStarter.AddDialogLine("1175", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
+            campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
 
-            campaignGameStarter.AddPlayerLine("e1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
-            campaignGameStarter.AddDialogLine("e2", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
+            campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
 
-            campaignGameStarter.AddPlayerLine("caravan_create_conversation_1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1175", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
+            campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
 
-            campaignGameStarter.AddDialogLine("1175", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
             
             /* Player Interactions with NPC */
             //Friendly - Working
