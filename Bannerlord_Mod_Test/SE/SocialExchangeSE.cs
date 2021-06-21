@@ -27,13 +27,13 @@ namespace Bannerlord_Mod_Test
 
             switch (SEName)
             {
-                case "Flirt":
-                case "AskOut": Intention = IntentionEnum.Romantic; break;
                 case "Compliment": Intention = IntentionEnum.Positive; break;
-                case "JealousRomantic":
-                case "Bully": Intention = IntentionEnum.Hostile; break;
-                case "Sabotage":
+                case "FriendSabotage":
                 case "Jealous": Intention = IntentionEnum.Negative; break;
+                case "AskOut":
+                case "Flirt": Intention = IntentionEnum.Romantic; break;
+                case "RomanticSabotage":
+                case "Bully": Intention = IntentionEnum.Hostile; break;
                 case "Break": Intention = IntentionEnum.Special; break;
                 default: Intention = IntentionEnum.Undefined; break;
             }
@@ -140,7 +140,6 @@ namespace Bannerlord_Mod_Test
                         CustomAgentInitiator.UpdateStatus("Shame", 1);
                     }
 
-
                     break;
                 case IntentionEnum.Romantic:
                     if (CustomAgentReceiver.SE_Accepted)
@@ -193,7 +192,7 @@ namespace Bannerlord_Mod_Test
                             if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
                             {
                                 //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
-                                TriggerRule triggerRule = new TriggerRule("JealousRomantic", CustomAgentInitiator.Name);
+                                TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name);
                                 customAgent.AddToTriggerRulesList(triggerRule);
                             }
                         }
@@ -212,7 +211,7 @@ namespace Bannerlord_Mod_Test
                             CustomAgentInitiator.UpdateStatus("Anger", -0.3);
                         }
 
-                        if (SEName == "Sabotage")
+                        if (SEName == "FriendSabotage")
                         {
                             //Decreases relation with Initiator
                             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
@@ -228,7 +227,7 @@ namespace Bannerlord_Mod_Test
                             CustomAgentReceiver.UpdateStatus("Courage", -0.2);
                         }
                         
-                        if (SEName == "Sabotage")
+                        if (SEName == "FriendSabotage")
                         {
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));

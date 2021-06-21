@@ -30,9 +30,9 @@ namespace Bannerlord_Mod_Test
                         {//Insult
                             return RunRulesJealous();
                         }
-                        else if (RelationName == "Sabotage")
+                        else if (RelationName == "FriendSabotage")
                         {
-                            return RunRulesSabotage();
+                            return RunRulesFriendSabotage();
                         }
                         else { return 0; }
 
@@ -52,9 +52,9 @@ namespace Bannerlord_Mod_Test
                         {
                             return RunRulesHostile();
                         }
-                        else if (RelationName == "JealousRomantic")
+                        else if (RelationName == "RomanticSabotage")
                         {//Jealous
-                            return RunRulesJealousRomantic();
+                            return RunRulesRomanticSabotage();
                         }
                         else { return 0; }
                     case SocialExchangeSE.IntentionEnum.Special:
@@ -308,7 +308,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
-        private int RunRulesSabotage()
+        private int RunRulesFriendSabotage()
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1; 
@@ -386,7 +386,7 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
         // Go talk with someone if that someone talked with his wife/husband
-        private int RunRulesJealousRomantic()
+        private int RunRulesRomanticSabotage()
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;

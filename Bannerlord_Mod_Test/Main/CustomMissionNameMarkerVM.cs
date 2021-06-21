@@ -142,7 +142,7 @@ namespace Bannerlord_Mod_Test
             maximumSEs = 1;
             /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "Sabotage", "Jealous", "JealousRomantic", "Break" };
+            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "FriendSabotage", "Jealous", "JealousRomantic", "Break" };
 
             SocialExchangeSEList = new List<SocialExchangeSE>();
             foreach (String seName in SocialExchangeListString)
@@ -167,17 +167,8 @@ namespace Bannerlord_Mod_Test
                         if (agent.IsHuman) //to allow all the NPCs
                         {
                             string nameTemp = "";
-                            if (agent.IsHero)
-                            {
-                                nameTemp = agent.Name + id;
-                                //id++;
-                            }
-                            else
-                            {
-                                nameTemp = agent.Name + id;
-                                //id++;
-                            }
-
+                            nameTemp = agent.Name + id;
+                            
                             CustomAgent customAgent = new CustomAgent(agent, StatusListString) { Name = nameTemp };
                             customAgentsList.Add(customAgent);
 
@@ -211,18 +202,18 @@ namespace Bannerlord_Mod_Test
         }
         private void UpdateStatus()
         {
-            foreach (var customAgent in customAgentsList)
+            foreach (CustomAgent customAgent in customAgentsList)
             {
                 customAgent.UpdateStatus("SocialTalk", 0.05);
                 customAgent.UpdateStatus("Courage", -0.05);
                 customAgent.UpdateStatus("Shame", -0.05);
 
                 //if (customAgent.targetAgent != null)
-                if (customAgent.customTargetAgent != null) // se tiver target entao fica cansado
+                if (customAgent.customTargetAgent != null) // if he has a target si it's going to it 
                 {
-                    customAgent.UpdateStatus("Tiredness", 0.1);
+                    customAgent.UpdateStatus("Tiredness", 0.05);
                 }
-                else // senão descansa
+                else // else is resting
                 {
                     customAgent.UpdateStatus("Tiredness", -0.05);
                 }
