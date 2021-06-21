@@ -17,7 +17,9 @@ namespace Bannerlord_Mod_Test
         public Agent selfAgent;
         public Agent targetAgent;
         public CustomAgent customTargetAgent;
-        public string Name { get; set; } // ID
+        public string Name { get; set; } 
+        public int Id { get; set; }
+        public int idTarget { get; set; }
         public string message { get; set; } // Output Message
         public string[] FullMessage { get; set; } // Output Full Message
         public string SocialMove { get; set; }
@@ -42,13 +44,14 @@ namespace Bannerlord_Mod_Test
         public SocialExchangeSE socialExchangeSE { get; set; }
         public SocialExchangeSE.IntentionEnum SEIntention { get; set; }
         private int memorySize = 3;
-        public CustomAgent(Agent agent, List<string> auxStatusList = null)
+        public CustomAgent(Agent agent, int _id, List<string> auxStatusList = null)
         {
             this.selfAgent = agent; // reference to self
+            this.Id = _id;
+            this.idTarget = -1;
             this.Name = "";
             this.message = "";
             this.SocialMove = "";
-            this.targetAgent = null;
             this.customTargetAgent = null;
             this.customAgentsList = new List<CustomAgent>(); // reference to NPCs around 
             this.TraitList = new List<Trait>();
@@ -90,13 +93,12 @@ namespace Bannerlord_Mod_Test
         }
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
-        public void startSE(string _SEName, string _ReceiverName, int _Volition)
+        public void startSE(string _SEName, CustomAgent _Receiver/* string _ReceiverName, int _ReceiverId*/)
         {
-            UpdateTarget(_ReceiverName);
+            UpdateTarget(_Receiver.Name, _Receiver.Id);
             //this.selfAgent.SetLookAgent(targetAgent);
 
             customTargetAgent.busy = true;
-            //GetCustomAgentByName(targetAgent.Name).busy = true;
 
             IsInitiator = true;
             SocialMove = _SEName;
@@ -116,11 +118,10 @@ namespace Bannerlord_Mod_Test
         }
         internal void CheckDistanceBetweenAgentsToSocialExchange(string SEName, CustomAgent customAgent, Random rnd)
         {
-            //if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.targetAgent != null)
             if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.customTargetAgent != null)
             {
-                //if (customAgent.selfAgent.Position.Distance(customAgent.targetAgent.Position) < 3)
                 InformationManager.DisplayMessage(new InformationMessage(customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position).ToString()));
+                
                 if (customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
@@ -266,7 +267,6 @@ namespace Bannerlord_Mod_Test
         {
             IsInitiator = false;
             SocialMove = "";
-            targetAgent = null;
             if (selfAgent != Agent.Main)
             {
                 EndFollowBehavior();
@@ -302,22 +302,23 @@ namespace Bannerlord_Mod_Test
         }
         private float dtControl;
         public string thirdAgent;
+        public int thirdAgentId;
 
-        public CustomAgent GetCustomAgentByName(string name)
+        public CustomAgent GetCustomAgentByName(string name, int _id)
         {
             CustomAgent customAgent = null;
             foreach (CustomAgent item in customAgentsList)
             {
-                if (item.Name == name) { customAgent = item; break; }
+                if (item.Name == name && item.Id == _id) { customAgent = item; break; }
             }
             return customAgent;
         }
-        public void UpdateTarget(string _targetName)
+        public void UpdateTarget(string _targetName, int _id)
         {
             busy = true;
             
             //targetAgent = GetCustomAgentByName(_targetName).selfAgent;
-            customTargetAgent = GetCustomAgentByName(_targetName);
+            customTargetAgent = GetCustomAgentByName(_targetName, _id);
 
             //StartFollowBehavior(selfAgent, targetAgent);
             StartFollowBehavior(selfAgent, customTargetAgent.selfAgent);
@@ -340,14 +341,14 @@ namespace Bannerlord_Mod_Test
         #region /* Add / Update Beliefs  / Get Beliefs */ 
         public void AddBelief(SocialNetworkBelief belief)
         {
-            SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.value));
+            SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.IDs, belief.value));
         }
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
             SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
                 b => b.relationship == belief.relationship
-                && belief.agents.Contains(b.agents[0])
-                && belief.agents.Contains(b.agents[1]));
+                && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
+                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
 
             if (_belief == null)
             {
@@ -399,21 +400,25 @@ namespace Bannerlord_Mod_Test
         //Get Belief from itself with other
         public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
-            return SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name));
+            return 
+                SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name) 
+                                         && b.IDs.Contains(Id) && b.IDs.Contains(_otherCustomAgent.Id));
         }
         //Get Belief between 2 other NPCs
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
         {
             return this.SocialNetworkBeliefs.Find
-                (b => b.agents.Contains(customAgent1.Name)
-                && b.agents.Contains(customAgent2.Name)
+                (b => b.agents.Contains(customAgent1.Name) && b.agents.Contains(customAgent2.Name)
+                && b.IDs.Contains(customAgent1.Id) && b.IDs.Contains(customAgent2.Id)
                 );
         }
         public int CheckHowManyTheAgentIsDating(CustomAgent customAgent)
         {
             return customAgent.SocialNetworkBeliefs.Count(
                 b => b.relationship == "Dating"
-                && b.agents.Contains(customAgent.Name));
+                && b.agents.Contains(customAgent.Name)
+                && b.IDs.Contains(customAgent.Id)
+                );
         }
 
         #endregion

@@ -359,20 +359,25 @@ namespace Bannerlord_Mod_Test
             List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
             if (tempList != null && tempList.Count > 0)
             {
-                // get one randomly to sabotage
                 Random rnd = new Random();
                 int index = rnd.Next(tempList.Count);
-                //get the name of the agent with the negative relation
-                List<string> agentsOnRelation = tempList[index].agents;
+                // get one randomly to sabotage
+                // get the name of the agent with the negative relation
                 // it will skip if the agent will be the same as Initiator
                 // it will catch the other agent who the initiator has the negative relation
+                List<string> agentsOnRelation = tempList[index].agents;
+                //List<int> agentsIdOnRelation = tempList[index].agents;
+
                 if (agentsOnRelation.Contains(Initiator.Name))
                 {
                     foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
                     {
-                        char delimiterChar = ' ';
-                        string[] sentences = agent.Split(delimiterChar);
-                        Initiator.thirdAgent = sentences[0];
+                        //char delimiterChar = ' ';
+                        //string[] sentences = agent.Split(delimiterChar);
+                        //Initiator.thirdAgent = sentences[0];
+
+                        Initiator.thirdAgent = agent;
+                        Initiator.thirdAgentId = index;
 
                         sum += 2;
                     }
@@ -570,13 +575,15 @@ namespace Bannerlord_Mod_Test
                         if (belief == null)
                         {
                             List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
-                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, 0);
+                            List<int> b = new List<int>() { Initiator.Id, Receiver.Id };
+                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, b, 0);
                             Initiator.AddBelief(newBelief);
                         }
 
                         foreach (var _belief in Initiator.SocialNetworkBeliefs)
                         {
-                            if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name))
+                            if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name) 
+                                && _belief.IDs.Contains(Initiator.Id) && _belief.IDs.Contains(Receiver.Id))
                             {
                                 if (_belief.value < _goal.value)
                                 {

@@ -63,40 +63,71 @@ namespace Bannerlord_Mod_Test
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
-            foreach (Agent agent in Mission.Current.Agents)
+
+            CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+            if (agentConversation != null)
             {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+                CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
+                customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                Trait trait = customAgent.TraitList.Find(t => t.traitName == "Weak");
+                if (trait != null)
                 {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    Trait trait = customAgent.TraitList.Find(t => t.traitName == "Weak");
-                    if (trait != null)
-                    {
-                        return true;
-                    }
-                    else { return false; }
+                    return true;
                 }
+                else { return false; }
             }
+
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+            //        Trait trait = customAgent.TraitList.Find(t => t.traitName == "Weak");
+            //        if (trait != null)
+            //        {
+            //            return true;
+            //        }
+            //        else { return false; }
+            //    }
+            //}
             return false;
         }
         private bool talking_with_Charming()
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
-            foreach (Agent agent in Mission.Current.Agents)
+
+            CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+            if (agentConversation != null)
             {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+                CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
+                customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
+                if (trait != null)
                 {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
-                    if (trait != null)
-                    {
-                        return true;
-                    }
-                    else { return false; }
+                    return true;
                 }
+                else { return false; }
             }
+
+            //string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            //string _currentLocation = CampaignMission.Current.Location.StringId;
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+            //        Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
+            //        if (trait != null)
+            //        {
+            //            return true;
+            //        }
+            //        else { return false; }
+            //    }
+            //}
             return false;
         }
 
@@ -261,46 +292,78 @@ namespace Bannerlord_Mod_Test
         }
         private bool NPC_Reject_Dating_condition()
         {
-            foreach (Agent agent in Mission.Current.Agents)
-            {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
-                {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (hasTrait != null || datingHowMany > 0)
-                    {
-                        return false;
-                    }
-                    else 
-                    {
-                        return true;
-                    }
+            CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+            if (agentConversation != null)
+            {
+                CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
+                customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                Trait trait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+                if (trait != null)
+                {
+                    return false;
                 }
+                else { return true; }
             }
+
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+            //        int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+
+            //        if (hasTrait != null || datingHowMany > 0)
+            //        {
+            //            return false;
+            //        }
+            //        else 
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //}
             return true;
         }
         private bool NPC_Accept_Dating_condition()
         {
-            foreach (Agent agent in Mission.Current.Agents)
-            {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
-                {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (hasTrait != null || datingHowMany > 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+            CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+            if (agentConversation != null)
+            {
+                CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
+                customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                Trait trait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+                if (trait != null)
+                {
+                    return true;
                 }
+                else { return false; }
             }
+
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
+            //        int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+
+            //        if (hasTrait != null || datingHowMany > 0)
+            //        {
+            //            return true;
+            //        }
+            //        else
+            //        {
+            //            return false;
+            //        }
+            //    }
+            //}
             return false;
         }
         public bool giveCourage { get; set; }
@@ -333,26 +396,35 @@ namespace Bannerlord_Mod_Test
         /// //////////////////////////////////
         /// </summary>
         /// <returns></returns>
+        public List<CustomAgent> customAgents;
         private bool CheckIfIsDatingWithNPC_condition()
         {
-            foreach (Agent agent in Mission.Current.Agents)
-            {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
-                {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-                    int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
+            //Agent agent1 = null;
 
-                    if (hasTrait != null || datingHowMany > 0)
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
+            var agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+            if (agentConversation != null)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("-"));
             }
+
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+            //        agent1 = agent;
+            //        break;
+            //    }
+            //}
+
+            //CustomAgent agent2 = customAgents.Find(c => c.selfAgent == agent1);
+            ////CustomAgent customAgent = new CustomAgent(agent1) { Name = agent1.Name };
+
+            //CustomAgent customMainAgent = new CustomAgent(Agent.Main) { Name = Agent.Main.Name + "0" };
+            //customMainAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+            //customMainAgent.SelfGetBeliefWithAgent(customAgent);
+
             return true;
         }
         /// <summary>
@@ -462,29 +534,29 @@ namespace Bannerlord_Mod_Test
         }
         private void Conversation_with_lord3()
         {
-            string a = "";
-            foreach (Agent agent in Mission.Current.Agents)
-            {
-                if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
-                {
-                    a = agent.Name;
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    //customAgent.SetUpdateEmotion("happiness", 0.1);
-                    //customAgent.AddGoal("insult", "Anbard the Brave");
-                    customAgent.UpdateTarget("Anbard the Brave");
-                    break;
-                }
-            }
+            //string a = "";
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
+            //    {
+            //        a = agent.Name;
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        //customAgent.SetUpdateEmotion("happiness", 0.1);
+            //        //customAgent.AddGoal("insult", "Anbard the Brave");
+            //        customAgent.UpdateTarget("Anbard the Brave");
+            //        break;
+            //    }
+            //}
 
-            foreach (Agent agent in Mission.Current.Agents)
-            {
-                if (agent.Name == "Anbard the Brave")
-                {
-                    CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-                    customAgent.UpdateTarget(a);
-                }
-                break;
-            }
+            //foreach (Agent agent in Mission.Current.Agents)
+            //{
+            //    if (agent.Name == "Anbard the Brave")
+            //    {
+            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
+            //        customAgent.UpdateTarget(a);
+            //    }
+            //    break;
+            //}
         }
 
         private bool Conversation1()

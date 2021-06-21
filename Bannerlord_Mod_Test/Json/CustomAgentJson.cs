@@ -6,9 +6,10 @@ namespace Bannerlord_Mod_Test
 {
     public class CustomAgentJson
     {
-        public CustomAgentJson(string name, List<Trait> traitList)
+        public CustomAgentJson(string name, int id, List<Trait> traitList)
         {
             Name = name;
+            Id = id;
             TraitList = traitList;
             GoalsList = new List<Goal>();
             SocialNetworkBeliefs = new List<SocialNetworkBelief>();
@@ -19,6 +20,8 @@ namespace Bannerlord_Mod_Test
 
         [JsonProperty("Name")]
         public string Name { get; set; }
+        [JsonProperty("Id")]
+        public int Id { get; set; }
         [JsonProperty("TraitsList")]
         public List<Trait> TraitList { get; set; }
         [JsonProperty("GoalsList")]

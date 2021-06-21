@@ -8,12 +8,17 @@ namespace Bannerlord_Mod_Test
 {
     public class mostWantedSE
     {
-        public mostWantedSE(string _customAgentName, NextSE _nextSE)
+        //public mostWantedSE(string _customAgentName, int _customId, NextSE _nextSE)
+        public mostWantedSE(CustomAgent _customAgent, NextSE _nextSE)
         {
-            CustomAgentName = _customAgentName;
+            customAgent = _customAgent;
+            //CustomAgentName = _customAgentName;
+            //CustomAgentID = _customId;
             nextSE = _nextSE;
         }
         public string CustomAgentName;
+        public CustomAgent customAgent;
+        public int CustomAgentID;
         public NextSE nextSE;
     }
 }

@@ -95,8 +95,8 @@ namespace Bannerlord_Mod_Test
         {
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
-            CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.Name, SEName));
-            CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.Name, SEName));
+            CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.Name, CustomAgentReceiver.Id, SEName));
+            CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.Name, CustomAgentInitiator.Id, SEName));
 
             ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
@@ -114,7 +114,6 @@ namespace Bannerlord_Mod_Test
             customAgent.busy = false;
             customAgent.message = "";
             customAgent.cooldown = true;
-            customAgent.targetAgent = null;
             customAgent.customTargetAgent = null;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
@@ -192,7 +191,7 @@ namespace Bannerlord_Mod_Test
                             if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
                             {
                                 //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
-                                TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name);
+                                TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name, CustomAgentInitiator.Id);
                                 customAgent.AddToTriggerRulesList(triggerRule);
                             }
                         }
@@ -231,7 +230,7 @@ namespace Bannerlord_Mod_Test
                         {
                             //Decreases relation dating
                             InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
-                            CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent);
+                            CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
                             SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
 
                             CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
@@ -287,7 +286,9 @@ namespace Bannerlord_Mod_Test
             if (belief == null)
             {
                 List<string> agents = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
-                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _value);
+                List<int> _ids = new List<int>() { CustomAgentInitiator.Id, CustomAgentReceiver.Id };
+
+                SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _ids, _value);
 
                 CustomAgentInitiator.AddBelief(newBelief);
                 CustomAgentReceiver.AddBelief(newBelief);
@@ -309,8 +310,7 @@ namespace Bannerlord_Mod_Test
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
                     SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => 
-                    b.agents.Contains(CustomAgentInitiator.Name)
-                    && b.agents.Contains(CustomAgentReceiver.Name));
+                    b.agents.Contains(CustomAgentInitiator.Name) && b.agents.Contains(CustomAgentReceiver.Name));
 
                     if (belief == null)
                     {

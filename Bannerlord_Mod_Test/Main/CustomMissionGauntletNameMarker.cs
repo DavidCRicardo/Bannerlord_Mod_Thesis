@@ -25,6 +25,7 @@ namespace Bannerlord_Mod_Test
             base.MissionScreen.AddLayer(this._gauntletLayer);
             CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
         }
+        private bool _firstTick = true;
         public override void OnMissionScreenTick(float dt)
         {
             base.OnMissionScreenTick(dt);
@@ -34,6 +35,12 @@ namespace Bannerlord_Mod_Test
                 _dataSource.Tick(dt);
 
                 _dataSource.EnableDataSource(_dataSource);
+
+                if (_firstTick)
+                {
+                    CBB_ref.customAgents = _dataSource.customAgentsList;
+                    _firstTick = false;
+                }
 
                 CheckIntentionFromNPCToPlayer(dt);
 

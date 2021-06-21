@@ -187,16 +187,17 @@ namespace Bannerlord_Mod_Test
             if (id != -1)
             {
                 //juntar as 2 strings
-                this.Name = agent.Name.ToString() + id.ToString();
+                //this.Name = agent.Name.ToString() + id.ToString();
             }
             else
             {
-                this.Name = agent.Name.ToString();
+                //this.Name = agent.Name.ToString();
             }
+            this.id = id;
             this.Text = "";
             this.IsMovingTarget = true; //1;
             this.TargetAgent = agent;
-            //this.Name = agent.Name.ToString();
+            this.Name = agent.Name.ToString();
             this.MarkerType = 1;
             this.QuestMarkerType = 0;
             this.IssueMarkerType = 0;
@@ -474,6 +475,7 @@ namespace Bannerlord_Mod_Test
         private bool _isAgentInPrison;
         private bool _isQuestMainStory;
         private string _text;
+        public int id;
 
         public enum EntitiyType
         {
