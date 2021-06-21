@@ -15,7 +15,6 @@ namespace Bannerlord_Mod_Test
         }
         [JsonProperty("traitName")]
         public string traitName { get; set; }
-
         
         private bool decreaseCountdown;
         private bool increaseCountdown;

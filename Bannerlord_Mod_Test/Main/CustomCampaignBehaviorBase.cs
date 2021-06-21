@@ -146,7 +146,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             //TavernMaid
-            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfIsDatingWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             //Child
             campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
@@ -195,7 +195,7 @@ namespace Bannerlord_Mod_Test
             //Romantic
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfIsDatingWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
-            campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Reject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
+            campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
             /* NPC Friendly Interactions With Player */  //Working
             campaignGameStarter.AddDialogLine("1", "start", "Friendly_start", "Hi Friend... If you need something just tell me, maybe I can help you.[ib:closed][if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Friendly), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
@@ -301,7 +301,10 @@ namespace Bannerlord_Mod_Test
                 CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
                 customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                 Trait trait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-                if (trait != null)
+                
+                int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+
+                if (trait != null || datingHowMany > 0)
                 {
                     return false;
                 }
@@ -339,11 +342,15 @@ namespace Bannerlord_Mod_Test
                 CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id) { Name = agentConversation.Name };
                 customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                 Trait trait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-                if (trait != null)
+                Trait trait2 = customAgent.TraitList.Find(t => t.traitName == "Charming");
+                
+                int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
+                
+                if (trait == null || trait2 == null || datingHowMany > 0)
                 {
-                    return true;
+                    return false;
                 }
-                else { return false; }
+                else { return true; }
             }
 
             //foreach (Agent agent in Mission.Current.Agents)

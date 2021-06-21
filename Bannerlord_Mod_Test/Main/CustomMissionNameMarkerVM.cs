@@ -42,6 +42,7 @@ namespace Bannerlord_Mod_Test
         private CustomAgent auxInitiatorAgent;
         private CustomAgent auxReceiverAgent;
         private Random rnd { get; set; }
+
         public void Tick(float dt)
         {
             if (Hero.MainHero.CurrentSettlement != null)
