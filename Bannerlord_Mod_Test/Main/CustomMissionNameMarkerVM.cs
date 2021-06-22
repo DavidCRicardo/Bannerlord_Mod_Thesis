@@ -138,18 +138,9 @@ namespace Bannerlord_Mod_Test
         }
         private void Initialize(bool giveTraitsToNPCs)
         {
-            onGoingSEs = 0;
-            maximumSEs = _currentLocation == "center" ? 3 : 2;
+            InitializeSocialExchanges();
 
-            /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-            SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "FriendSabotage", "Jealous", "JealousRomantic", "Break" };
-
-            SocialExchangeSEList = new List<SocialExchangeSE>();
-            foreach (String seName in SocialExchangeListString)
-            {
-                SocialExchangeSEList.Add(new SocialExchangeSE(seName, null, null));
-            }
 
             if (Mission.Current.MainAgent != null)
             {
@@ -161,11 +152,13 @@ namespace Bannerlord_Mod_Test
 
                     /* Reference to CustomAgent */
                     customAgentsList = new List<CustomAgent>();
+
                     int id = -1;
                     Agent previousAgent = null;
+
                     foreach (Agent agent in Mission.Current.Agents)
                     {
-                        if (agent.IsHuman) //to allow all the NPCs
+                        if (agent.IsHuman && agent.Character != null) //to allow all the NPCs
                         {
                             if (previousAgent == null || agent.Character != previousAgent.Character)
                             {
@@ -190,7 +183,7 @@ namespace Bannerlord_Mod_Test
 
                     LoadAllInfoFromJSON();
 
-                    // Increase & Decrease customAgent countdown depending of the traits
+                    // Set CustomAgent countdown depending of the traits
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
@@ -204,6 +197,18 @@ namespace Bannerlord_Mod_Test
             }
         }
 
+        private void InitializeSocialExchanges()
+        {
+            onGoingSEs = 0;
+            maximumSEs = _currentLocation == "center" ? 4 : 2;
+
+            SocialExchangeListString = new List<string>() { "Compliment", "Jealous", "AskOut", "Flirt", "Bully", "FriendSabotage", "JealousRomantic", "Break" };
+            SocialExchangeSEList = new List<SocialExchangeSE>();
+            foreach (String seName in SocialExchangeListString)
+            {
+                SocialExchangeSEList.Add(new SocialExchangeSE(seName, null, null));
+            }
+        }
 
         private void UpdateStatus()
         {
@@ -330,7 +335,7 @@ namespace Bannerlord_Mod_Test
             customAgent.EnoughRest = customAgent.StatusList.Find(s => s.statusName == "Tiredness").intensity <= 0.5;
             return customAgent.EnoughRest;
         }
-        internal void OnConversationEnd2()
+        public void OnConversationEndWithPlayer()
         {
             CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()) && c.IsInitiator && c.busy);
             if (customAgent != null)
@@ -666,7 +671,7 @@ namespace Bannerlord_Mod_Test
         }
         private void UpdateTargetScreen()
         {
-            if (this.IsEnabled)
+            if (!this.IsEnabled)
             {
                 this.UpdateTargetScreenPositions();
             }
@@ -704,7 +709,8 @@ namespace Bannerlord_Mod_Test
         {
             foreach (CustomMissionNameMarkerTargetVM item in _dataSource.Targets)
             {
-                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.id);
+                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.Id);
+
                 if (customAgent != null)
                 {
                     if (customAgent.message != "")
@@ -716,7 +722,7 @@ namespace Bannerlord_Mod_Test
                     {
                         item.IsEnabled = false;
                     }
-                }    
+                }
             }            
         }
 

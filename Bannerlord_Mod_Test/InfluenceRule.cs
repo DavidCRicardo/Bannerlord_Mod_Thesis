@@ -14,7 +14,7 @@ namespace Bannerlord_Mod_Test
             InitialValue = initialValue;
             IsReacting = reacting;
         }
-        public int SRunRules() // (IsReacting || !IsReacting)
+        public int SRunRules()
         {
             var Dictionary = GetDictionaryToCheckTraitsValues(RelationType);
 
@@ -38,8 +38,8 @@ namespace Bannerlord_Mod_Test
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false);
                         case "AskOut": return RunRules(Dictionary, true, false, true, false, false);
+                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false);
                         default: return 0;
                     }
 
@@ -64,7 +64,7 @@ namespace Bannerlord_Mod_Test
         }
 
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary,
-             bool FriendsOrNullRelationBool, bool DatingRelationBool, bool CheckRomanticRuleBool,
+             bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool)
         {
             int sum = 0;
@@ -99,17 +99,17 @@ namespace Bannerlord_Mod_Test
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
 
-            if (FriendsOrNullRelationBool)
+            if (DecreaseIfDatingBool)
             {
-                sum += CheckFriendsOrNullRelation(sum);
+                sum += DecreaseIfDating(sum);
             }
-            if (DatingRelationBool)
+            if (DecreaseIfNotDatingBool)
             {
-                sum += CheckDatingRelation(sum);
+                sum += DecreaseIfNotDating(sum);
             }
-            if (CheckRomanticRuleBool)
+            if (MustHaveDifferentGenderBool)
             {
-                sum += CheckRomanticRule(sum);
+                sum += MustHaveDifferentGender(sum);
             }
             if (GetNPCToSabotageBool)
             {
@@ -123,7 +123,8 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
 
-        private int CheckFriendsOrNullRelation(int sum)
+        // -100 if Dating
+        private int DecreaseIfDating(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
 
@@ -134,7 +135,8 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
-        private int CheckDatingRelation(int sum)
+        // it must be dating
+        private int DecreaseIfNotDating(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
             if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
@@ -144,7 +146,8 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
-        private int CheckRomanticRule(int sum)
+        // different genders
+        private int MustHaveDifferentGender(int sum)
         {
             if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
                  ||
@@ -155,6 +158,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+        // must have someone to sabotage
         private int GetNPCToSabotage(int sum)
         {
             List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
@@ -183,6 +187,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+        // must have belief = Dating && value < 1
         private int BreakUpRule(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);

@@ -32,7 +32,7 @@ namespace Bannerlord_Mod_Test
 
         public CustomMissionNameMarkerTargetVM(Agent agent, int id = -1)
         {
-            this.id = id;
+            this.Id = id;
             this.Message = "";
             this.TargetAgent = agent;
             this.Name = agent.Name.ToString();
@@ -138,6 +138,6 @@ namespace Bannerlord_Mod_Test
 
         public string Name { get; set; }
         private string _message;
-        public int id;
+        public int Id;
     }
 }

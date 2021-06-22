@@ -97,7 +97,7 @@ namespace Bannerlord_Mod_Test
             if (_dataSource != null)
             {
                 CheckIfThereIsAnyChange(characterObject);
-                _dataSource.OnConversationEnd2();
+                _dataSource.OnConversationEndWithPlayer();
             }
 
             if (_dataSource != null && CBB_ref.AskWhatsGoinOn)
