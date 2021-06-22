@@ -386,7 +386,7 @@ namespace Bannerlord_Mod_Test
         {
             string relation = GetRelationType(IR);
 
-            IR.InitialValue = IR.CheckGoals(relation);
+            //IR.InitialValue = IR.CheckGoals(relation);
 
             IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.RelationName) : 0;
 

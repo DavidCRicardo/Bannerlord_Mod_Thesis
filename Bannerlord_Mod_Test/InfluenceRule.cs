@@ -24,7 +24,7 @@ namespace Bannerlord_Mod_Test
                 case SocialExchangeSE.IntentionEnum.Positive:
                     if (RelationName == "Compliment")
                     {
-                        return RunRules(Dictionary, false, true, false, false, false);
+                        return RunRules(Dictionary, true, false, false, false, false);
                         //return RunRulesCompliment();
                     }
                     else { return 0; }
@@ -32,12 +32,12 @@ namespace Bannerlord_Mod_Test
                 case SocialExchangeSE.IntentionEnum.Negative:
                     if (RelationName == "Jealous")
                     {//Insult
-                        return RunRules(Dictionary, false, true, false, false, false);
+                        return RunRules(Dictionary, true, false, false, false, false);
                         //return RunRulesJealous();
                     }
                     else if (RelationName == "FriendSabotage")
                     {
-                        return RunRules(Dictionary, false, true, false, true, false);
+                        return RunRules(Dictionary, true, false, false, true, false);
                         //return RunRulesFriendSabotage();
                     }
                     else { return 0; }
@@ -45,12 +45,12 @@ namespace Bannerlord_Mod_Test
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     if (RelationName == "Flirt")
                     {
-                        return RunRules(Dictionary, true, false, true, false, false);
+                        return RunRules(Dictionary, false, true, true, false, false);
                         //return RunRulesFlirt();
                     }
                     else if (RelationName == "AskOut")
                     {
-                        return RunRules(Dictionary, true, true, false, false, false);
+                        return RunRules(Dictionary, true, false, true, false, false);
                         //return RunRulesAskOut();
                     }
                     else { return 0; }
@@ -63,14 +63,14 @@ namespace Bannerlord_Mod_Test
                     }
                     else if (RelationName == "RomanticSabotage")
                     {//Jealous
-                        return RunRules(Dictionary, true, true, false, false, false);
+                        return RunRules(Dictionary, false, false, false, false, false);
                         //return RunRulesRomanticSabotage();
                     }
                     else { return 0; }
                 case SocialExchangeSE.IntentionEnum.Special:
                     if (RelationName == "Break")
                     {
-                        return RunRules(Dictionary, true, false, true, false, true);
+                        return RunRules(Dictionary, true, false, false, false, true);
                         //return RunRulesBreakUp();
                     }
                     else { return 0; }
@@ -247,27 +247,11 @@ namespace Bannerlord_Mod_Test
             /* End Check Status */
 
 
-            if (InitialValue >= 5)
-            {
-                if (InitialValue >= 5 && InitialValue < 8)
-                {
-                    sum += 1;
-                }
-                else
-                {
-                    sum += 2;
-                }
-            }
-            else
-            {
-                sum += 0;
-            }
-
             sum += CheckRomanticRule(sum);
 
             #region Check Condition to AskOut
             //If dating already with the receiver, so decrease drastically the sum to not AskOut again
-            sum += DatingRelationMustExist(sum);
+            sum += FriendsRelationMustExist(sum);
             #endregion
 
             return sum;
@@ -570,8 +554,8 @@ namespace Bannerlord_Mod_Test
        
 
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, 
-            bool CheckRomanticRuleBool, bool FriendsRelationMustExistBool, 
-            bool DatingRelationMustExistBool, bool SabotageFriendNPCBool, bool BreakUpRuleBool)
+             bool FriendsRelationMustExistBool, bool DatingRelationMustExistBool, bool CheckRomanticRuleBool, 
+             bool GetNPCToSabotageBool, bool BreakUpRuleBool)
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
@@ -604,11 +588,7 @@ namespace Bannerlord_Mod_Test
             }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            if (CheckRomanticRuleBool)
-            {
-                sum += CheckRomanticRule(sum);
-            }
+            
             if (FriendsRelationMustExistBool)
             {
                 sum += FriendsRelationMustExist(sum);
@@ -617,9 +597,13 @@ namespace Bannerlord_Mod_Test
             {
                 sum += DatingRelationMustExist(sum);
             }
-            if (SabotageFriendNPCBool)
+            if (CheckRomanticRuleBool)
             {
-                sum += SabotageFriendNPC(sum);
+                sum += CheckRomanticRule(sum);
+            }
+            if (GetNPCToSabotageBool)
+            {
+                sum += GetNPCToSabotage(sum);
             }
             if (BreakUpRuleBool)
             {
@@ -639,7 +623,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
-        private int SabotageFriendNPC(int sum)
+        private int GetNPCToSabotage(int sum)
         {
             List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
             if (tempList != null && tempList.Count > 0)
