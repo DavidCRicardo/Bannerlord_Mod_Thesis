@@ -38,6 +38,7 @@ namespace Bannerlord_Mod_Test
 
                 if (_firstTick)
                 {
+                    _dataSource.IsEnabled = true;
                     CBB_ref.customAgents = _dataSource.customAgentsList;
                     _firstTick = false;
                 }
@@ -127,12 +128,6 @@ namespace Bannerlord_Mod_Test
         }
         private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value , Agent agent = null)
         {
-            //CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
-
-            //CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name == Agent.Main.Name);
-            //MainCustomAgent.targetAgent = customAgent.selfAgent;
-            //MainCustomAgent.targetAgent = customAgent.selfAgent;
-            
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(characterObject.Name.ToString()) && agent == Agent.Main);
             CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(Agent.Main.Name));
             MainCustomAgent.customTargetAgent = customAgent;

@@ -49,7 +49,7 @@ namespace Bannerlord_Mod_Test
             this.selfAgent = agent; // reference to self
             this.Id = _id;
             this.idTarget = -1;
-            this.Name = "";
+            this.Name = agent.Name;
             this.message = "";
             this.SocialMove = "";
             this.customTargetAgent = null;
@@ -93,7 +93,7 @@ namespace Bannerlord_Mod_Test
         }
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
-        public void startSE(string _SEName, CustomAgent _Receiver/* string _ReceiverName, int _ReceiverId*/)
+        public void startSE(string _SEName, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
             //this.selfAgent.SetLookAgent(targetAgent);
@@ -216,7 +216,6 @@ namespace Bannerlord_Mod_Test
                 SocialNetworkBelief localBelief = _belief;
                 LoadDataFromJsonToAgent(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
 
-                //SocialNetworkBelief belief = SelfGetBeliefWithAgent(_belief.relationship, _customAgent);
                 UpdateBeliefWithNewValue(localBelief, localBelief.value);
                 SaveDataFromAgentToJson(Hero.MainHero.CurrentSettlement.Name.ToString(), CampaignMission.Current.Location.StringId);
             }
@@ -317,10 +316,8 @@ namespace Bannerlord_Mod_Test
         {
             busy = true;
             
-            //targetAgent = GetCustomAgentByName(_targetName).selfAgent;
             customTargetAgent = GetCustomAgentByName(_targetName, _id);
 
-            //StartFollowBehavior(selfAgent, targetAgent);
             StartFollowBehavior(selfAgent, customTargetAgent.selfAgent);
         }
         public void StartFollowBehavior(Agent _agent, Agent _agentTarget)
@@ -382,14 +379,7 @@ namespace Bannerlord_Mod_Test
                 AddBelief(belief);
             }
 
-            //Get Belief Index
-            //int tempBeliefIndex = SocialNetworkBeliefs.IndexOf(belief);
-
-            //Change RelationName
             _belief.relationship = _newRelation;
-
-            //Add the new belief on the same index to overrride 
-            //SocialNetworkBeliefs.Insert(tempBeliefIndex, belief);
         }
         public List<SocialNetworkBelief> SelfGetNegativeRelations(string _relation = "")
         {
@@ -486,27 +476,5 @@ namespace Bannerlord_Mod_Test
         {
             TriggerRuleList.Add(triggerRule);
         }
-        //public void RunTriggerRules()
-        //{
-        //    foreach (TriggerRule TRule in TriggerRuleList)
-        //    {
-        //        CheckRule(TRule);
-        //        break;
-        //    }
-        //}
-        //private void CheckRule(TriggerRule TRule)
-        //{
-        //    foreach (SocialNetworkBelief belief in SocialNetworkBeliefs)
-        //    {
-        //        if (belief.relationship == TRule.RelationshipName
-        //            && TRule.NPCsOnRule == belief.agents
-        //            && TRule.Value <= belief.value)
-        //        {
-        //            InformationManager.DisplayMessage(new InformationMessage("."));
-
-        //            break;
-        //        }
-        //    }
-        //}
     }
 }

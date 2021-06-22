@@ -34,13 +34,12 @@ namespace Bannerlord_Mod_Test
         private string _currentSettlement { get; set; }
         private string _currentLocation { get; set; } // tavern, center, prison, lordshall
         private NextSE nextSE { get; set; }
-        private int auxVolition;
+
         private string auxSEName;
-        private string auxInitiatorName;
-        private string auxReceiverName;
-        private int auxReceiverId;
         private CustomAgent auxInitiatorAgent;
         private CustomAgent auxReceiverAgent;
+        private int auxVolition;
+
         private Random rnd { get; set; }
 
         public void Tick(float dt)
@@ -96,11 +95,9 @@ namespace Bannerlord_Mod_Test
                     if (_firstTick2)
                     {
                         _firstTick2 = false;
-
-                        //
                     }
                 }
-                UpdateTargetScreen(dt);
+                UpdateTargetScreen();
             }
         }
 
@@ -142,16 +139,8 @@ namespace Bannerlord_Mod_Test
         private void Initialize(bool giveTraitsToNPCs)
         {
             onGoingSEs = 0;
+            maximumSEs = _currentLocation == "center" ? 3 : 2;
 
-            if (_currentLocation == "center")
-            {
-                maximumSEs = 1;
-            }
-            else
-            {
-                maximumSEs = 1;
-            }
-            
             /* Initialize the Social Exchanges */
             StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
             SocialExchangeListString = new List<string>() { "Compliment", "AskOut", "Flirt", "Bully", "FriendSabotage", "Jealous", "JealousRomantic", "Break" };
@@ -167,7 +156,6 @@ namespace Bannerlord_Mod_Test
                 if (customAgentsList == null)
                 {
                     /* Reference to Next SE & Most Wanted SE */
-                    //nextSE = new NextSE("", "", "", 0, 0);
                     nextSE = new NextSE("", null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
 
@@ -179,15 +167,15 @@ namespace Bannerlord_Mod_Test
                     {
                         if (agent.IsHuman) //to allow all the NPCs
                         {
-                            if (previousAgent != null && agent.Character == previousAgent.Character)
-                            {
-                                id++;
-                            }
-                            else
+                            if (previousAgent == null || agent.Character != previousAgent.Character)
                             {
                                 id = 0;
                             }
-                            
+                            else
+                            {
+                                id++;
+                            }
+
                             CreateCustomAgent(id, agent);
 
                             previousAgent = agent;
@@ -225,8 +213,7 @@ namespace Bannerlord_Mod_Test
                 customAgent.UpdateStatus("Courage", -0.05);
                 customAgent.UpdateStatus("Shame", -0.05);
 
-                //if (customAgent.targetAgent != null)
-                if (customAgent.customTargetAgent != null) // if he has a target si it's going to it 
+                if (customAgent.customTargetAgent != null) // if he has a target and it's going to it 
                 {
                     customAgent.UpdateStatus("Tiredness", 0.05);
                 }
@@ -242,20 +229,15 @@ namespace Bannerlord_Mod_Test
             foreach (var k in mostWantedSEList)
             {
                 k.nextSE.SEName = "";
-                //k.nextSE.InitiatorName = "";
-                //k.nextSE.ReceiverName = "";
-                //k.nextSE.ReceiverId = 0;
                 k.nextSE.InitiatorAgent = null;
                 k.nextSE.ReceiverAgent = null;
                 k.nextSE.Volition = 0;
             }
             nextSE.SEName = "";
-            //nextSE.InitiatorName = "";
-            //nextSE.ReceiverName = "";
-            //nextSE.ReceiverId = 0;
             nextSE.Volition = 0;
             nextSE.InitiatorAgent = null;
             nextSE.ReceiverAgent = null;
+
             /* Each NPC will check the environment */
             foreach (var c1 in customAgentsList)
             {
@@ -266,9 +248,6 @@ namespace Bannerlord_Mod_Test
 
                 auxVolition = 0;
                 auxSEName = "";
-                //auxInitiatorName = "";
-                //auxReceiverName = "";
-                //auxReceiverId = 0;
                 auxInitiatorAgent = null;
                 auxReceiverAgent = null;
 
@@ -289,8 +268,6 @@ namespace Bannerlord_Mod_Test
                             auxSEName = se.SEName;
                             auxInitiatorAgent = se.CustomAgentInitiator;
                             auxReceiverAgent = se.CustomAgentReceiver;
-                            //auxInitiatorName = se.CustomAgentInitiator.Name;
-                            //auxReceiverName = se.CustomAgentReceiver.Name;
                         }
                     }
                 }
@@ -299,9 +276,6 @@ namespace Bannerlord_Mod_Test
                 if (auxVolition > mostWanted.nextSE.Volition)
                 {
                     mostWanted.nextSE.SEName = auxSEName;
-                    //mostWanted.nextSE.InitiatorName = auxInitiatorName;
-                    //mostWanted.nextSE.ReceiverName = auxReceiverName;
-                    //mostWanted.nextSE.ReceiverId = auxReceiverId;
                     mostWanted.nextSE.InitiatorAgent = auxInitiatorAgent;
                     mostWanted.nextSE.ReceiverAgent = auxReceiverAgent;
                     mostWanted.nextSE.Volition = auxVolition;
@@ -316,17 +290,13 @@ namespace Bannerlord_Mod_Test
                     nextSE.SEName = k.nextSE.SEName;
                     nextSE.InitiatorAgent = k.nextSE.InitiatorAgent;
                     nextSE.ReceiverAgent = k.nextSE.ReceiverAgent;
-                    //nextSE.InitiatorName = k.nextSE.InitiatorName;
-                    //nextSE.ReceiverName = k.nextSE.ReceiverName;
-                    //nextSE.ReceiverId = k.nextSE.ReceiverId;
                     nextSE.Volition = k.nextSE.Volition;
                 }
             }
 
             if (nextSE.Volition > 0)
             {
-                /*Get Custom Agent | Get NPC*/
-                //GetCustomAgent(nextSE.InitiatorName).startSE(nextSE.SEName, nextSE.ReceiverName, nextSE.ReceiverId);
+                /* Get NPC & Start SE */
                 nextSE.InitiatorAgent.startSE(nextSE.SEName, nextSE.ReceiverAgent);
                 onGoingSEs++;
             }
@@ -355,10 +325,6 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        private CustomAgent GetCustomAgent(string _name)
-        {
-            return customAgentsList.Find(a => a.Name == _name);
-        }
         private static bool CustomAgentHasEnoughRest(CustomAgent customAgent)
         {
             customAgent.EnoughRest = customAgent.StatusList.Find(s => s.statusName == "Tiredness").intensity <= 0.5;
@@ -366,11 +332,9 @@ namespace Bannerlord_Mod_Test
         }
         internal void OnConversationEnd2()
         {
-            //CustomAgent customAgent = customAgentsList.Find(c => c.Name == CharacterObject.OneToOneConversationCharacter.Name.ToString());
             CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()) && c.IsInitiator && c.busy);
             if (customAgent != null)
             {
-                //if (customAgent.targetAgent == Agent.Main)
                 if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name.Contains(Agent.Main.Name))
                 {
                     intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
@@ -386,14 +350,9 @@ namespace Bannerlord_Mod_Test
         }
         private void GiveRandomEnergyToAgents()
         {
-            //Random rnd = new Random();
-            foreach (var customAgent in customAgentsList)
+            foreach (CustomAgent customAgent in customAgentsList)
             {
-                //Status status = customAgent.StatusList.Find(s => s.statusName == "Tiredness");
-                if (customAgent.selfAgent.IsHero)
-                {
-                    customAgent.UpdateStatus("Tiredness", rnd.NextDouble());
-                }
+                customAgent.UpdateStatus("Tiredness", rnd.NextDouble());
             }
         }
         private void GiveRandomTraitsToAgents()
@@ -498,10 +457,9 @@ namespace Bannerlord_Mod_Test
         }
         private void CreateCustomAgent(int id, Agent agent)
         {
-            CustomAgent customAgent = new CustomAgent(agent, id, StatusListString) { Name = agent.Name };
+            CustomAgent customAgent = new CustomAgent(agent, id, StatusListString);
             customAgentsList.Add(customAgent);
 
-            //mostWantedSE sE = new mostWantedSE(customAgent.Name, customAgent.Id, new NextSE("", "", "", 0, 0));
             mostWantedSE sE = new mostWantedSE(customAgent, new NextSE("", null, null, 0));
             mostWantedSEList.Add(sE);
 
@@ -547,7 +505,6 @@ namespace Bannerlord_Mod_Test
             {
                 if (_settlement.Name == _currentSettlement && _settlement.LocationWithId == _currentLocation)
                 {
-                    // Check if there is any companion/NPC new to add to the file
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
@@ -559,11 +516,6 @@ namespace Bannerlord_Mod_Test
                             customAgent.ItemList = _customAgentJson.ItemsList;
                             customAgent.MemorySEs = _customAgentJson.MemoriesList;
                             customAgent.TriggerRuleList = _customAgentJson.TriggerRulesList;
-
-                            foreach (Trait trait in customAgent.TraitList)
-                            {
-                                trait.SetCountdownToIncreaseDecrease(trait.traitName);
-                            }
                         }
                         else
                         {
@@ -572,6 +524,11 @@ namespace Bannerlord_Mod_Test
                             _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList));
 
                             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                        }
+
+                        foreach (Trait trait in customAgent.TraitList)
+                        {
+                            trait.SetCountdownToIncreaseDecrease(trait.traitName);
                         }
                     }
                     break;
@@ -699,67 +656,25 @@ namespace Bannerlord_Mod_Test
         {
             if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent))
             {
-                if (agent.IsHuman/* agent.Character.IsHero*/)
+                if (agent.IsHuman)
                 {
                     CustomMissionNameMarkerTargetVM item = new CustomMissionNameMarkerTargetVM(agent, id);
                     this.Targets.Add(item);
                     return;
                 }
-                Settlement currentSettlement = Settlement.CurrentSettlement;
-                bool flag;
-                if (currentSettlement == null)
-                {
-                    flag = false;
-                }
-                else
-                {
-                    LocationCharacter locationCharacter = currentSettlement.LocationComplex.FindCharacter(agent);
-                    bool? flag2 = (locationCharacter != null) ? new bool?(locationCharacter.IsVisualTracked) : null;
-                    bool flag3 = true;
-                    flag = (flag2.GetValueOrDefault() == flag3 & flag2 != null);
-                }
-                if (flag)
-                {
-                    CustomMissionNameMarkerTargetVM item2 = new CustomMissionNameMarkerTargetVM(agent);
-                    this.Targets.Add(item2);
-                }
             }
         }
-        private void UpdateTargetScreen(float dt)
+        private void UpdateTargetScreen()
         {
             if (this.IsEnabled)
             {
                 this.UpdateTargetScreenPositions();
-                this._fadeOutTimerStarted = false;
-                this._fadeOutTimer = 0f;
-                this._prevEnabledState = this.IsEnabled;
             }
-            else
-            {
-                if (this._prevEnabledState)
-                {
-                    this._fadeOutTimerStarted = true;
-                }
-                if (this._fadeOutTimerStarted)
-                {
-                    this._fadeOutTimer += dt;
-                }
-                if (this._fadeOutTimer < 2f)
-                {
-                    this.UpdateTargetScreenPositions();
-                }
-                else
-                {
-                    this._fadeOutTimerStarted = false;
-                }
-            }
-            this._prevEnabledState = this.IsEnabled;
         }
         private void UpdateTargetScreenPositions()
         {
             foreach (CustomMissionNameMarkerTargetVM missionNameMarkerTargetVM in this.Targets)
             {
-                //missionNameMarkerTargetVM.IsEnabled = true;
                 float a = -100f;
                 float b = -100f;
                 float num = 0f;
@@ -789,14 +704,12 @@ namespace Bannerlord_Mod_Test
         {
             foreach (CustomMissionNameMarkerTargetVM item in _dataSource.Targets)
             {
-                //code here
-
                 CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.id);
                 if (customAgent != null)
                 {
                     if (customAgent.message != "")
                     {
-                        item.Text = customAgent.message;
+                        item.Message = customAgent.message;
                         item.IsEnabled = true;
                     }
                     else
@@ -840,23 +753,14 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        internal Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> MegaDictionary { get; private set; }
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> MegaDictionary { get; private set; }
 
         private readonly Camera _missionCamera;
         private bool _firstTick = true;
         private bool _firstTick2 = true;
         private readonly Mission _mission;
         private Vec3 _heightOffset = new Vec3(0f, 0f, 2f, -1f);
-        private bool _prevEnabledState;
-        private bool _fadeOutTimerStarted;
-        private float _fadeOutTimer;
         private readonly CustomMissionNameMarkerVM.MarkerDistanceComparer _distanceComparer;
-
-        private readonly List<string> PassagePointFilter = new List<string>
-        {
-            "Empty Shop"
-        };
-
         private MBBindingList<CustomMissionNameMarkerTargetVM> _targets;
         private bool _isEnabled;
         private class MarkerDistanceComparer : IComparer<CustomMissionNameMarkerTargetVM>
@@ -868,19 +772,3 @@ namespace Bannerlord_Mod_Test
         }
     }
 }
-
-//private void RemoveAgentTarget(Agent agent)
-//{
-//    if (this.Targets.SingleOrDefault((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent) != null)
-//    {
-//        this.Targets.Remove(this.Targets.Single((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent));
-//    }
-//}
-//public override void RefreshValues()
-//{
-//    base.RefreshValues();
-//    this.Targets.ApplyActionOnAllItems(delegate (CustomMissionNameMarkerTargetVM x)
-//    {
-//        x.RefreshValues();
-//    });
-//}

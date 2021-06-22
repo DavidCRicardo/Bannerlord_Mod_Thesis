@@ -17,544 +17,54 @@ namespace Bannerlord_Mod_Test
         public int SRunRules() // (IsReacting || !IsReacting)
         {
             var Dictionary = GetDictionaryToCheckTraitsValues(RelationType);
-            //int a = RunRules(Dictionary);
 
             switch (RelationType)
             {
                 case SocialExchangeSE.IntentionEnum.Positive:
-                    if (RelationName == "Compliment")
+                    switch (RelationName)
                     {
-                        return RunRules(Dictionary, true, false, false, false, false);
-                        //return RunRulesCompliment();
+                        case "Compliment": return RunRules(Dictionary, true, false, false, false, false);
+                        default: return 0;
                     }
-                    else { return 0; }
-
+                   
                 case SocialExchangeSE.IntentionEnum.Negative:
-                    if (RelationName == "Jealous")
-                    {//Insult
-                        return RunRules(Dictionary, true, false, false, false, false);
-                        //return RunRulesJealous();
-                    }
-                    else if (RelationName == "FriendSabotage")
+                    switch (RelationName)
                     {
-                        return RunRules(Dictionary, true, false, false, true, false);
-                        //return RunRulesFriendSabotage();
+                        case "Jealous": return RunRules(Dictionary, true, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, true, false);
+                        default: return 0;
                     }
-                    else { return 0; }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
-                    if (RelationName == "Flirt")
+                    switch (RelationName)
                     {
-                        return RunRules(Dictionary, false, true, true, false, false);
-                        //return RunRulesFlirt();
+                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false);
+                        case "AskOut": return RunRules(Dictionary, true, false, true, false, false);
+                        default: return 0;
                     }
-                    else if (RelationName == "AskOut")
-                    {
-                        return RunRules(Dictionary, true, false, true, false, false);
-                        //return RunRulesAskOut();
-                    }
-                    else { return 0; }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
-                    if (RelationName == "Bully")
+                    switch (RelationName)
                     {
-                        return RunRules(Dictionary, false, true, false, false, false);
-                        //return RunRulesHostile();
+                        case "Bully": return RunRules(Dictionary, false, true, false, false, false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false);
+                        default: return 0;
                     }
-                    else if (RelationName == "RomanticSabotage")
-                    {//Jealous
-                        return RunRules(Dictionary, false, false, false, false, false);
-                        //return RunRulesRomanticSabotage();
-                    }
-                    else { return 0; }
+                   
                 case SocialExchangeSE.IntentionEnum.Special:
-                    if (RelationName == "Break")
+                    switch (RelationName)
                     {
-                        return RunRules(Dictionary, true, false, false, false, true);
-                        //return RunRulesBreakUp();
+                        case "Break": return RunRules(Dictionary, false, true, false, false, true);
+                        default: return 0;
                     }
-                    else { return 0; }
+
                 default:
                     return 0;
             }
         }
 
-        //Positive SE
-        private int RunRulesCompliment()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            #region /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent =>  2 },
-                { "Hostile"   , agent => -2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent =>  2 },
-                { "Aggressive", agent => -2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-            #endregion /* End Check Traits */
-
-            /* Check Status */
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            //Only If they have Friends relation
-            sum += FriendsRelationMustExist(sum);
-
-            return sum;
-        }
-
-        //Romantic SE
-        private int RunRulesFlirt()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            #region /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent =>  0 },
-                { "Hostile"   , agent =>  0 },
-                { "Charming"  , agent =>  2 },
-                { "UnCharming", agent => -2 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent =>  0 },
-                { "Aggressive", agent =>  0 },
-                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(Initiator, Receiver) : CheckFaithful(Initiator, Receiver) },
-                { "Unfaithful", agent =>  2 }
-            };
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-            #endregion
-
-            /* Check Status */
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            /* End Check Status */
-
-            /* Check Extra Rules */
-            sum += CheckRomanticRule(sum);
-
-            //If not dating with the receiver, so decrease drastically the sum to not Flirt because it has noone to flirt
-            sum += DatingRelationMustExist(sum);
-
-            /* Extra Rules */
-
-            return sum;
-        }
-        private int RunRulesAskOut()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Initiator & Receiver Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent =>  0 },
-                { "Hostile"   , agent =>  0 },
-                { "Charming"  , agent =>  2 },
-                { "UnCharming", agent => -2 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent =>  0 },
-                { "Aggressive", agent =>  0 },
-                { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(Initiator, Receiver) : CheckFaithful(Receiver, Initiator) },
-                { "Unfaithful", agent =>  2 }
-            };
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            /* Check Status */
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            /* End Check Status */
-
-
-            sum += CheckRomanticRule(sum);
-
-            #region Check Condition to AskOut
-            //If dating already with the receiver, so decrease drastically the sum to not AskOut again
-            sum += FriendsRelationMustExist(sum);
-            #endregion
-
-            return sum;
-        }
-        //Negative SE
-        private int RunRulesJealous()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent => -2 },
-                { "Hostile"   , agent =>  2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent => -2 },
-                { "Aggressive", agent =>  2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            //Only if they have Friends relation
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Friends")
-            {
-                sum -= 100;
-            }
-
-            return sum;
-        }
-        private int RunRulesFriendSabotage()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent => -2 },
-                { "Hostile"   , agent =>  2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent => -2 },
-                { "Aggressive", agent =>  2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
-            if (tempList != null && tempList.Count > 0)
-            {
-                Random rnd = new Random();
-                int index = rnd.Next(tempList.Count);
-                // get one randomly to sabotage
-                // get the name of the agent with the negative relation
-                // it will skip if the agent will be the same as Initiator
-                // it will catch the other agent who the initiator has the negative relation
-                List<string> agentsOnRelation = tempList[index].agents;
-                //List<int> agentsIdOnRelation = tempList[index].agents;
-
-                if (agentsOnRelation.Contains(Initiator.Name))
-                {
-                    foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
-                    {
-                        //char delimiterChar = ' ';
-                        //string[] sentences = agent.Split(delimiterChar);
-                        //Initiator.thirdAgent = sentences[0];
-
-                        Initiator.thirdAgent = agent;
-                        Initiator.thirdAgentId = index;
-
-                        sum += 2;
-                    }
-                }
-            }
-            else
-            {
-                sum -= 100;
-            }
-
-            return sum;
-        }
-        // Go talk with someone if that someone talked with his wife/husband
-        private int RunRulesRomanticSabotage()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent => -2 },
-                { "Hostile"   , agent =>  2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent => -2 },
-                { "Aggressive", agent =>  2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            return sum;
-        }
-        //Hostile SE
-        private int RunRulesHostile()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent => -2 },
-                { "Hostile"   , agent =>  2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent => -2 },
-                { "Aggressive", agent =>  2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            return sum;
-        }
-        //Special SE
-        private int RunRulesBreakUp()
-        {
-            int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
-            /* Check Traits */
-            Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
-                { "Friendly"  , agent => -2 },
-                { "Hostile"   , agent =>  2 },
-                { "Charming"  , agent =>  0 },
-                { "UnCharming", agent =>  0 },
-                { "Shy"       , agent => -2 },
-                { "Brave"     , agent =>  2 },
-                { "Calm"      , agent => -2 },
-                { "Aggressive", agent =>  2 },
-                { "Faithful"  , agent =>  0 },
-                { "Unfaithful", agent =>  0 }
-            };
-            if (!IsReacting)
-            {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Initiator);
-                    }
-
-                    return acc;
-                });
-            }
-            else
-            {
-                sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
-                {
-                    Func<CustomAgent, int> TraitFunc;
-                    if (TraitFunc_Dictionary.TryGetValue(t.traitName, out TraitFunc))
-                    {
-                        acc += TraitFunc(Receiver);
-                    }
-
-                    return acc;
-                });
-            }
-
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-
-            //It will check when the value is 0 about dating with the receiver before break up
-            sum = BreakUpRule(sum);
-
-            return sum;
-        }
-
-       
-
-        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, 
-             bool FriendsRelationMustExistBool, bool DatingRelationMustExistBool, bool CheckRomanticRuleBool, 
+        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary,
+             bool FriendsOrNullRelationBool, bool DatingRelationBool, bool CheckRomanticRuleBool,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool)
         {
             int sum = 0;
@@ -588,14 +98,14 @@ namespace Bannerlord_Mod_Test
             }
 
             sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
-            
-            if (FriendsRelationMustExistBool)
+
+            if (FriendsOrNullRelationBool)
             {
-                sum += FriendsRelationMustExist(sum);
+                sum += CheckFriendsOrNullRelation(sum);
             }
-            if (DatingRelationMustExistBool)
+            if (DatingRelationBool)
             {
-                sum += DatingRelationMustExist(sum);
+                sum += CheckDatingRelation(sum);
             }
             if (CheckRomanticRuleBool)
             {
@@ -613,12 +123,34 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
 
-        private int BreakUpRule(int sum)
+        private int CheckFriendsOrNullRelation(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value < 1)
+
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship != "Friends")
             {
-                sum += 100;
+                sum -= 100;
+            }
+
+            return sum;
+        }
+        private int CheckDatingRelation(int sum)
+        {
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
+            {
+                sum -= 100;
+            }
+
+            return sum;
+        }
+        private int CheckRomanticRule(int sum)
+        {
+            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
+                 ||
+                (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
+            {
+                sum -= 100;
             }
 
             return sum;
@@ -651,86 +183,18 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
-        private int FriendsRelationMustExist(int sum)
+        private int BreakUpRule(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Friends")
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value < 1)
             {
-                sum -= 100;
+                sum += 100;
             }
 
             return sum;
         }
-        private int DatingRelationMustExist(int sum)
-        {
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
-            {
-                sum -= 100;
-            }
+        
 
-            return sum;
-        }
-        private int CheckRomanticRule(int sum)
-        {
-            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
-                            ||
-                            (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
-            {
-                sum -= 10;
-            }
-
-            return sum;
-        }
-        internal int CheckInitiatorTriggerRules(CustomAgent agentWhoWillCheck, CustomAgent agentChecked, string relationName)
-        {
-            if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
-            {
-                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.SocialExchangeToDo == relationName);
-                if (triggerRule != null)
-                {
-                    return 100;
-                }
-            }
-
-            return 0;
-        }
-        internal int CheckGoals(string _relation)
-        {
-            if (!Initiator.GoalsList.IsEmpty())
-            {
-                foreach (var _goal in Initiator.GoalsList)
-                {
-                    if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
-                    {
-                        /* Belief = Null? So Add Belief to check if belief value < goal value */
-                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
-                        if (belief == null)
-                        {
-                            List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
-                            List<int> b = new List<int>() { Initiator.Id, Receiver.Id };
-                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, b, 0);
-                            Initiator.AddBelief(newBelief);
-                        }
-
-                        foreach (var _belief in Initiator.SocialNetworkBeliefs)
-                        {
-                            if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name)
-                                && _belief.IDs.Contains(Initiator.Id) && _belief.IDs.Contains(Receiver.Id))
-                            {
-                                if (_belief.value < _goal.value)
-                                {
-                                    return 100;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            return 0;
-        }
         private int CheckStatus(CustomAgent customAgent)
         {
             int localSum = 0;
@@ -775,20 +239,6 @@ namespace Bannerlord_Mod_Test
 
             return localSum;
         }
-        private Status CheckStatusIntensity(CustomAgent customAgent, string statusName)
-        {
-            return customAgent.StatusList.Find(s => s.statusName == statusName);
-        }
-        internal int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
-        {
-            SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
-            if (belief != null)
-            {
-                return belief.value;
-            }
-
-            return 0;
-        }
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
             SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
@@ -815,22 +265,85 @@ namespace Bannerlord_Mod_Test
                 return 2; //not dating with anyone
             }
         }
+        private Status CheckStatusIntensity(CustomAgent customAgent, string statusName)
+        {
+            return customAgent.StatusList.Find(s => s.statusName == statusName);
+        }
+        public int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
+        {
+            SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
+            if (belief != null)
+            {
+                return belief.value;
+            }
+
+            return 0;
+        }
+        public int CheckInitiatorTriggerRules(CustomAgent agentWhoWillCheck, CustomAgent agentChecked, string relationName)
+        {
+            if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
+            {
+                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.SocialExchangeToDo == relationName);
+                if (triggerRule != null)
+                {
+                    return 100;
+                }
+            }
+
+            return 0;
+        }
+        public int CheckGoals(string _relation)
+        {
+            if (!Initiator.GoalsList.IsEmpty())
+            {
+                foreach (var _goal in Initiator.GoalsList)
+                {
+                    if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
+                    {
+                        /* Belief = Null? So Add Belief to check if belief value < goal value */
+                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
+                        if (belief == null)
+                        {
+                            List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
+                            List<int> b = new List<int>() { Initiator.Id, Receiver.Id };
+                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, b, 0);
+                            Initiator.AddBelief(newBelief);
+                        }
+
+                        foreach (var _belief in Initiator.SocialNetworkBeliefs)
+                        {
+                            if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name)
+                                && _belief.IDs.Contains(Initiator.Id) && _belief.IDs.Contains(Receiver.Id))
+                            {
+                                if (_belief.value < _goal.value)
+                                {
+                                    return 100;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }
+        public bool IsReacting { get; set; }
         public int InitialValue { get; set; }
         public string RelationName { get; set; }
-        public bool IsReacting { get; set; }
-        public SocialExchangeSE.IntentionEnum RelationType { get; internal set; }
+        public SocialExchangeSE.IntentionEnum RelationType { get; set; }
 
-        
         public Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<String, Func<CustomAgent, int>>();
         public Dictionary<String, Func<CustomAgent, int>> GetDictionaryToCheckTraitsValues(SocialExchangeSE.IntentionEnum intention)
         {
             switch (intention)
             {
-                case SocialExchangeSE.IntentionEnum.Positive: 
-                case SocialExchangeSE.IntentionEnum.Special: 
-                    TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                case SocialExchangeSE.IntentionEnum.Positive:
+                case SocialExchangeSE.IntentionEnum.Special:
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
                 { "Charming"  , agent =>  0 },
@@ -842,11 +355,10 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent =>  0 },
                 { "Unfaithful", agent =>  0 }
                     };
-                    return TraitFunc_Dictionary;
 
                 //Flirt & AskOut
-                case SocialExchangeSE.IntentionEnum.Romantic: 
-                    TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                case SocialExchangeSE.IntentionEnum.Romantic:
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  0 },
                 { "Hostile"   , agent =>  0 },
                 { "Charming"  , agent =>  2 },
@@ -858,12 +370,11 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent => (agent == Initiator) ? CheckFaithful(Initiator, Receiver) : CheckFaithful(Initiator, Receiver) },
                 { "Unfaithful", agent =>  2 }
                     };
-                    return TraitFunc_Dictionary;
 
                 //Jealous & FriendSabotage & RomanticSabotage & Hostile
                 case SocialExchangeSE.IntentionEnum.Negative:
                 case SocialExchangeSE.IntentionEnum.Hostile:
-                    TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent => -2 },
                 { "Hostile"   , agent =>  2 },
                 { "Charming"  , agent =>  0 },
@@ -875,10 +386,9 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent =>  0 },
                 { "Unfaithful", agent =>  0 }
                     };
-                    return TraitFunc_Dictionary;
 
                 default:
-                    TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
                 { "Charming"  , agent =>  0 },
@@ -890,7 +400,6 @@ namespace Bannerlord_Mod_Test
                 { "Faithful"  , agent =>  0 },
                 { "Unfaithful", agent =>  0 }
                     };
-                    return TraitFunc_Dictionary;
             }
         }
     }

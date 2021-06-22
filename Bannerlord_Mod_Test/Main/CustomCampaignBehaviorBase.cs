@@ -353,24 +353,6 @@ namespace Bannerlord_Mod_Test
                 else { return true; }
             }
 
-            //foreach (Agent agent in Mission.Current.Agents)
-            //{
-            //    if (agent.Character == Hero.OneToOneConversationHero.CharacterObject)
-            //    {
-            //        CustomAgent customAgent = new CustomAgent(agent) { Name = agent.Name };
-            //        Trait hasTrait = customAgent.TraitList.Find(t => t.traitName == "Faithful");
-            //        int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
-
-            //        if (hasTrait != null || datingHowMany > 0)
-            //        {
-            //            return true;
-            //        }
-            //        else
-            //        {
-            //            return false;
-            //        }
-            //    }
-            //}
             return false;
         }
         public bool giveCourage { get; set; }
@@ -410,11 +392,19 @@ namespace Bannerlord_Mod_Test
             string _currentLocation = CampaignMission.Current.Location.StringId;
             //Agent agent1 = null;
 
-            var agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-            if (agentConversation != null)
+            if (Hero.OneToOneConversationHero != null)
             {
-                InformationManager.DisplayMessage(new InformationMessage("-"));
+                var agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                if (agentConversation != null)
+                {
+                    InformationManager.DisplayMessage(new InformationMessage("-"));
+                }
             }
+            else
+            {
+                
+            }
+            
 
             //foreach (Agent agent in Mission.Current.Agents)
             //{

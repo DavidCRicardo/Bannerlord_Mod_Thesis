@@ -17,11 +17,10 @@ namespace Bannerlord_Mod_Test
                 this.AgentInitiator = _customAgentinitiator.selfAgent;
                 this.CustomAgentInitiator = _customAgentinitiator;
 
-                //this.AgentReceiver = _customAgentinitiator.targetAgent;
-                //this.CustomAgentReceiver = CustomAgentList.Single(item => item.Name == AgentReceiver.Name);
-                this.CustomAgentList = customAgents;
                 this.CustomAgentReceiver = CustomAgentInitiator.customTargetAgent;
                 this.AgentReceiver = CustomAgentReceiver.selfAgent;
+
+                this.CustomAgentList = customAgents;
                 this.index = -1;
             }
 
@@ -124,162 +123,190 @@ namespace Bannerlord_Mod_Test
             switch (Intention)
             {
                 case IntentionEnum.Positive:
-                    if (CustomAgentReceiver.SE_Accepted)
-                    {
-                        if (SEName == "Compliment")
-                        {
-                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                            UpdateThirdNPCsBeliefs("Friends", belief, 1);
-                            CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
-                        }
-                    }
-                    else
-                    {
-                        CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
-                        CustomAgentInitiator.UpdateStatus("Shame", 1);
-                    }
-
+                    ConsequencesFromPositiveIntention();
                     break;
+
                 case IntentionEnum.Romantic:
-                    if (CustomAgentReceiver.SE_Accepted)
-                    {
-                        //Increases Relationship for both
-                        if (SEName == "AskOut")
-                        {
-                            //if they are not friends so start dating with a new belief
-                            ////If they are already friends, it updates for dating while keeping the same value 
-                            SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                            UpdateThirdNPCsBeliefs("Friends", _belief, 1);
-
-                            //CustomAgentInitiator.UpdateBeliefWithNewRelation("Dating", _belief);
-                            //CustomAgentReceiver.UpdateBeliefWithNewRelation("Dating", _belief);
-
-                            foreach (CustomAgent customAgent in CustomAgentList)
-                            {
-                                customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
-                            }
-
-                            InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
-                        }
-                        else if (SEName == "Flirt")
-                        {
-                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                            UpdateThirdNPCsBeliefs("Dating", belief, 1);
-                        }
-                    }
-                    else
-                    {
-                        CustomAgentInitiator.UpdateStatus("Anger", 1);
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
-                    }
-
-                    //Independentemente se aceitou ou nao.. 
-                    foreach (CustomAgent customAgent in CustomAgentList)
-                    {
-                        // verificar para todos menos para aqueles que estavam envolvidos na SE
-                        if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
-                        {
-                            //se o initiator é o seu parceiro (dating) que começou a Romantic SE // nao vai gostar da SE e vai decrementar 1 ponto
-                            SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
-                            if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Dating")
-                            {
-                                customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
-                            }
-
-                            //se o receiver é o seu parceiro (dating) de que foi alvo de Romantic SE // vai ter ciumes do Initiator 
-                            SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
-                            if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
-                            {
-                                //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
-                                TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name, CustomAgentInitiator.Id);
-                                customAgent.AddToTriggerRulesList(triggerRule);
-                            }
-                        }
-                    }
-
+                    ConsequencesFromRomanticIntention();
                     break;
+
                 case IntentionEnum.Negative:
-                    if (CustomAgentReceiver.SE_Accepted)
-                    {
-                        if (SEName == "Jealous")
-                        {
-                            //Decreases relation with Initiator
-                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                            UpdateThirdNPCsBeliefs("Friends", belief, -1);
-
-                            CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-                        }
-
-                        if (SEName == "FriendSabotage")
-                        {
-                            //Decreases relation with Initiator
-                            SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                            UpdateThirdNPCsBeliefs("Friends", belief, -1);
-                        }
-                    }
-                    else
-                    {
-                        if (SEName == "Jealous")
-                        {
-                            CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-                            CustomAgentInitiator.UpdateStatus("Shame", 1);
-                            CustomAgentReceiver.UpdateStatus("Courage", -0.2);
-                        }
-                        
-                        if (SEName == "FriendSabotage")
-                        {
-                            //Decreases relation dating
-                            InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
-                            CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
-                            SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
-
-                            CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
-                        }
-                    }
+                    ConsequencesFromNegativeIntention();
                     break;
+
                 case IntentionEnum.Hostile:
-                    if (CustomAgentReceiver.SE_Accepted)
-                    {
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " is embarrassed."));
-
-                        CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-                        CustomAgentInitiator.UpdateStatus("Shame", 1);
-                        CustomAgentReceiver.UpdateStatus("Courage", -0.2);
-
-                        CustomAgentInitiator.StopAnimation();
-                        CustomAgentReceiver.StopAnimation();
-                    }
-                    else
-                    {
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
-                        CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-
-                        SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                        UpdateThirdNPCsBeliefs("Friends", belief, -1);
-                    }
+                    ConsequencesFromHostileIntention();
                     break;
+
                 case IntentionEnum.Special:
-                    if (true)
-                    {
-                        CustomAgentInitiator.UpdateStatus("Anger", -1);
-                        CustomAgentInitiator.UpdateStatus("Courage", -1);
-
-                        SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
-                        UpdateThirdNPCsBeliefs("Dating", _belief, -1);
-
-                        foreach (CustomAgent customAgent in CustomAgentList)
-                        {
-                            customAgent.UpdateBeliefWithNewRelation("Friends", _belief);
-                        }
-
-                        InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
-                    }
+                    ConsequencesFromSpecialIntention();
                     break;
+
                 default:
                     break;
             }
         }
+
+        private void ConsequencesFromSpecialIntention()
+        {
+            if (true)
+            {
+                CustomAgentInitiator.UpdateStatus("Anger", -1);
+                CustomAgentInitiator.UpdateStatus("Courage", -1);
+
+                SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
+                UpdateThirdNPCsBeliefs("Dating", _belief, -1);
+
+                foreach (CustomAgent customAgent in CustomAgentList)
+                {
+                    customAgent.UpdateBeliefWithNewRelation("Friends", _belief);
+                }
+
+                InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " broke up with " + CustomAgentReceiver.Name));
+            }
+        }
+
+        private void ConsequencesFromHostileIntention()
+        {
+            if (CustomAgentReceiver.SE_Accepted)
+            {
+                //Bully or RomanticSabotage
+
+                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
+                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " is embarrassed."));
+
+                CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                CustomAgentInitiator.UpdateStatus("Shame", 1);
+                CustomAgentReceiver.UpdateStatus("Courage", -0.2);
+
+                CustomAgentInitiator.StopAnimation();
+                CustomAgentReceiver.StopAnimation();
+            }
+            else
+            {
+                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
+                CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+
+                SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                UpdateThirdNPCsBeliefs("Friends", belief, -1);
+            }
+        }
+
+        private void ConsequencesFromNegativeIntention()
+        {
+            if (CustomAgentReceiver.SE_Accepted)
+            {
+                if (SEName == "Jealous")
+                {
+                    //Decreases relation with Initiator
+                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                    UpdateThirdNPCsBeliefs("Friends", belief, -1);
+
+                    CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                }
+
+                if (SEName == "FriendSabotage")
+                {
+                    //Decreases relation with Initiator
+                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                    UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                }
+            }
+            else
+            {
+                if (SEName == "Jealous")
+                {
+                    CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                    CustomAgentInitiator.UpdateStatus("Shame", 1);
+                    CustomAgentReceiver.UpdateStatus("Courage", -0.2);
+                }
+
+                if (SEName == "FriendSabotage")
+                {
+                    //Decreases relation dating
+                    //InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
+                    CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
+                    SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
+
+                    CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
+                }
+            }
+        }
+
+        private void ConsequencesFromRomanticIntention()
+        {
+            if (CustomAgentReceiver.SE_Accepted)
+            {
+                //Increases Relationship for both
+                if (SEName == "AskOut")
+                {
+                    //if they are not friends so start dating with a new belief
+                    ////If they are already friends, it updates for dating while keeping the same value 
+                    SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                    UpdateThirdNPCsBeliefs("Friends", _belief, 1);
+
+                    foreach (CustomAgent customAgent in CustomAgentList)
+                    {
+                        customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
+                    }
+
+                    //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
+                }
+                else if (SEName == "Flirt")
+                {
+                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                    UpdateThirdNPCsBeliefs("Dating", belief, 1);
+                }
+            }
+            else
+            {
+                CustomAgentInitiator.UpdateStatus("Anger", 1);
+                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
+            }
+
+            //Independentemente se aceitou ou nao.. 
+            foreach (CustomAgent customAgent in CustomAgentList)
+            {
+                // verificar para todos menos para aqueles que estavam envolvidos na SE
+                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
+                {
+                    //se o initiator é o seu parceiro (dating) que começou a Romantic SE // nao vai gostar da SE e vai decrementar 1 ponto
+                    SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
+                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Dating")
+                    {
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
+                    }
+
+                    //se o receiver é o seu parceiro (dating) de que foi alvo de Romantic SE // vai ter ciumes do Initiator 
+                    SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
+                    if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
+                    {
+                        //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
+                        TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name, CustomAgentInitiator.Id);
+                        customAgent.AddToTriggerRulesList(triggerRule);
+                    }
+                }
+            }
+        }
+
+        private void ConsequencesFromPositiveIntention()
+        {
+            if (CustomAgentReceiver.SE_Accepted)
+            {
+                if (SEName == "Compliment")
+                {
+                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                    UpdateThirdNPCsBeliefs("Friends", belief, 1);
+                    CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
+                }
+            }
+            else
+            {
+                CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
+                CustomAgentInitiator.UpdateStatus("Shame", 1);
+            }
+        }
+
         private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName = "", int _value = 0)
         {
             SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
@@ -315,6 +342,7 @@ namespace Bannerlord_Mod_Test
                     if (belief == null)
                     {
                         customAgent.AddBelief(_belief);
+                        belief = _belief;
                     }
                     else
                     {
@@ -380,12 +408,11 @@ namespace Bannerlord_Mod_Test
 
             //InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
 
-            return CustomAgentReceiver.SEVolition;
+                return CustomAgentReceiver.SEVolition;
         }
         private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
-            string relation = GetRelationType(IR);
-
+            //string relation = GetRelationType(IR);
             //IR.InitialValue = IR.CheckGoals(relation);
 
             IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.RelationName) : 0;
@@ -395,7 +422,6 @@ namespace Bannerlord_Mod_Test
 
             return IR.InitialValue;
         }
-
 
         public void PlayerConversationWithNPC(string relation, int value)
         {
@@ -465,13 +491,5 @@ namespace Bannerlord_Mod_Test
                 //Rejected
             }
         }
-        //private void RunTriggerRulesForEveryone()
-        //{
-        //    foreach (CustomAgent _customAgent in CustomAgentList)
-        //    {
-        //        _customAgent.RunTriggerRules();
-        //    }
-        //}
-        //*
     }
 }
