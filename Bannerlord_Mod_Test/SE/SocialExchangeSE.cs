@@ -242,13 +242,7 @@ namespace Bannerlord_Mod_Test
                 {
                     //if they are not friends so start dating with a new belief
                     ////If they are already friends, it updates for dating while keeping the same value 
-                    SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                    UpdateThirdNPCsBeliefs("Friends", _belief, 1);
-
-                    foreach (CustomAgent customAgent in CustomAgentList)
-                    {
-                        customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
-                    }
+                    AskOutMethod();
 
                     //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
                 }
@@ -262,8 +256,13 @@ namespace Bannerlord_Mod_Test
             {
                 CustomAgentInitiator.UpdateStatus("Anger", 1);
                 //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
+                NPCsNearRomanticSocialMove();
             }
 
+        }
+
+        private void NPCsNearRomanticSocialMove()
+        {
             //Independentemente se aceitou ou nao.. 
             foreach (CustomAgent customAgent in CustomAgentList)
             {
@@ -287,6 +286,19 @@ namespace Bannerlord_Mod_Test
                     }
                 }
             }
+        }
+
+        public void AskOutMethod()
+        {
+            SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
+            UpdateThirdNPCsBeliefs("Friends", _belief, 1);
+
+            foreach (CustomAgent customAgent in CustomAgentList)
+            {
+                customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
+            }
+
+            NPCsNearRomanticSocialMove();
         }
 
         private void ConsequencesFromPositiveIntention()
@@ -428,6 +440,8 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
         }
+ 
+
         private static string GetRelationType(InfluenceRule IR)
         {
             string relation = "";

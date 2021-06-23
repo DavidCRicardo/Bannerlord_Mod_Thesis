@@ -113,12 +113,16 @@ namespace Bannerlord_Mod_Test
         
         private void CheckIfThereIsAnyChange(CharacterObject characterObject)
         {
+            if (CBB_ref.StartDating)
+            {
+                Start_Dating(characterObject);
+                CBB_ref.StartDating = false;
+            }
             if (CBB_ref.giveCourage)
             {
                 GiveCourageToCharacter(characterObject);
                 CBB_ref.giveCourage = false;
             }
-
             if (CBB_ref.IncreaseFriendshipWithPlayer)
             {
                 UpdateRelationWithPlayerChoice(characterObject, "Friends", 1, Agent.Main);
@@ -129,11 +133,36 @@ namespace Bannerlord_Mod_Test
                 UpdateRelationWithPlayerChoice(characterObject, "Friends", -1, Agent.Main);
                 CBB_ref.DecreaseFriendshipWithPlayer = false;
             }
+            if (CBB_ref.IncreaseDatingWithPlayer)
+            {
+                UpdateRelationWithPlayerChoice(characterObject, "Dating", 1, Agent.Main);
+                CBB_ref.IncreaseDatingWithPlayer = false;
+            }
+            if (CBB_ref.DecreaseDatingWithPlayer)
+            {
+                UpdateRelationWithPlayerChoice(characterObject, "Dating", -1, Agent.Main);
+                CBB_ref.DecreaseDatingWithPlayer = false;
+            }
+
         }
-        
+
+        private void Start_Dating(CharacterObject characterObject)
+        {
+            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
+            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
+
+            SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
+            {
+                CustomAgentReceiver = customAgent
+            };
+            se.AskOutMethod();
+
+            _dataSource.SaveToJson();
+        }
+
         private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value , Agent agent = null)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(characterObject.Name.ToString()) && agent == Agent.Main);
+            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
             CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(Agent.Main.Name));
             MainCustomAgent.customTargetAgent = customAgent;
 
@@ -142,7 +171,7 @@ namespace Bannerlord_Mod_Test
                 CustomAgentReceiver = customAgent
             };
             se.PlayerConversationWithNPC(relation, value);
-
+            
             _dataSource.SaveToJson();
         }
         
