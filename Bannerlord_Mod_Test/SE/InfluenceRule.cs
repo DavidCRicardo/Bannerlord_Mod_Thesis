@@ -296,7 +296,7 @@ namespace Bannerlord_Mod_Test
         {
             if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
             {
-                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.SocialExchangeToDo == relationName);
+                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.NPC_ID == agentChecked.Id && t.SocialExchangeToDo == relationName);
                 if (triggerRule != null)
                 {
                     return 100;
