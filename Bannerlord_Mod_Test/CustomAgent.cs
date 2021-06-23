@@ -38,6 +38,7 @@ namespace Bannerlord_Mod_Test
         public bool busy { get; set; } // Has Target to start a social exchange when close? // or it's interacting?
         public bool cooldown { get; set; }
         public bool EnoughRest { get; set; }
+        public bool PlayerInteracting { get; set; }
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using TaleWorlds.Core;
@@ -8,7 +9,6 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
-using System.IO;
 
 namespace Bannerlord_Mod_Test
 {
@@ -95,6 +95,10 @@ namespace Bannerlord_Mod_Test
                     if (_firstTick2)
                     {
                         _firstTick2 = false;
+
+                        CharacterObject a = CharacterObject.OneToOneConversationCharacter;
+
+                        
                     }
                 }
                 UpdateTargetScreen();
@@ -196,7 +200,6 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
-
         private void InitializeSocialExchanges()
         {
             onGoingSEs = 0;
@@ -306,19 +309,19 @@ namespace Bannerlord_Mod_Test
                 onGoingSEs++;
             }
         }
+        
         private void AbortOnGoingSE(CustomAgent customAgent)
         {
             // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
             // o player e o NPC interagido sao considerados como busy
             // se algum outro NPC viria para interagir com o player ou o npc, então aborta a social exchange 
-            //if (customAgent != null && customAgent.targetAgent != null && customAgent.targetAgent != Agent.Main)
+
             if (customAgent != null && customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent != Agent.Main)
             {
                 if (customAgent.busy) // busy // target or not
                 {
                     customAgent.AbortSocialExchange();
 
-                    //if (customAgent.targetAgent != null) // if has target // its the initiator
                     if (customAgent.customTargetAgent != null) // if has target // its the initiator
                     {
                         if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
@@ -620,6 +623,7 @@ namespace Bannerlord_Mod_Test
         }
 
         internal BasicCharacterObject characterReftoCampaignBehaviorBase { get; set; }
+        internal BasicCharacterObject characterRef2 { get; set; }
         internal SocialExchangeSE.IntentionEnum intentionReftoCampaignBehaviorBase { get; set; }
         private SocialExchangeSE.IntentionEnum GetIntentionToCampaignBehaviorBase(CustomAgent customAgent)
         {

@@ -14,6 +14,7 @@ namespace Bannerlord_Mod_Test
         private CustomMissionNameMarkerVM _dataSource;
         private CustomCampaignBehaviorBase CBB_ref;
         private GauntletLayer _gauntletLayer;
+        private bool _firstTick = true;
 
         public override void OnMissionScreenInitialize()
         {
@@ -25,7 +26,7 @@ namespace Bannerlord_Mod_Test
             base.MissionScreen.AddLayer(this._gauntletLayer);
             CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
         }
-        private bool _firstTick = true;
+        
         public override void OnMissionScreenTick(float dt)
         {
             base.OnMissionScreenTick(dt);
@@ -56,6 +57,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+        
         public override void OnMissionScreenFinalize()
         {
             base.OnMissionScreenFinalize();
@@ -92,6 +94,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+        
         private void OnConversationEnd(CharacterObject characterObject)
         {
             if (_dataSource != null)
@@ -107,6 +110,7 @@ namespace Bannerlord_Mod_Test
                 custom.selfAgent.OnUse(Agent.Main);
             }
         }
+        
         private void CheckIfThereIsAnyChange(CharacterObject characterObject)
         {
             if (CBB_ref.giveCourage)
@@ -126,6 +130,7 @@ namespace Bannerlord_Mod_Test
                 CBB_ref.DecreaseFriendshipWithPlayer = false;
             }
         }
+        
         private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value , Agent agent = null)
         {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(characterObject.Name.ToString()) && agent == Agent.Main);
@@ -140,6 +145,7 @@ namespace Bannerlord_Mod_Test
 
             _dataSource.SaveToJson();
         }
+        
         private void GiveCourageToCharacter(CharacterObject characterObject)
         {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
