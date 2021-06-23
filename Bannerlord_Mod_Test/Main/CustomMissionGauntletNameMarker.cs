@@ -46,18 +46,15 @@ namespace Bannerlord_Mod_Test
 
                 CheckIntentionFromNPCToPlayer(dt);
 
-                if (_dataSource.GetResetOtherVariables())
+                if (_dataSource.CanResetCBB_refVariables())
                 {
-                    CBB_ref.FriendlyBool = false;
-                    CBB_ref.RomanticBool = false;
-                    CBB_ref.UnFriendlyBool = false;
-                    CBB_ref.HostileBool = false;
-                    CBB_ref.SpecialBool = false;
-                    _dataSource.SetResetOtherVariables(false);
+                    ResetCBB_refVariables();
+                    _dataSource.SetCanResetCBB_refVariables(false);
                 }
             }
         }
-        
+
+
         public override void OnMissionScreenFinalize()
         {
             base.OnMissionScreenFinalize();
@@ -118,43 +115,49 @@ namespace Bannerlord_Mod_Test
                 Start_Dating(characterObject);
                 CBB_ref.StartDating = false;
             }
-            if (CBB_ref.giveCourage)
+            else if (CBB_ref.DoBreak)
             {
-                GiveCourageToCharacter(characterObject);
-                CBB_ref.giveCourage = false;
+                DoBreak(characterObject);
+                CBB_ref.DoBreak = false;
             }
-            if (CBB_ref.IncreaseFriendshipWithPlayer)
+            else if (CBB_ref.IncreaseFriendshipWithPlayer)
             {
                 UpdateRelationWithPlayerChoice(characterObject, "Friends", 1, Agent.Main);
                 CBB_ref.IncreaseFriendshipWithPlayer = false;
             }
-            if (CBB_ref.DecreaseFriendshipWithPlayer)
+            else if (CBB_ref.DecreaseFriendshipWithPlayer)
             {
                 UpdateRelationWithPlayerChoice(characterObject, "Friends", -1, Agent.Main);
                 CBB_ref.DecreaseFriendshipWithPlayer = false;
             }
-            if (CBB_ref.IncreaseDatingWithPlayer)
+            else if (CBB_ref.IncreaseDatingWithPlayer)
             {
                 UpdateRelationWithPlayerChoice(characterObject, "Dating", 1, Agent.Main);
                 CBB_ref.IncreaseDatingWithPlayer = false;
             }
-            if (CBB_ref.DecreaseDatingWithPlayer)
+            else if (CBB_ref.DecreaseDatingWithPlayer)
             {
                 UpdateRelationWithPlayerChoice(characterObject, "Dating", -1, Agent.Main);
                 CBB_ref.DecreaseDatingWithPlayer = false;
             }
+            else if (CBB_ref.giveCourage)
+            {
+                GiveCourageToCharacter(characterObject);
+                CBB_ref.giveCourage = false;
+            }
+        }
 
+        private void DoBreak(CharacterObject characterObject)
+        {
+            SocialExchangeSE se = InitializeSocialExchange(characterObject);
+            se.BreakUpMethod();
+
+            _dataSource.SaveToJson();
         }
 
         private void Start_Dating(CharacterObject characterObject)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
-            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
-
-            SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
-            {
-                CustomAgentReceiver = customAgent
-            };
+            SocialExchangeSE se = InitializeSocialExchange(characterObject);
             se.AskOutMethod();
 
             _dataSource.SaveToJson();
@@ -162,23 +165,40 @@ namespace Bannerlord_Mod_Test
 
         private void UpdateRelationWithPlayerChoice(CharacterObject characterObject, string relation, int value , Agent agent = null)
         {
+            SocialExchangeSE se = InitializeSocialExchange(characterObject);
+            se.PlayerConversationWithNPC(relation, value);
+
+            _dataSource.SaveToJson();
+        }
+
+        private SocialExchangeSE InitializeSocialExchange(CharacterObject characterObject)
+        {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
-            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name.Contains(Agent.Main.Name));
+            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.Name == Agent.Main.Name);
             MainCustomAgent.customTargetAgent = customAgent;
 
             SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
             {
                 CustomAgentReceiver = customAgent
             };
-            se.PlayerConversationWithNPC(relation, value);
-            
-            _dataSource.SaveToJson();
+            return se;
         }
-        
+
         private void GiveCourageToCharacter(CharacterObject characterObject)
         {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == characterObject.Name.ToString());
             customAgent.UpdateStatus("Courage", 1);
+        }
+
+        private void ResetCBB_refVariables()
+        {
+            CBB_ref.FriendlyBool = false;
+            CBB_ref.RomanticBool = false;
+            CBB_ref.UnFriendlyBool = false;
+            CBB_ref.HostileBool = false;
+            CBB_ref.SpecialBool = false;
+            CBB_ref.StartDating = false;
+            CBB_ref.DoBreak = false;
         }
     }
 }

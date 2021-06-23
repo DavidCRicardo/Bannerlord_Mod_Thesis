@@ -347,7 +347,7 @@ namespace Bannerlord_Mod_Test
                 {
                     intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
                     characterReftoCampaignBehaviorBase = null;
-                    SetResetOtherVariables(true);
+                    SetCanResetCBB_refVariables(true);
 
                     onGoingSEs--;
                     customAgent.EndingSocialExchange = false;
@@ -613,11 +613,11 @@ namespace Bannerlord_Mod_Test
         private float dtControl;
 
         private static bool resetVariables { get; set; }
-        public bool GetResetOtherVariables()
+        public bool CanResetCBB_refVariables()
         {
             return resetVariables;
         }
-        public void SetResetOtherVariables(bool value)
+        public void SetCanResetCBB_refVariables(bool value)
         {
             resetVariables = value;
         }

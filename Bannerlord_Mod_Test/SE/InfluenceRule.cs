@@ -14,6 +14,7 @@ namespace Bannerlord_Mod_Test
             InitialValue = initialValue;
             IsReacting = reacting;
         }
+
         public int SRunRules()
         {
             var Dictionary = GetDictionaryToCheckTraitsValues(RelationType);
@@ -135,6 +136,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+
         // it must be dating
         private int DecreaseIfNotDating(int sum)
         {
@@ -146,6 +148,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+
         // different genders
         private int MustHaveDifferentGender(int sum)
         {
@@ -158,6 +161,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+
         // must have someone to sabotage
         private int GetNPCToSabotage(int sum)
         {
@@ -187,6 +191,7 @@ namespace Bannerlord_Mod_Test
 
             return sum;
         }
+
         // must have belief = Dating && value < 1
         private int BreakUpRule(int sum)
         {
@@ -199,7 +204,6 @@ namespace Bannerlord_Mod_Test
             return sum;
         }
         
-
         private int CheckStatus(CustomAgent customAgent)
         {
             int localSum = 0;
@@ -244,6 +248,7 @@ namespace Bannerlord_Mod_Test
 
             return localSum;
         }
+
         private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
         {
             SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
@@ -270,10 +275,12 @@ namespace Bannerlord_Mod_Test
                 return 2; //not dating with anyone
             }
         }
+
         private Status CheckStatusIntensity(CustomAgent customAgent, string statusName)
         {
             return customAgent.StatusList.Find(s => s.statusName == statusName);
         }
+
         public int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
             SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
@@ -284,6 +291,7 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
+
         public int CheckInitiatorTriggerRules(CustomAgent agentWhoWillCheck, CustomAgent agentChecked, string relationName)
         {
             if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
@@ -297,6 +305,7 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
+
         public int CheckGoals(string _relation)
         {
             if (!Initiator.GoalsList.IsEmpty())

@@ -155,10 +155,10 @@ namespace Bannerlord_Mod_Test
             /* Player Interactions with NPC */
 
             // Friendly
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_friendly", "close_window", "Oh...that's nice. Thank you![if:idle_pleased]", null, null, 100, null);
             // UnFriendly
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_unfriendly", "close_window", "Oh...that's not nice![if:idle_angry]", null, null, 100, null);
             // AskOut
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
@@ -168,17 +168,25 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
             // Break
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_break", "Time to break. This is not working anymore. [Break]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
-
+            // Sleep With NPC
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_sleep", "Do you want to have a child? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+            
             //Accept AskOut
-            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
+            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), new ConversationSentence.OnConsequenceDelegate(Start_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
             //Reject AskOut
-            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
+            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
 
             //Reacting to Flirt
             campaignGameStarter.AddDialogLine("1", "lord_romanticFlirt", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
 
             //Reacting to Hostile
             campaignGameStarter.AddDialogLine("1", "lord_hostile", "close_window", "Oh, don't need to be so rude![if:idle_pleased][ib:confident]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null);
+            
+            //Reacting to Break
+            campaignGameStarter.AddDialogLine("1", "lord_break", "close_window", "Oh, fine! Have a good day sir![if:idle_angry]", null, null, 100, null);
+            
+            //Reacting to Sleep
+            campaignGameStarter.AddDialogLine("1", "lord_sleep", "close_window", "Oh, I don't feel ready to take that step. Maybe next time![if:idle_pleased][ib:confident]", null, null, 100, null);
 
 
             //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
@@ -310,32 +318,8 @@ namespace Bannerlord_Mod_Test
             }
             else { return false; }
         }
-        private bool NPC_Reject_Dating_condition()
-        {
-            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-            string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
-            {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
-                {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    bool hasTrait = customAgentConversation.TraitList.Exists(t => t.traitName == "Faithful");
-
-                    int datingHowMany = customAgentConversation.CheckHowManyTheAgentIsDating(customAgentConversation);
-
-                    if (!hasTrait || datingHowMany > 0)
-                    {
-                        return false;
-                    }
-                    else { return true; }
-                }
-            }
-
-            return true;
-        }
-        private bool NPC_Accept_Dating_condition()
+        private bool NPC_AcceptReject_Dating_condition()
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -398,13 +382,37 @@ namespace Bannerlord_Mod_Test
         }
 
         /* Break */
-        public bool LetsBreak { get; set; }
+        public bool DoBreak { get; set; }
         private void Do_BreakUp()
         {
-            LetsBreak = true;
+            DoBreak = true;
         }
 
         public List<CustomAgent> customAgents;
+
+        private bool CheckIfPlayerHasFriendOrNullRelationWithNPC_condition()
+        {
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
+
+            if (Hero.OneToOneConversationHero != null)
+            {
+                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                if (customAgentConversation != null)
+                {
+                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                    if (belief == null || belief.relationship == "Friends")
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private bool CheckIfPlayerCanAskOutWithNPC_condition()
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
@@ -496,6 +504,33 @@ namespace Bannerlord_Mod_Test
             }
             return false;
         }
+
+        private bool CheckIfPlayerSleepWithNPC_condition()
+        {
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
+
+            if (Hero.OneToOneConversationHero != null)
+            {
+                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                if (customAgentConversation != null)
+                {
+                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                    if (belief != null && belief.relationship == "Dating")
+                    {
+                        return false;
+                    }
+                    if (belief != null && belief.relationship == "Friends" && belief.value >= 7)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
 
         #region Emergency Call 
 
