@@ -34,16 +34,12 @@ namespace Bannerlord_Mod_Test
         {
             this.Id = id;
             this.Message = "";
+            this.IsMovingTarget = true;
             this.TargetAgent = agent;
             this.Name = agent.Name.ToString();
-            this.MarkerType = 1;
+            this.MarkerType = 1; // 2 = red . 1 = yellow . 0 = green
             CharacterObject characterObject = (CharacterObject)agent.Character;
-            if (characterObject != null)
-            {
-                this.MarkerType = 2; // red
-                this.MarkerType = 0; // green
-                this.MarkerType = 1; // yellow
-            }
+            if (characterObject != null) { }
         }
 
         [DataSourceProperty]
@@ -136,8 +132,101 @@ namespace Bannerlord_Mod_Test
         private int _markerType;
         private bool _isEnabled;
 
-        public string Name { get; set; }
-        private string _message;
         public int Id;
-    }
+        public string Name;
+        private string _message;
+
+		private int _questMarkerType;
+		private int _issueMarkerType;
+		private bool _isTracked;
+		private bool _isAgentInPrison;
+		private bool _isQuestMainStory;
+
+        //
+		[DataSourceProperty]
+		public int QuestMarkerType
+		{
+			get
+			{
+				return this._questMarkerType;
+			}
+			set
+			{
+				if (value != this._questMarkerType)
+				{
+					this._questMarkerType = value;
+					base.OnPropertyChangedWithValue(value, "QuestMarkerType");
+				}
+			}
+		}
+
+		[DataSourceProperty]
+		public int IssueMarkerType
+		{
+			get
+			{
+				return this._issueMarkerType;
+			}
+			set
+			{
+				if (value != this._issueMarkerType)
+				{
+					this._issueMarkerType = value;
+					base.OnPropertyChangedWithValue(value, "IssueMarkerType");
+				}
+			}
+		}
+
+		[DataSourceProperty]
+		public bool IsTracked
+		{
+			get
+			{
+				return this._isTracked;
+			}
+			set
+			{
+				if (value != this._isTracked)
+				{
+					this._isTracked = value;
+					base.OnPropertyChangedWithValue(value, "IsTracked");
+				}
+			}
+		}
+
+		[DataSourceProperty]
+		public bool IsQuestMainStory
+		{
+			get
+			{
+				return this._isQuestMainStory;
+			}
+			set
+			{
+				if (value != this._isQuestMainStory)
+				{
+					this._isQuestMainStory = value;
+					base.OnPropertyChangedWithValue(value, "IsQuestMainStory");
+				}
+			}
+		}
+
+		[DataSourceProperty]
+		public bool IsAgentInPrison
+		{
+			get
+			{
+				return this._isAgentInPrison;
+			}
+			set
+			{
+				if (value != this._isAgentInPrison)
+				{
+					this._isAgentInPrison = value;
+					base.OnPropertyChangedWithValue(value, "IsAgentInPrison");
+				}
+			}
+		}
+        //
+	}
 }

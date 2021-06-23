@@ -366,7 +366,7 @@ namespace Bannerlord_Mod_Test
 
             foreach (var customAgent in customAgentsList)
             {
-                if (/*customAgent.selfAgent.IsHero &&*/ customAgent.selfAgent.IsHuman)
+                if (customAgent.selfAgent.IsHuman)
                 {
                     for (int i = 0; i < ListWithAllTraits.Count; i++)
                     {
@@ -575,7 +575,6 @@ namespace Bannerlord_Mod_Test
                 {
                     foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
                     {
-                        //var x = customAgentsList.Find(c => c.Name == _customAgentJson.Name);
                         CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name && c.Id == _customAgentJson.Id);
                         if (x != null)
                         {
@@ -630,15 +629,15 @@ namespace Bannerlord_Mod_Test
                 {
                     return SocialExchangeSE.IntentionEnum.Positive;
                 }
-                else if (customAgent.SocialMove == "Flirt")
+                else if (customAgent.SocialMove == "Flirt" || customAgent.SocialMove == "AskOut")
                 {
                     return SocialExchangeSE.IntentionEnum.Romantic;
                 }
-                else if (customAgent.SocialMove == "Bully")
+                else if (customAgent.SocialMove == "Bully" || customAgent.SocialMove == "RomanticSabotage")
                 {
                     return SocialExchangeSE.IntentionEnum.Hostile;
                 }
-                else if (customAgent.SocialMove == "Jealous")
+                else if (customAgent.SocialMove == "Jealous" || customAgent.SocialMove == "FriendSabotage")
                 {
                     return SocialExchangeSE.IntentionEnum.Negative;
                 }
@@ -671,7 +670,7 @@ namespace Bannerlord_Mod_Test
         }
         private void UpdateTargetScreen()
         {
-            if (!this.IsEnabled)
+            if (this.IsEnabled)
             {
                 this.UpdateTargetScreenPositions();
             }
