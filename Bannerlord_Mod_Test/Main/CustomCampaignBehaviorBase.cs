@@ -257,6 +257,7 @@ namespace Bannerlord_Mod_Test
             #endregion
         }
 
+        public CustomAgent customAgentConversation { get; set; }
         internal BasicCharacterObject characterRef { get; set; }
         private bool ThisAgentWillInteractWithPlayer()
         {
@@ -389,25 +390,22 @@ namespace Bannerlord_Mod_Test
         }
 
         public List<CustomAgent> customAgents;
-        public List<CustomAgent> customAgentsNearPlayer;
 
         private bool CheckIfPlayerHasFriendOrNullRelationWithNPC_condition()
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                if (belief == null || belief.relationship == "Friends")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief == null || belief.relationship == "Friends")
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -418,25 +416,25 @@ namespace Bannerlord_Mod_Test
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
-            
-            if (Hero.OneToOneConversationHero != null)
+
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                SocialNetworkBelief belief2 = customMainAgent.GetBeliefBetween(customMainAgent, customAgentConversation);
+                if (belief != null && belief.relationship == "Dating")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Dating")
-                    {
-                        return false;
-                    }
-                    if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
-                    {
-                        return true;
-                    }
+                    return false;
+                }
+                if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
+                {
+                    return true;
                 }
             }
+
             return false;
         }
 
@@ -447,7 +445,7 @@ namespace Bannerlord_Mod_Test
 
             if (Hero.OneToOneConversationHero != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
                 if (customAgentConversation != null)
                 {
                     customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
@@ -469,7 +467,7 @@ namespace Bannerlord_Mod_Test
 
             if (Hero.OneToOneConversationHero != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
                 if (customAgentConversation != null)
                 {
                     customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
@@ -491,7 +489,7 @@ namespace Bannerlord_Mod_Test
 
             if (Hero.OneToOneConversationHero != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
                 if (customAgentConversation != null)
                 {
                     customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);

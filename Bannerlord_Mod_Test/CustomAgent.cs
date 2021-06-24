@@ -38,7 +38,7 @@ namespace Bannerlord_Mod_Test
         public bool busy { get; set; } // Has Target to start a social exchange when close? // or it's interacting?
         public bool cooldown { get; set; }
         public bool EnoughRest { get; set; }
-        public bool PlayerInteracting { get; set; }
+        public bool NearPlayer { get; set; }
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }
@@ -63,6 +63,7 @@ namespace Bannerlord_Mod_Test
             this.TriggerRuleList = new List<TriggerRule>();
             this.StatusList = new List<Status>();
             this.IsInitiator = false;
+            this.NearPlayer = false;
 
             AddStatusToCustomAgent(auxStatusList);
             this.Countdown = SetCountdownToCustomAgent();
@@ -92,8 +93,10 @@ namespace Bannerlord_Mod_Test
 
             return _countdown;
         }
+
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
+
         public void startSE(string _SEName, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
@@ -160,6 +163,7 @@ namespace Bannerlord_Mod_Test
             EndingSocialExchange = true;
 
             EnoughRest = false;
+            
         }
         internal void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
@@ -237,7 +241,7 @@ namespace Bannerlord_Mod_Test
                     _customAgentJson.TraitList = TraitList;
                     _customAgentJson.SocialNetworkBeliefs = SocialNetworkBeliefs;
                     //_customAgentJson.GoalsList = GoalsList;
-                    //_customAgentJson.ItemsList = ItemList;
+                    _customAgentJson.ItemsList = ItemList;
                 }
             }
 
@@ -259,7 +263,7 @@ namespace Bannerlord_Mod_Test
                     TraitList = _customAgentJson.TraitList;
                     SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                     //GoalsList = _customAgentJson.GoalsList;
-                    //ItemList = _customAgentJson.ItemsList;
+                    ItemList = _customAgentJson.ItemsList;
                 }
             }
         }
@@ -336,6 +340,7 @@ namespace Bannerlord_Mod_Test
             DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
             behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
         }
+
         #region /* Add / Update Beliefs  / Get Beliefs */ 
         public void AddBelief(SocialNetworkBelief belief)
         {
@@ -343,10 +348,11 @@ namespace Bannerlord_Mod_Test
         }
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
-            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
+            SocialNetworkBelief _belief = belief;
+            /*SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
                 b => b.relationship == belief.relationship
                 && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
-                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
+                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));*/
 
             if (_belief == null)
             {
@@ -448,11 +454,11 @@ namespace Bannerlord_Mod_Test
         }
         #endregion
         #region /* Add Item */
-        /*public void AddItem(string _itemName, int _quantity)
+        public void AddItem(string _itemName, int _quantity)
         {
             Item r = new Item(_itemName, _quantity);
             ItemList.Add(r);
-        }*/
+        }
         #endregion
         #region /* Play Animation / Stop Animation */
         public void PlayAnimation(string _animation)
@@ -464,6 +470,7 @@ namespace Bannerlord_Mod_Test
             selfAgent.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
+
         public void AddToMemory(MemorySE _newMemory)
         {
             if (MemorySEs.Count >= memorySize)

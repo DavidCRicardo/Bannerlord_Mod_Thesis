@@ -40,8 +40,6 @@ namespace Bannerlord_Mod_Test
         private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
-        public List<CustomAgent> CustomAgentsNearPlayerList = new List<CustomAgent>();
-
         private Random rnd { get; set; }
 
         public void Tick(float dt)
@@ -70,7 +68,7 @@ namespace Bannerlord_Mod_Test
 
                         if (customAgent.busy && customAgent.IsInitiator)
                         {
-                            if (customAgent.customTargetAgent.selfAgent == Agent.Main)
+                            if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent == Agent.Main)
                             {
                                 characterReftoCampaignBehaviorBase = customAgent.selfAgent.Character;
                                 intentionReftoCampaignBehaviorBase = GetIntentionToCampaignBehaviorBase(customAgent);
@@ -279,25 +277,12 @@ namespace Bannerlord_Mod_Test
                     /* Reference to CustomAgent */
                     customAgentsList = new List<CustomAgent>();
 
-                    int id = -1;
-                    Agent previousAgent = null;
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {
                         if (agent.IsHuman && agent.Character != null) //to allow all the NPCs
                         {
-                            if (previousAgent == null || agent.Character != previousAgent.Character)
-                            {
-                                id = 0;
-                            }
-                            else
-                            {
-                                id++;
-                            }
-
-                            CreateCustomAgent(agent, id);
-
-                            previousAgent = agent;
+                            CreateCustomAgent(agent);
                         }
                     }
 
@@ -341,12 +326,12 @@ namespace Bannerlord_Mod_Test
             return customAgent.EnoughRest;
         }
 
-        public void OnConversationEndWithPlayer()
+        public void OnConversationEndWithPlayer(CustomAgent custom)
         {
-            CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()) && c.IsInitiator && c.busy);
+            CustomAgent customAgent = customAgentsList.Find(c => c.selfAgent == custom.selfAgent && c.Id == custom.Id);
             if (customAgent != null)
             {
-                if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name.Contains(Agent.Main.Name))
+                if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name == Agent.Main.Name)
                 {
                     intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
                     characterReftoCampaignBehaviorBase = null;
@@ -356,6 +341,7 @@ namespace Bannerlord_Mod_Test
                     customAgent.EndingSocialExchange = false;
                     customAgent.FinalizeSocialExchange();
                     customAgent.customTargetAgent = null;
+
                 }
             }
         }
@@ -472,13 +458,17 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        private void CreateCustomAgent(Agent agent, int id)
+        private void CreateCustomAgent(Agent agent)
         {
+            int id = 0;
             CustomAgent customAgent = new CustomAgent(agent, id, StatusListString);
 
-            while (customAgentsList.Contains(customAgent))
+            foreach (var item in customAgentsList)
             {
-                customAgent.Id++;
+                if (item.Name == customAgent.Name && item.Id == customAgent.Id)
+                {
+                    customAgent.Id++;
+                }
             }
 
             customAgentsList.Add(customAgent);
@@ -486,7 +476,7 @@ namespace Bannerlord_Mod_Test
             mostWantedSE sE = new mostWantedSE(customAgent, new NextSE("", null, null, 0));
             mostWantedSEList.Add(sE);
 
-            AddAgentTarget(agent, id);
+            AddAgentTarget(agent, customAgent.Id);
         }
 
         private bool CheckIfSettlementExistsOnFile(string _currentSettlementName, string _currentLocationName)
@@ -681,24 +671,17 @@ namespace Bannerlord_Mod_Test
 
         private void CustomAgentsNearPlayer(CustomAgent customAgent)
         {
-            CustomAgent t = CustomAgentsNearPlayerList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
             if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0))
             {
-                if (t == null)
-                {
-                    CustomAgentsNearPlayerList.Add(customAgent);
-                }
+                customAgent.NearPlayer = true;
             }
             else
             {
-                if (t != null)
-                {
-                    CustomAgentsNearPlayerList.Remove(customAgent);
-                }
+                customAgent.NearPlayer = false;
             }
         }
 
-        private void AddAgentTarget(Agent agent, int id = -1)
+        private void AddAgentTarget(Agent agent, int id)
         {
             if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent))
             {

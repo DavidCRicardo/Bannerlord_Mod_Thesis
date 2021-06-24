@@ -38,7 +38,7 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        internal void OnInitialize(Random _rnd)
+        public void OnInitialize(Random _rnd)
         {
             Rnd = _rnd;
             SocialExchangeDoneAndReacted = false;
@@ -52,8 +52,8 @@ namespace Bannerlord_Mod_Test
             CustomAgentReceiver.SocialMove = SEName;
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
-        public bool ReduceDelay { get; set; }
-        internal void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+
+        public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
@@ -90,7 +90,8 @@ namespace Bannerlord_Mod_Test
                 SocialExchangeDoneAndReacted = true; 
             }
         }
-        internal void OnFinalize()
+
+        public void OnFinalize()
         {
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
@@ -308,6 +309,7 @@ namespace Bannerlord_Mod_Test
                 customAgent.UpdateBeliefWithNewRelation("Friends", _belief);
             }
         }
+
         public void AskOutMethod()
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
@@ -447,31 +449,8 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
         }
- 
 
-        /*private static string GetRelationType(InfluenceRule IR)
-        {
-            string relation = "";
-            switch (IR.RelationType)
-            {
-                case IntentionEnum.Positive:
-                case IntentionEnum.Negative:
-                    relation = "Friends";
-                    break;
-                case IntentionEnum.Romantic:
-                    relation = "Dating";
-                    break;
-                case IntentionEnum.Hostile:
-                    break;
-                case IntentionEnum.Special:
-                    break;
-                default:
-                    break;
-            }
-
-            return relation;
-        }*/
-
+        public IntentionEnum Intention { get; private set; }
         public enum IntentionEnum
         {
             Undefined = -1,
@@ -482,13 +461,14 @@ namespace Bannerlord_Mod_Test
             Special,
             AllTypes
         }
-        public IntentionEnum Intention { get; private set; }
+
         public bool SocialExchangeDoneAndReacted { get; set; }
         public bool ReceptorIsPlayer { get; set; }
+        public bool ReduceDelay { get; set; }
         public string SEName { get; set; }
         private Random Rnd { get; set; }
-        private int auxToCheckWhoIsSpeaking;
-        private int index;
+        private int auxToCheckWhoIsSpeaking { get; set; }
+        private int index { get; set; }
 
         private List<CustomAgent> CustomAgentList { get; set; }
         public CustomAgent CustomAgentInitiator { get; set; }
@@ -511,6 +491,28 @@ namespace Bannerlord_Mod_Test
             {
                 //Rejected
             }
+        }
+        private static string GetRelationType(InfluenceRule IR)
+        {
+            string relation = "";
+            switch (IR.RelationType)
+            {
+                case IntentionEnum.Positive:
+                case IntentionEnum.Negative:
+                    relation = "Friends";
+                    break;
+                case IntentionEnum.Romantic:
+                    relation = "Dating";
+                    break;
+                case IntentionEnum.Hostile:
+                    break;
+                case IntentionEnum.Special:
+                    break;
+                default:
+                    break;
+            }
+
+            return relation;
         }
     }
 }
