@@ -234,7 +234,7 @@ namespace Bannerlord_Mod_Test
 
             if (settlementJson != null)
             {
-                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name);
+                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name && c.Id == Id);
 
                 if (_customAgentJson != null)
                 {
@@ -256,7 +256,7 @@ namespace Bannerlord_Mod_Test
 
             if (settlementJson != null)
             {
-                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name);
+                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name && c.Id == Id);
 
                 if (_customAgentJson != null)
                 {
@@ -348,11 +348,11 @@ namespace Bannerlord_Mod_Test
         }
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
-            SocialNetworkBelief _belief = belief;
-            /*SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
+            //SocialNetworkBelief _belief = belief;
+            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
                 b => b.relationship == belief.relationship
                 && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
-                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));*/
+                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
 
             if (_belief == null)
             {
@@ -363,13 +363,13 @@ namespace Bannerlord_Mod_Test
             {
                 _belief.value += _value;
 
-                if (_belief.value >= 10)
+                if (_belief.value >= 5)
                 {
-                    _belief.value = 10;
+                    _belief.value = 5;
                 }
-                if (_belief.value <= -10)
+                if (_belief.value <= -5)
                 {
-                    _belief.value = -10;
+                    _belief.value = -5;
                 }
             }
         }
@@ -388,12 +388,14 @@ namespace Bannerlord_Mod_Test
 
             _belief.relationship = _newRelation;
         }
+
         public List<SocialNetworkBelief> SelfGetNegativeRelations(string _relation = "")
         {
             return _relation == ""
                 ? SocialNetworkBeliefs.FindAll(b => b.value < 0)
                 : SocialNetworkBeliefs.FindAll(b => b.relationship == _relation && b.value < 0);
         }
+
         //Get Belief from itself with other
         public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
@@ -401,6 +403,7 @@ namespace Bannerlord_Mod_Test
                 SocialNetworkBeliefs.Find(b => b.agents.Contains(Name) && b.agents.Contains(_otherCustomAgent.Name) 
                                          && b.IDs.Contains(Id) && b.IDs.Contains(_otherCustomAgent.Id));
         }
+
         //Get Belief between 2 other NPCs
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
         {
@@ -409,6 +412,7 @@ namespace Bannerlord_Mod_Test
                 && b.IDs.Contains(customAgent1.Id) && b.IDs.Contains(customAgent2.Id)
                 );
         }
+
         public int CheckHowManyTheAgentIsDating(CustomAgent customAgent)
         {
             return customAgent.SocialNetworkBeliefs.Count(
@@ -435,6 +439,7 @@ namespace Bannerlord_Mod_Test
             GoalsList.Remove(r);
         }*/
         #endregion
+
         #region /* Update Status */
         public void UpdateStatus(string statusName, double _value)
         {
@@ -453,6 +458,7 @@ namespace Bannerlord_Mod_Test
             }
         }
         #endregion
+
         #region /* Add Item */
         public void AddItem(string _itemName, int _quantity)
         {
@@ -460,6 +466,7 @@ namespace Bannerlord_Mod_Test
             ItemList.Add(r);
         }
         #endregion
+
         #region /* Play Animation / Stop Animation */
         public void PlayAnimation(string _animation)
         {

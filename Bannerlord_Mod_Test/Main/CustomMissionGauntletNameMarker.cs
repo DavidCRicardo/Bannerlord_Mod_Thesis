@@ -67,9 +67,9 @@ namespace Bannerlord_Mod_Test
 
         private void CheckIntentionFromNPCToPlayer(float dt)
         {
-            if (_dataSource.intentionReftoCampaignBehaviorBase != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.characterReftoCampaignBehaviorBase != null)
+            if (_dataSource.intentionReftoCampaignBehaviorBase != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.customCharacterReftoCampaignBehaviorBase != null)
             {
-                CBB_ref.characterRef = _dataSource.characterReftoCampaignBehaviorBase;
+                CBB_ref.characterRef = _dataSource.customCharacterReftoCampaignBehaviorBase;
                 switch (_dataSource.intentionReftoCampaignBehaviorBase)
                 {
                     case SocialExchangeSE.IntentionEnum.Positive:

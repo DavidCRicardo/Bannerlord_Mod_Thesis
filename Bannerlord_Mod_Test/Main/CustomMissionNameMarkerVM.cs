@@ -70,7 +70,7 @@ namespace Bannerlord_Mod_Test
                         {
                             if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent == Agent.Main)
                             {
-                                characterReftoCampaignBehaviorBase = customAgent.selfAgent.Character;
+                                customCharacterReftoCampaignBehaviorBase = customAgent;
                                 intentionReftoCampaignBehaviorBase = GetIntentionToCampaignBehaviorBase(customAgent);
                             }
 
@@ -334,7 +334,7 @@ namespace Bannerlord_Mod_Test
                 if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name == Agent.Main.Name)
                 {
                     intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
-                    characterReftoCampaignBehaviorBase = null;
+                    customCharacterReftoCampaignBehaviorBase = null;
                     SetCanResetCBB_refVariables(true);
 
                     onGoingSEs--;
@@ -631,7 +631,7 @@ namespace Bannerlord_Mod_Test
             resetVariables = value;
         }
 
-        internal BasicCharacterObject characterReftoCampaignBehaviorBase { get; set; }
+        public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
 
         internal SocialExchangeSE.IntentionEnum intentionReftoCampaignBehaviorBase { get; set; }
         private SocialExchangeSE.IntentionEnum GetIntentionToCampaignBehaviorBase(CustomAgent customAgent)

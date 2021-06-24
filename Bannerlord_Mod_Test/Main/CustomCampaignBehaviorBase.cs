@@ -7,6 +7,7 @@ using System.Linq;
 using SandBox;
 using Helpers;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Bannerlord_Mod_Test
 {
@@ -38,21 +39,20 @@ namespace Bannerlord_Mod_Test
         //TaleWorlds.CampaignSystem.dll : TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors.Towns
         private void TavernEmployeesCampaignBehavior(CampaignGameStarter campaignGameStarter)
         {
-
             //Start Dialog
             //campaignGameStarter.AddDialogLine("tavernmaid_introduction", "start", "tavernmaid_greeting", "Hello Adventure! ", new ConversationSentence.OnConditionDelegate(testing_intro_tavernmaid), null, 101, null);
             //campaignGameStarter.AddPlayerLine("tavernmaid_introduction", "tavernmaid_greeting", "close_window", "Thank you. ", null, null, 100, null, null);
 
             //Dialog
-            campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), null, 100, null, null);
-            campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_test1", "AI - Can you say 'Hello World'? {GOLD_ICON}", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_test1", "tavernmaid_order_test2", "Social Engagement? That sounds interesting.", null, null, 100, null);
+            //campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), null, 100, null, null);
+            //campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_test1", "AI - Can you say 'Hello World'? {GOLD_ICON}", null, null, 100, null, null);
+            //campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_test1", "tavernmaid_order_test2", "Social Engagement? That sounds interesting.", null, null, 100, null);
 
             // Closes dialog with an Answer
-            campaignGameStarter.AddPlayerLine("tavernmaid_test", "tavernmaid_order_test2", "close_window", "Yes, it is!", null, null, 100, null, null);
+            //campaignGameStarter.AddPlayerLine("tavernmaid_test", "tavernmaid_order_test2", "close_window", "Yes, it is!", null, null, 100, null, null);
 
             // Closes dialog with no Answer
-            campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_testnews1", "close_window", "No news sr.", null, null, 100, null);
+            //campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_testnews1", "close_window", "No news sr.", null, null, 100, null);
 
             campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant?", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
@@ -101,7 +101,7 @@ namespace Bannerlord_Mod_Test
         //TaleWorlds.CampaignSystem.dll : CampaignSystem.SandBox.CampaignBehaviors.VillageBehaviors.VillagerCampaignBehavior
         private void AddVillageFarmerTradeAndLootDialogs(CampaignGameStarter campaignGameStarter)
         {
-            campaignGameStarter.AddPlayerLine("village_farmer_buy_products", "village_farmer_talk", "village_farmer_player_trade", "I'm going to market too. Bye bye bye", null, null, 100, null, null);
+            //campaignGameStarter.AddPlayerLine("village_farmer_buy_products", "village_farmer_talk", "village_farmer_player_trade", "I'm going to market too. Bye bye bye", null, null, 100, null, null);
         }
         
         //TaleWorlds.CampaignSystem.dll : CampaignSystem.SandBox.Source.Towns.CommonVillagersCampaignBehavior
@@ -109,159 +109,187 @@ namespace Bannerlord_Mod_Test
         {
             /*Child or Teenager*/
             //TavernKeeper
-            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            //TavernMaid
-            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            //Child
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            
-            //Town Or Village
-
             // Friendly
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             // UnFriendly
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            // AskOut
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
+            // Flirt
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            // Hostile 
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            // Break
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            // Sleep With NPC
+            campaignGameStarter.AddPlayerLine("1", "tavernkeeper_talk", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+
+            //TavernMaid
+            // Friendly
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            // UnFriendly
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            // AskOut
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
+            // Flirt
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            // Hostile 
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            // Break
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            // Sleep With NPC
+            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+
+            //Child
+            // Friendly
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            // UnFriendly
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
+            // AskOut
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
+            // Flirt
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            // Hostile 
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            // Break
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            // Sleep With NPC
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_children_player_no_rhyme", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player_children_post_rhyme", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+
+            //Town Or Village
+            // Friendly
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
+            // UnFriendly
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             // AskOut
             campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
             // Flirt
             campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            // Hostile
+            // Hostile 
             campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
             // Break
-            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_break", "Time to break. This is not working anymore. [Break]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
-            
-            }
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            // Sleep With NPC
+            campaignGameStarter.AddPlayerLine("1", "town_or_village_player", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
 
+        }
+
+        /*Hero Dialog*/
         private void LordConversationsCampaignBehavior(CampaignGameStarter campaignGameStarter)
         {
             /* Increase Courage */
             campaignGameStarter.AddPlayerLine("1175", "hero_main_options", "hero_increase_courage", "You can fight against the bully. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_NotNegativeTraits), null, 100, null, null);
             campaignGameStarter.AddDialogLine("1175", "hero_increase_courage", "close_window", "Ok, I will try.", null, new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null);
 
-            /*Hero Dialog*/
             campaignGameStarter.AddPlayerLine("1", "start", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_date", "close_window", "I don't know... Well, why not.", null, null, 100, null);
 
 
-            /* Player Interactions with NPC */
+            #region /* Player Interactions with NPC */
 
             // Friendly
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "lord_friendly", "close_window", "Oh...that's nice. Thank you![if:idle_pleased]", null, null, 100, null);
             // UnFriendly
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "lord_unfriendly", "close_window", "Oh...that's not nice![if:idle_angry]", null, null, 100, null);
             // AskOut
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romanticAskOut", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
             // Flirt
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romanticFlirt", "You still beautiful as always! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            // Hostile
+            // Hostile 
             campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_hostile", "What are you doing here? Go home and wash some dishes! [Hostile]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
             // Break
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_break", "Time to break. This is not working anymore. [Break]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_break", "Time to break. This is not working anymore. [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition), new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null, null);
             // Sleep With NPC
-            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_sleep", "Do you want to have a child? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
-            
-            //Accept AskOut
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_sleep", "What do you think about having a family? [Special]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition), null, 100, null, null);
+
+
+            // React to Friendly
+            campaignGameStarter.AddDialogLine("1", "lord_friendly", "close_window", "Oh...that's nice. Thank you![if:idle_pleased]", null, null, 100, null);
+            // React to UnFriendly
+            campaignGameStarter.AddDialogLine("1", "lord_unfriendly", "close_window", "Oh...that's not nice![if:idle_angry]", null, null, 100, null);
+            // Accept AskOut
             campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), new ConversationSentence.OnConsequenceDelegate(Start_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
-            //Reject AskOut
+            // Reject AskOut
             campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
-
-            //Reacting to Flirt
+            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", message + "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Gender_condition), null, 101, null); // Reject if they are the same gender
+            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 101, null); // Reject if they are the same gender
+            // Reacting to Flirt
             campaignGameStarter.AddDialogLine("1", "lord_romanticFlirt", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
-
-            //Reacting to Hostile
+            // Reacting to Hostile
             campaignGameStarter.AddDialogLine("1", "lord_hostile", "close_window", "Oh, don't need to be so rude![if:idle_pleased][ib:confident]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null);
-            
-            //Reacting to Break
+            // Reacting to Break
             campaignGameStarter.AddDialogLine("1", "lord_break", "close_window", "Oh, fine! Have a good day sir![if:idle_angry]", null, null, 100, null);
-            
-            //Reacting to Sleep
+            // Reacting to Sleep
             campaignGameStarter.AddDialogLine("1", "lord_sleep", "close_window", "Oh, I don't feel ready to take that step. Maybe next time![if:idle_pleased][ib:confident]", null, null, 100, null);
 
+            #endregion
+           
+            #region /* NPC Interactions with Player */
 
-            //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_friendly", "You are awesome! [Friendly]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_friendly", "close_window", "Oh...that's nice. Thank you![if:idle_pleased]", null, null, 100, null);
-            //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_unfriendly", "My pet is smarter than you! [Unfriendly]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_unfriendly", "close_window", "Oh...that's not nice![if:idle_angry]", null, null, 100, null);
-
-            ////Appears if not dating
-            //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "Uh.. you want to start dating? [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition), null, 100, null, null);
-            ////campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_romantic", "My day is better with you! [Romantic]", new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingWithNPC_condition), null, 100, null, null);
-            ////Accept and increase Romance
-            //campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
-            ////Reject
-            //campaignGameStarter.AddDialogLine("1", "lord_romantic", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Accept_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
-
-            #region
-            campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
-
-            campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
-
-            campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
-
-            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
-
-            //Hostile
-            //campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_hostile", "I need some gold, these coins are enough for now! [Hostile]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_hostile", "close_window", "You don't have a job, or what? [ib:nervous][if:idle_angry]", null, new ConversationSentence.OnConsequenceDelegate(StealFromNPC), 100, null);
-            /* NPC Friendly Interactions With Player */  //Working
+            /* NPC Friendly Interactions With Player */
             campaignGameStarter.AddDialogLine("1", "start", "Friendly_start", "Hi Friend... If you need something just tell me, maybe I can help you.[ib:closed][if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Friendly), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step1", "Yes, sure. I appreciate it. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Friendship), 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "Friendly_start", "close_window", "Huh.. Someone is calling me!", null, null, 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "Friendly_start", "Friendly_step2", "Do you think that I am a kid or something? I don't need your help! [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step1", "close_window", "It's a pleasure to help you. [if:idle_pleased]", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step2", "close_window", "Take it easy. There is no need to be rude. [rf:idle_angry]", null, null, 100, null);
-            /**/
-            campaignGameStarter.AddDialogLine("1", "start", "Romantic_start", "You are looking really charming today.[if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Romantic), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step1", "Hehe You're kind as always. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step2", "Are you blind? Go away! [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "Romantic_step1", "close_window", "Thank you Sr.[ib:confident]", null, null, 100, null);
-            campaignGameStarter.AddDialogLine("1", "Romantic_step2", "close_window", "Not nice.", null, null, 100, null);
 
+            /* NPC UnFriendly Interactions With Player */
             campaignGameStarter.AddDialogLine("1", "start", "UnFriendly_start", "Why are you listening people's conversation?", new ConversationSentence.OnConditionDelegate(UnFriendly), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step1", "Sorry, it wouldn't happen again. [Accept]", null, null, 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step2", "Just curiosity. [Reject]", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("1", "UnFriendly_step1", "close_window", "I hope not, idiot.", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null);
             campaignGameStarter.AddDialogLine("1", "UnFriendly_step2", "close_window", "Curiosity, huh.", null, null, 100, null);
 
-            campaignGameStarter.AddDialogLine("1", "start", "Hostile_start", "You have some gold for me, huh? [ib:aggressive]", new ConversationSentence.OnConditionDelegate(Hostile), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Hostile_start", "Hostile_step1", "There you go. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(NPCStealPlayer), 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "Hostile_start", "Hostile_step2", "Are you kidding me? [Reject]", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "Hostile_step1", "close_window", "Thank you, friend hehe.", null, null, 100, null);
-            campaignGameStarter.AddDialogLine("1", "Hostile_step2", "close_window", "Hum... maybe next time.", null, null, 100, null);
+            /* NPC Romantic Interactions With Player */
+            campaignGameStarter.AddDialogLine("1", "start", "Romantic_start", "You are looking really charming today.[if:idle_pleased]", new ConversationSentence.OnConditionDelegate(Romantic), null, 200, null);
+            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step1", "Hehe You're kind as always. [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Romantic_start", "Romantic_step2", "Are you blind? Go away! [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "Romantic_step1", "close_window", "Thank you Sr.[ib:confident]", null, null, 100, null);
+            campaignGameStarter.AddDialogLine("1", "Romantic_step2", "close_window", "Not nice.", null, null, 100, null);
+            
+            /* NPC Hostile Interactions With Player */
+            campaignGameStarter.AddDialogLine("1", "start", "Hostile_start", "You want to fight, huh? [ib:aggressive]", new ConversationSentence.OnConditionDelegate(Hostile), null, 200, null);
+            campaignGameStarter.AddPlayerLine("1", "Hostile_start", "Hostile_step1", "You want to hurt yourself? [Accept]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Hostile_start", "Hostile_step2", "Are you kidding me? [Reject]", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Dating), 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "Hostile_step1", "close_window", "You don't deserve my time.", null, null, 100, null);
+            campaignGameStarter.AddDialogLine("1", "Hostile_step2", "close_window", "Hum... maybe next time...", null, null, 100, null);
 
-            /*campaignGameStarter.AddDialogLine("1", "start", "Special_start", "Special", new ConversationSentence.OnConditionDelegate(Special), null, 200, null);
-            campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step1", "[Accept]!", null, null, 100, null, null);
-            campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step2", "[Reject]!", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "Special_step1", "close_window", "SpecialAccept", null, null, 100, null);
-            campaignGameStarter.AddDialogLine("1", "Special_step2", "close_window", "SpecialReject", null, null, 100, null);*/
+            /* NPC Special Interactions With Player */
+            campaignGameStarter.AddDialogLine("1", "start", "Special_start", "Special", new ConversationSentence.OnConditionDelegate(Special), null, 200, null);
+            campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step1", "Yes, I think it's better for both. [Accept]", null, null, 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "Special_start", "Special_step2", "What? Are you kidding me? [Reject]", null, null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "Special_step1", "close_window", "Yes, maybe we can be friends.", null, new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null);
+            campaignGameStarter.AddDialogLine("1", "Special_step2", "close_window", "No, I am not. Have a good day!", null, new ConversationSentence.OnConsequenceDelegate(Do_BreakUp), 100, null);
 
-            /*
-            campaignGameStarter.AddDialogLine("1175", "lord_give_oath_give_up1", "close_window", "{=kvrZ4HIT} {PLAYER} here on {CURRENT_SETTLEMENT_NAME} and me {CONVERSATION_CHARACTER} .... No, I don't want to test your code. Go away[rf:idle_angry][ib:nervous]!", null, delegate ()
-            {
-                PlayerEncounter.LeaveEncounter = true;
-            }, 100, null);
-            */
             #endregion
+
+
+            campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
+            campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
+            campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
+            campaignGameStarter.AddDialogLine("1", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
         }
 
         public CustomAgent customAgentConversation { get; set; }
-        internal BasicCharacterObject characterRef { get; set; }
+        public CustomAgent characterRef { get; set; }
+
         private bool ThisAgentWillInteractWithPlayer()
         {
-            if (CharacterObject.OneToOneConversationCharacter == characterRef)
+            customAgentConversation = customAgents.Find( c => c == characterRef 
+                //&& c.customTargetAgent == customAgents.Find(c2 => c2.selfAgent == Agent.Main)
+                );
+
+            if (customAgentConversation != null)
             {
                 characterRef = null;
                 return true;
@@ -325,56 +353,97 @@ namespace Bannerlord_Mod_Test
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                bool isFaithful = customAgentConversation.TraitList.Exists(t => t.traitName == "Faithful");
+                bool isCharming = customAgentConversation.TraitList.Exists(t => t.traitName == "Charming");
+
+                int datingHowMany = customAgentConversation.CheckHowManyTheAgentIsDating(customAgentConversation);
+
+                if (isFaithful && isCharming && datingHowMany <= 0)
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    bool isFaithful = customAgentConversation.TraitList.Exists(t => t.traitName == "Faithful");
-                    bool isCharming = customAgentConversation.TraitList.Exists(t => t.traitName == "Charming");
+                    return true;
+                }
+                else if (!isFaithful && isCharming)
+                {
+                    return true;
+                }
+                else { return false; }
+            }
+            
+            return false;
+        }
+        string message = null;
+        //if (message.Contains("{PERSON}"))
+        //            {
+        //                StringBuilder builder = new StringBuilder(message);
+        //builder.Replace("{PERSON}", "Oh no");
+        //                message = builder.ToString();
+        //            }
+    private bool NPC_Gender_condition()
+        {
+            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    int datingHowMany = customAgentConversation.CheckHowManyTheAgentIsDating(customAgentConversation);
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (isFaithful && isCharming && datingHowMany <= 0)
+            if (customAgentConversation != null)
+            {
+                if (Agent.Main.IsFemale || customAgentConversation.selfAgent.IsFemale)
+                {
+                    if (Agent.Main.IsFemale && customAgentConversation.selfAgent.IsFemale)
+                    {
+                        return false;
+                    }
+                    else
                     {
                         return true;
                     }
-                    else if (!isFaithful && isCharming)
-                    {
-                        return true;
-                    }
+                }
+                else
+                {
+                    return false;
                 }
             }
 
             return false;
         }
 
+
         public bool giveCourage { get; set; }
+        public bool IncreaseFriendshipWithPlayer { get; set; }
+        public bool DecreaseFriendshipWithPlayer { get; set; }
+        public bool IncreaseDatingWithPlayer { get; set; }
+        public bool DecreaseDatingWithPlayer { get; set; }
+
         private void Increase_Courage()
         {
             giveCourage = true;
         }
-        public bool DecreaseFriendshipWithPlayer { get; set; }
-        public bool IncreaseFriendshipWithPlayer { get; set; }
+
         private void Increase_Friendship()
         {
             IncreaseFriendshipWithPlayer = true;
         }
+
         private void Decrease_Friendship()
         {
             DecreaseFriendshipWithPlayer = true;
         }
-        public bool DecreaseDatingWithPlayer { get; set; }
-        public bool IncreaseDatingWithPlayer { get; set; }
+
         private void Increase_Dating()
         {
             IncreaseDatingWithPlayer = true;
         }
+
         private void Decrease_Dating()
         {
             DecreaseDatingWithPlayer = true;
         }
+
         /* Start Dating aka AskOut */
         public bool StartDating { get; set; }
         private void Start_Dating()
@@ -419,12 +488,12 @@ namespace Bannerlord_Mod_Test
 
             customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-            if (customAgentConversation != null)
+            if (customAgentConversation != null && customAgentConversation.selfAgent.Age > 18)
             {
                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                 CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                SocialNetworkBelief belief2 = customMainAgent.GetBeliefBetween(customMainAgent, customAgentConversation);
+
                 if (belief != null && belief.relationship == "Dating")
                 {
                     return false;
@@ -443,19 +512,18 @@ namespace Bannerlord_Mod_Test
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                if (belief != null && belief.relationship == "Dating")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Dating")
-                    {
-                        return true;
-                    }
+                    return true;
                 }
+                
             }
             return false;
         }
@@ -465,19 +533,18 @@ namespace Bannerlord_Mod_Test
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
-                {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                     CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                     SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                     if (belief != null && belief.relationship == "Dating")
                     {
                         return true;
                     }
-                }
+                
             }
             return false;
         }
@@ -487,20 +554,19 @@ namespace Bannerlord_Mod_Test
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
-                {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                     CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                     SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                     if (belief != null && belief.relationship == "Dating" && belief.value <= 0)
                     {
                         return true;
                     }
-                }
             }
+            
             return false;
         }
 
@@ -509,26 +575,26 @@ namespace Bannerlord_Mod_Test
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             string _currentLocation = CampaignMission.Current.Location.StringId;
 
-            if (Hero.OneToOneConversationHero != null)
+            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+            if (customAgentConversation != null)
             {
-                CustomAgent customAgentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (customAgentConversation != null)
-                {
                     customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                     CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                     SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Dating")
+                    if (belief != null && belief.relationship == "Friends")
                     {
                         return false;
                     }
-                    if (belief != null && belief.relationship == "Friends" && belief.value >= 7)
+                    if (belief != null && belief.relationship == "Dating" && belief.value >= 5)
                     {
                         return true;
                     }
-                }
+                
             }
             return false;
         }
+
 
         #region Emergency Call 
 
@@ -674,10 +740,6 @@ namespace Bannerlord_Mod_Test
         }
     }
 
-    //internal ConversationSentence(string idString, TextObject text, string inputToken, string outputToken, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, uint flags = 0U, int priority = 100, int agentIndex = 0, int nextAgentIndex = 0, object relatedObject = null, bool withVariation = false, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null);
-    //public ConversationSentence AddPlayerLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null)
-    //public ConversationSentence AddDialogLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)
-    //public ConversationSentence AddDialogLineMultiAgent(string id, string inputToken, string outputToken, TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int agentIndex, int nextAgentIndex, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)
 }
 
 
@@ -703,3 +765,9 @@ namespace Bannerlord_Mod_Test
  * 
  *             //[rf:idle_angry][ib:nervous]
  * */
+
+
+//internal ConversationSentence(string idString, TextObject text, string inputToken, string outputToken, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, uint flags = 0U, int priority = 100, int agentIndex = 0, int nextAgentIndex = 0, object relatedObject = null, bool withVariation = false, ConversationSentence.OnMultipleConversationConsequenceDelegate speakerDelegate = null, ConversationSentence.OnMultipleConversationConsequenceDelegate listenerDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null);
+//public ConversationSentence AddPlayerLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null)
+//public ConversationSentence AddDialogLine(string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)
+//public ConversationSentence AddDialogLineMultiAgent(string id, string inputToken, string outputToken, TextObject text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int agentIndex, int nextAgentIndex, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null)
