@@ -28,7 +28,7 @@ namespace Bannerlord_Mod_Test
         public List<Status> StatusList { get; set; }
         public List<CustomAgent> customAgentsList { get; set; }
         public List<Trait> TraitList { get; set; }
-        public List<Goal> GoalsList { get; set; }
+        //public List<Goal> GoalsList { get; set; }
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         public List<Item> ItemList { get; set; }
         public List<MemorySE> MemorySEs { get; set; }
@@ -56,7 +56,7 @@ namespace Bannerlord_Mod_Test
             this.customTargetAgent = null;
             this.customAgentsList = new List<CustomAgent>(); // reference to NPCs around 
             this.TraitList = new List<Trait>();
-            this.GoalsList = new List<Goal>();
+            //this.GoalsList = new List<Goal>();
             this.SocialNetworkBeliefs = new List<SocialNetworkBelief>();
             this.ItemList = new List<Item>();
             this.MemorySEs = new List<MemorySE>();
@@ -121,7 +121,7 @@ namespace Bannerlord_Mod_Test
         {
             if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.customTargetAgent != null)
             {
-                InformationManager.DisplayMessage(new InformationMessage(customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position).ToString()));
+                //InformationManager.DisplayMessage(new InformationMessage(customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position).ToString()));
                 
                 if (customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position) < 3)
                 {
@@ -236,8 +236,8 @@ namespace Bannerlord_Mod_Test
                 {
                     _customAgentJson.TraitList = TraitList;
                     _customAgentJson.SocialNetworkBeliefs = SocialNetworkBeliefs;
-                    _customAgentJson.GoalsList = GoalsList;
-                    _customAgentJson.ItemsList = ItemList;
+                    //_customAgentJson.GoalsList = GoalsList;
+                    //_customAgentJson.ItemsList = ItemList;
                 }
             }
 
@@ -258,8 +258,8 @@ namespace Bannerlord_Mod_Test
                 {
                     TraitList = _customAgentJson.TraitList;
                     SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
-                    GoalsList = _customAgentJson.GoalsList;
-                    ItemList = _customAgentJson.ItemsList;
+                    //GoalsList = _customAgentJson.GoalsList;
+                    //ItemList = _customAgentJson.ItemsList;
                 }
             }
         }
@@ -414,7 +414,7 @@ namespace Bannerlord_Mod_Test
 
         #endregion
         #region /* Add / Update / Remove Goals */
-        public void AddGoal(string _relationship, string _target, int _value)
+        /*public void AddGoal(string _relationship, string _target, int _value)
         {
             GoalsList.Add(new Goal(_relationship, _target, _value));
         }
@@ -427,7 +427,7 @@ namespace Bannerlord_Mod_Test
         {
             var r = GoalsList.Find(g => g.relationship == _relationship && g.targetName == _target);
             GoalsList.Remove(r);
-        }
+        }*/
         #endregion
         #region /* Update Status */
         public void UpdateStatus(string statusName, double _value)
@@ -448,11 +448,11 @@ namespace Bannerlord_Mod_Test
         }
         #endregion
         #region /* Add Item */
-        public void AddItem(string _itemName, int _quantity)
+        /*public void AddItem(string _itemName, int _quantity)
         {
             Item r = new Item(_itemName, _quantity);
             ItemList.Add(r);
-        }
+        }*/
         #endregion
         #region /* Play Animation / Stop Animation */
         public void PlayAnimation(string _animation)

@@ -449,7 +449,7 @@ namespace Bannerlord_Mod_Test
         }
  
 
-        private static string GetRelationType(InfluenceRule IR)
+        /*private static string GetRelationType(InfluenceRule IR)
         {
             string relation = "";
             switch (IR.RelationType)
@@ -470,7 +470,7 @@ namespace Bannerlord_Mod_Test
             }
 
             return relation;
-        }
+        }*/
 
         public enum IntentionEnum
         {

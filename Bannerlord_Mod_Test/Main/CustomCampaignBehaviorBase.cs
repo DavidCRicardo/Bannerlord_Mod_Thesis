@@ -389,6 +389,7 @@ namespace Bannerlord_Mod_Test
         }
 
         public List<CustomAgent> customAgents;
+        public List<CustomAgent> customAgentsNearPlayer;
 
         private bool CheckIfPlayerHasFriendOrNullRelationWithNPC_condition()
         {
@@ -530,7 +531,6 @@ namespace Bannerlord_Mod_Test
             }
             return false;
         }
-
 
         #region Emergency Call 
 

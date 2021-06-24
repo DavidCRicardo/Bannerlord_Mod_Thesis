@@ -34,13 +34,14 @@ namespace Bannerlord_Mod_Test
         public override void OnGameInitializationFinished(Game game)
         {
         }
+
         private CustomCampaignBehaviorBase CBBref;
 
         public override void OnMissionBehaviourInitialize(Mission mission)
         {
             base.OnMissionBehaviourInitialize(mission);
 
-            mission.MissionBehaviours.Add(new CustomMissionGauntletNameMarker(CBBref));           
+            mission.MissionBehaviours.Add(new CustomMissionGauntletNameMarker(CBBref, mission));           
         }
     }
 }

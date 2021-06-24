@@ -40,6 +40,8 @@ namespace Bannerlord_Mod_Test
         private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
+        public List<CustomAgent> CustomAgentsNearPlayerList = new List<CustomAgent>();
+
         private Random rnd { get; set; }
 
         public void Tick(float dt)
@@ -64,6 +66,8 @@ namespace Bannerlord_Mod_Test
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
+                        CustomAgentsNearPlayer(customAgent);
+
                         if (customAgent.busy && customAgent.IsInitiator)
                         {
                             if (customAgent.customTargetAgent.selfAgent == Agent.Main)
@@ -95,10 +99,6 @@ namespace Bannerlord_Mod_Test
                     if (_firstTick2)
                     {
                         _firstTick2 = false;
-
-                        CharacterObject a = CharacterObject.OneToOneConversationCharacter;
-
-                        
                     }
                 }
                 UpdateTargetScreen();
@@ -128,90 +128,6 @@ namespace Bannerlord_Mod_Test
 
             DesireFormation();
         }
-        private void PreInitialize()
-        {
-            CheckIfFileExists();
-
-            _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-            _currentLocation = CampaignMission.Current.Location.StringId;
-            if (CheckIfSettlementExistsOnFile(_currentSettlement, _currentLocation))
-            {
-                giveTraitsToNPCs = false;
-            }
-            else { giveTraitsToNPCs = true; }
-        }
-        private void Initialize(bool giveTraitsToNPCs)
-        {
-            InitializeSocialExchanges();
-
-            StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
-
-            if (Mission.Current.MainAgent != null)
-            {
-                if (customAgentsList == null)
-                {
-                    /* Reference to Next SE & Most Wanted SE */
-                    nextSE = new NextSE("", null, null, 0);
-                    mostWantedSEList = new List<mostWantedSE>();
-
-                    /* Reference to CustomAgent */
-                    customAgentsList = new List<CustomAgent>();
-
-                    int id = -1;
-                    Agent previousAgent = null;
-
-                    foreach (Agent agent in Mission.Current.Agents)
-                    {
-                        if (agent.IsHuman && agent.Character != null) //to allow all the NPCs
-                        {
-                            if (previousAgent == null || agent.Character != previousAgent.Character)
-                            {
-                                id = 0;
-                            }
-                            else
-                            {
-                                id++;
-                            }
-
-                            CreateCustomAgent(id, agent);
-
-                            previousAgent = agent;
-                        }
-                    }
-
-                    if (giveTraitsToNPCs)
-                    {
-                        GiveRandomTraitsToAgents();
-                        SaveNewAgentsInfoToJSON(customAgentsList);
-                    }
-
-                    LoadAllInfoFromJSON();
-
-                    // Set CustomAgent countdown depending of the traits
-                    foreach (CustomAgent customAgent in customAgentsList)
-                    {
-                        customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
-                    }
-
-                    customAgentsList.ForEach(c => c.customAgentsList = customAgentsList);
-                    GiveRandomEnergyToAgents();
-
-                    LoadDialogsFromJSON();
-                }
-            }
-        }
-        private void InitializeSocialExchanges()
-        {
-            onGoingSEs = 0;
-            maximumSEs = _currentLocation == "center" ? 4 : 2;
-
-            SocialExchangeListString = new List<string>() { "Compliment", "Jealous", "AskOut", "Flirt", "Bully", "FriendSabotage", "JealousRomantic", "Break" };
-            SocialExchangeSEList = new List<SocialExchangeSE>();
-            foreach (String seName in SocialExchangeListString)
-            {
-                SocialExchangeSEList.Add(new SocialExchangeSE(seName, null, null));
-            }
-        }
 
         private void UpdateStatus()
         {
@@ -231,6 +147,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void DesireFormation()
         {
             /* Set mostWantedSE & nextSE to default values */
@@ -309,7 +226,7 @@ namespace Bannerlord_Mod_Test
                 onGoingSEs++;
             }
         }
-        
+
         private void AbortOnGoingSE(CustomAgent customAgent)
         {
             // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
@@ -333,11 +250,97 @@ namespace Bannerlord_Mod_Test
             }
         }
 
+        private void PreInitialize()
+        {
+            CheckIfFileExists();
+
+            _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            _currentLocation = CampaignMission.Current.Location.StringId;
+            if (CheckIfSettlementExistsOnFile(_currentSettlement, _currentLocation))
+            {
+                giveTraitsToNPCs = false;
+            }
+            else { giveTraitsToNPCs = true; }
+        }
+        private void Initialize(bool giveTraitsToNPCs)
+        {
+            InitializeSocialExchanges();
+
+            StatusListString = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
+
+            if (Mission.Current.MainAgent != null)
+            {
+                if (customAgentsList == null)
+                {
+                    /* Reference to Next SE & Most Wanted SE */
+                    nextSE = new NextSE("", null, null, 0);
+                    mostWantedSEList = new List<mostWantedSE>();
+
+                    /* Reference to CustomAgent */
+                    customAgentsList = new List<CustomAgent>();
+
+                    int id = -1;
+                    Agent previousAgent = null;
+
+                    foreach (Agent agent in Mission.Current.Agents)
+                    {
+                        if (agent.IsHuman && agent.Character != null) //to allow all the NPCs
+                        {
+                            if (previousAgent == null || agent.Character != previousAgent.Character)
+                            {
+                                id = 0;
+                            }
+                            else
+                            {
+                                id++;
+                            }
+
+                            CreateCustomAgent(agent, id);
+
+                            previousAgent = agent;
+                        }
+                    }
+
+                    if (giveTraitsToNPCs)
+                    {
+                        GiveRandomTraitsToAgents();
+                        SaveNewAgentsInfoToJSON(customAgentsList);
+                    }
+
+                    LoadAllInfoFromJSON();
+
+                    // Set CustomAgent countdown depending of the traits
+                    foreach (CustomAgent customAgent in customAgentsList)
+                    {
+                        customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
+                    }
+
+                    customAgentsList.ForEach(c => c.customAgentsList = customAgentsList);
+                    GiveRandomEnergyToAgents();
+
+                    LoadDialogsFromJSON();
+                }
+            }
+        }
+        private void InitializeSocialExchanges()
+        {
+            onGoingSEs = 0;
+            maximumSEs = _currentLocation == "center" ? 4 : 2;
+
+            SocialExchangeListString = new List<string>() { "Compliment", "Jealous", "AskOut", "Flirt", "Bully", "FriendSabotage", "JealousRomantic", "Break" };
+            SocialExchangeSEList = new List<SocialExchangeSE>();
+            foreach (String seName in SocialExchangeListString)
+            {
+                SocialExchangeSEList.Add(new SocialExchangeSE(seName, null, null));
+            }
+        }
+
         private static bool CustomAgentHasEnoughRest(CustomAgent customAgent)
         {
             customAgent.EnoughRest = customAgent.StatusList.Find(s => s.statusName == "Tiredness").intensity <= 0.5;
             return customAgent.EnoughRest;
         }
+
         public void OnConversationEndWithPlayer()
         {
             CustomAgent customAgent = customAgentsList.Find(c => c.Name.Contains(CharacterObject.OneToOneConversationCharacter.Name.ToString()) && c.IsInitiator && c.busy);
@@ -356,6 +359,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void GiveRandomEnergyToAgents()
         {
             foreach (CustomAgent customAgent in customAgentsList)
@@ -363,6 +367,7 @@ namespace Bannerlord_Mod_Test
                 customAgent.UpdateStatus("Tiredness", rnd.NextDouble());
             }
         }
+
         private void GiveRandomTraitsToAgents()
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
@@ -392,9 +397,10 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private List<Trait> InitializeListWithAllTraits()
         {
-            TraitsListString = new List<string>() { "Friendly", "Hostile", "Charming", "UnCharming", "Shy", "Brave", "Calm", "Aggressive", "Faithful", "Unfaithful"};
+            TraitsListString = new List<string>() { "Friendly", "Hostile", "Charming", "UnCharming", "Shy", "Brave", "Calm", "Aggressive", "Faithful", "Unfaithful" };
             List<Trait> AllTraitList = new List<Trait>();
 
             foreach (var traitName in TraitsListString)
@@ -405,6 +411,7 @@ namespace Bannerlord_Mod_Test
 
             return AllTraitList;
         }
+
         private void LoadDialogsFromJSON()
         {
             string myJsonResponse = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/npc_conversations.json");
@@ -446,6 +453,7 @@ namespace Bannerlord_Mod_Test
 
             MegaDictionary = fromIntentionGetCulture;
         }
+
         private void CheckIfFileExists()
         {
             try
@@ -463,9 +471,16 @@ namespace Bannerlord_Mod_Test
                 File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
-        private void CreateCustomAgent(int id, Agent agent)
+
+        private void CreateCustomAgent(Agent agent, int id)
         {
             CustomAgent customAgent = new CustomAgent(agent, id, StatusListString);
+
+            while (customAgentsList.Contains(customAgent))
+            {
+                customAgent.Id++;
+            }
+
             customAgentsList.Add(customAgent);
 
             mostWantedSE sE = new mostWantedSE(customAgent, new NextSE("", null, null, 0));
@@ -473,6 +488,7 @@ namespace Bannerlord_Mod_Test
 
             AddAgentTarget(agent, id);
         }
+
         private bool CheckIfSettlementExistsOnFile(string _currentSettlementName, string _currentLocationName)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
@@ -488,6 +504,7 @@ namespace Bannerlord_Mod_Test
                 return false;
             }
         }
+
         private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
@@ -504,6 +521,7 @@ namespace Bannerlord_Mod_Test
 
             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
+
         private void LoadAllInfoFromJSON()
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
@@ -519,7 +537,7 @@ namespace Bannerlord_Mod_Test
                         if (_customAgentJson != null)
                         {
                             customAgent.TraitList = _customAgentJson.TraitList;
-                            customAgent.GoalsList = _customAgentJson.GoalsList;
+                            //customAgent.GoalsList = _customAgentJson.GoalsList;
                             customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                             customAgent.ItemList = _customAgentJson.ItemsList;
                             customAgent.MemorySEs = _customAgentJson.MemoriesList;
@@ -543,6 +561,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
@@ -582,7 +601,7 @@ namespace Bannerlord_Mod_Test
                         if (x != null)
                         {
                             _customAgentJson.TraitList = x.TraitList;
-                            _customAgentJson.GoalsList = x.GoalsList;
+                            //_customAgentJson.GoalsList = x.GoalsList;
                             _customAgentJson.SocialNetworkBeliefs = x.SocialNetworkBeliefs;
                             _customAgentJson.ItemsList = x.ItemList;
                             _customAgentJson.MemoriesList = x.MemorySEs;
@@ -623,7 +642,7 @@ namespace Bannerlord_Mod_Test
         }
 
         internal BasicCharacterObject characterReftoCampaignBehaviorBase { get; set; }
-        internal BasicCharacterObject characterRef2 { get; set; }
+
         internal SocialExchangeSE.IntentionEnum intentionReftoCampaignBehaviorBase { get; set; }
         private SocialExchangeSE.IntentionEnum GetIntentionToCampaignBehaviorBase(CustomAgent customAgent)
         {
@@ -660,6 +679,25 @@ namespace Bannerlord_Mod_Test
             }
         }
 
+        private void CustomAgentsNearPlayer(CustomAgent customAgent)
+        {
+            CustomAgent t = CustomAgentsNearPlayerList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
+            if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0))
+            {
+                if (t == null)
+                {
+                    CustomAgentsNearPlayerList.Add(customAgent);
+                }
+            }
+            else
+            {
+                if (t != null)
+                {
+                    CustomAgentsNearPlayerList.Remove(customAgent);
+                }
+            }
+        }
+
         private void AddAgentTarget(Agent agent, int id = -1)
         {
             if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent))
@@ -672,6 +710,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void UpdateTargetScreen()
         {
             if (this.IsEnabled)
@@ -726,7 +765,7 @@ namespace Bannerlord_Mod_Test
                         item.IsEnabled = false;
                     }
                 }
-            }            
+            }
         }
 
         [DataSourceProperty]

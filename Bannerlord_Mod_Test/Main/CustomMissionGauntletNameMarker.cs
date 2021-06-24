@@ -10,17 +10,18 @@ namespace Bannerlord_Mod_Test
     class CustomMissionGauntletNameMarker : MissionView
     {
         public int ViewOrderPriority { get; }
-        public CustomMissionGauntletNameMarker(CustomCampaignBehaviorBase CBB) { this.ViewOrderPriorty = 1; CBB_ref = CBB; }
+        public CustomMissionGauntletNameMarker(CustomCampaignBehaviorBase CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
         private CustomMissionNameMarkerVM _dataSource;
         private CustomCampaignBehaviorBase CBB_ref;
         private GauntletLayer _gauntletLayer;
+        private Mission mission;
         private bool _firstTick = true;
 
         public override void OnMissionScreenInitialize()
         {
             base.OnMissionScreenInitialize();
 
-            _dataSource = new CustomMissionNameMarkerVM(base.Mission, base.MissionScreen.CombatCamera);
+            _dataSource = new CustomMissionNameMarkerVM(mission, base.MissionScreen.CombatCamera);
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
@@ -41,6 +42,7 @@ namespace Bannerlord_Mod_Test
                 {
                     _dataSource.IsEnabled = true;
                     CBB_ref.customAgents = _dataSource.customAgentsList;
+                    CBB_ref.customAgentsNearPlayer = _dataSource.CustomAgentsNearPlayerList;
                     _firstTick = false;
                 }
 

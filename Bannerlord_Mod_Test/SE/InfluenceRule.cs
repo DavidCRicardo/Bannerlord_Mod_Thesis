@@ -306,7 +306,7 @@ namespace Bannerlord_Mod_Test
             return 0;
         }
 
-        public int CheckGoals(string _relation)
+        /*public int CheckGoals(string _relation)
         {
             if (!Initiator.GoalsList.IsEmpty())
             {
@@ -314,7 +314,7 @@ namespace Bannerlord_Mod_Test
                 {
                     if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
                     {
-                        /* Belief = Null? So Add Belief to check if belief value < goal value */
+                        // Belief = Null? So Add Belief to check if belief value < goal value 
                         SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
                         if (belief == null)
                         {
@@ -341,7 +341,7 @@ namespace Bannerlord_Mod_Test
             }
 
             return 0;
-        }
+        }*/
 
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }
