@@ -5,7 +5,6 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 using System.Linq;
 using SandBox;
-using Helpers;
 using System.Collections.Generic;
 using System.Text;
 
@@ -217,9 +216,9 @@ namespace Bannerlord_Mod_Test
             // Accept AskOut
             campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), new ConversationSentence.OnConsequenceDelegate(Start_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
             // Reject AskOut
-            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
-            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", message + "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Gender_condition), null, 101, null); // Reject if they are the same gender
-            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 101, null); // Reject if they are the same gender
+            //campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry but I'm currently dating![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_Dating_condition), null, 100, null); // Reject depending if have Faithful Trait & Dating with anyone
+            //campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", message + "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", new ConversationSentence.OnConditionDelegate(NPC_Gender_condition), null, 100, null); // Reject if they are the same gender
+            campaignGameStarter.AddDialogLine("1", "lord_romanticAskOut", "close_window", "Oh, sorry... I'm not interested![if:idle_pleased][ib:confident]", null, null, 100, null); // Reject if they are the same gender
             // Reacting to Flirt
             campaignGameStarter.AddDialogLine("1", "lord_romanticFlirt", "close_window", "Oh, you're so kind![if:idle_pleased][ib:confident]", null, new ConversationSentence.OnConsequenceDelegate(Increase_Dating), 100, null); // Accept depending if have Faithful Trait and not dating or not having the trait and dating
             // Reacting to Hostile
@@ -357,50 +356,25 @@ namespace Bannerlord_Mod_Test
 
             if (customAgentConversation != null)
             {
-                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                bool isFaithful = customAgentConversation.TraitList.Exists(t => t.traitName == "Faithful");
-                bool isCharming = customAgentConversation.TraitList.Exists(t => t.traitName == "Charming");
-
-                int datingHowMany = customAgentConversation.CheckHowManyTheAgentIsDating(customAgentConversation);
-
-                if (isFaithful && isCharming && datingHowMany <= 0)
+                if (NPC_Gender_condition(customAgentConversation))
                 {
-                    return true;
-                }
-                else if (!isFaithful && isCharming)
-                {
-                    return true;
-                }
-                else { return false; }
-            }
-            
-            return false;
-        }
-        string message = null;
-        //if (message.Contains("{PERSON}"))
-        //            {
-        //                StringBuilder builder = new StringBuilder(message);
-        //builder.Replace("{PERSON}", "Oh no");
-        //                message = builder.ToString();
-        //            }
-    private bool NPC_Gender_condition()
-        {
-            string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-            string _currentLocation = CampaignMission.Current.Location.StringId;
+                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                    bool isFaithful = customAgentConversation.TraitList.Exists(t => t.traitName == "Faithful");
+                    bool isCharming = customAgentConversation.TraitList.Exists(t => t.traitName == "Charming");
 
-            customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    int datingHowMany = customAgentConversation.CheckHowManyTheAgentIsDating(customAgentConversation);
 
-            if (customAgentConversation != null)
-            {
-                if (Agent.Main.IsFemale || customAgentConversation.selfAgent.IsFemale)
-                {
-                    if (Agent.Main.IsFemale && customAgentConversation.selfAgent.IsFemale)
-                    {
-                        return false;
-                    }
-                    else
+                    if (isFaithful && isCharming && datingHowMany <= 0)
                     {
                         return true;
+                    }
+                    else if (!isFaithful && isCharming)
+                    {
+                        return true;
+                    }
+                    else 
+                    {
+                        return false; 
                     }
                 }
                 else
@@ -408,8 +382,27 @@ namespace Bannerlord_Mod_Test
                     return false;
                 }
             }
-
+                
             return false;
+        }
+
+        private bool NPC_Gender_condition(CustomAgent customAgentConversation)
+        {
+            if (Agent.Main.IsFemale || customAgentConversation.selfAgent.IsFemale)
+            {
+                if (Agent.Main.IsFemale && customAgentConversation.selfAgent.IsFemale)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
 

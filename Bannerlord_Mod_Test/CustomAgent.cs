@@ -156,7 +156,14 @@ namespace Bannerlord_Mod_Test
 
         internal void FinalizeSocialExchange()
         {
-            socialExchangeSE.OnFinalize();
+            try
+            {
+                socialExchangeSE.OnFinalize();
+            }
+            catch
+            {
+
+            }
             socialExchangeSE = null;
 
             NearEnoughToStartConversation = false;
@@ -348,11 +355,15 @@ namespace Bannerlord_Mod_Test
         }
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
         {
-            //SocialNetworkBelief _belief = belief;
-            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
+            SocialNetworkBelief _belief = belief;
+            if (belief != null)
+            {
+                _belief = SocialNetworkBeliefs.Find(
                 b => b.relationship == belief.relationship
                 && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
                 && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
+            }
+            
 
             if (_belief == null)
             {

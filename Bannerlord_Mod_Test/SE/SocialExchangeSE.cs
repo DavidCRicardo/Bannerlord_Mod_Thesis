@@ -183,6 +183,7 @@ namespace Bannerlord_Mod_Test
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                 UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
+            NPCsNearFriendSocialMove();
         }
 
         private void ConsequencesFromNegativeIntention()
@@ -224,6 +225,7 @@ namespace Bannerlord_Mod_Test
                     CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                 }
             }
+            NPCsNearFriendSocialMove();
         }
 
         private void ConsequencesFromRomanticIntention()
@@ -249,9 +251,9 @@ namespace Bannerlord_Mod_Test
             {
                 CustomAgentInitiator.UpdateStatus("Anger", 1);
                 //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
-                NPCsNearRomanticSocialMove();
+                
             }
-
+            NPCsNearRomanticSocialMove();
         }
 
         private void ConsequencesFromPositiveIntention()
@@ -272,6 +274,25 @@ namespace Bannerlord_Mod_Test
             }
         }
 
+        private void NPCsNearFriendSocialMove()
+        {
+            foreach (CustomAgent customAgent in CustomAgentList)
+            {
+                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
+                {
+                    SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
+                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Friends" && beliefWithInitiator.value < 0)
+                    {
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
+                    }
+
+                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Friends" && beliefWithInitiator.value > 0)
+                    {
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, 1);
+                    } 
+                }
+            }
+        }
         private void NPCsNearRomanticSocialMove()
         {
             //Independentemente se aceitou ou nao.. 
@@ -448,6 +469,8 @@ namespace Bannerlord_Mod_Test
         {
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
+
+            NPCsNearFriendSocialMove();
         }
 
         public IntentionEnum Intention { get; private set; }
