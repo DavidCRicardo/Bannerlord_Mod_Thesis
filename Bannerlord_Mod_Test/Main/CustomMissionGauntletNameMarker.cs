@@ -55,7 +55,6 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-
         public override void OnMissionScreenFinalize()
         {
             base.OnMissionScreenFinalize();

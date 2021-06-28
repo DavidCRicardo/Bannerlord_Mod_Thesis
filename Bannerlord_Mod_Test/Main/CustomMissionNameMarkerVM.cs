@@ -64,6 +64,7 @@ namespace Bannerlord_Mod_Test
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
+
                         CustomAgentsNearPlayer(customAgent);
 
                         if (customAgent.busy && customAgent.IsInitiator)

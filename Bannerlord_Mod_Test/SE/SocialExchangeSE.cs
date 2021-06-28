@@ -106,19 +106,6 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        private void ResetCustomAgentVariables(CustomAgent customAgent)
-        {
-            customAgent.SocialMove = "";
-            customAgent.IsInitiator = false;
-            customAgent.FullMessage = null;
-            customAgent.busy = false;
-            customAgent.message = "";
-            customAgent.cooldown = true;
-            customAgent.customTargetAgent = null;
-            customAgent.StopAnimation();
-            customAgent.EndFollowBehavior();
-        }
-
         private void UpdateBeliefsAndStatus()
         {
             switch (Intention)
@@ -164,10 +151,6 @@ namespace Bannerlord_Mod_Test
             if (CustomAgentReceiver.SE_Accepted)
             {
                 //Bully or RomanticSabotage
-
-                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
-                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " is embarrassed."));
-
                 CustomAgentInitiator.UpdateStatus("Anger", -0.3);
                 CustomAgentInitiator.UpdateStatus("Shame", 1);
                 CustomAgentReceiver.UpdateStatus("Courage", -0.2);
@@ -177,7 +160,6 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " bullied by " + CustomAgentInitiator.Name));
                 CustomAgentInitiator.UpdateStatus("Anger", -0.3);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
@@ -190,9 +172,9 @@ namespace Bannerlord_Mod_Test
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
+                //Decreases relation with Initiator
                 if (SEName == "Jealous")
                 {
-                    //Decreases relation with Initiator
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                     UpdateThirdNPCsBeliefs("Friends", belief, -1);
 
@@ -201,7 +183,6 @@ namespace Bannerlord_Mod_Test
 
                 if (SEName == "FriendSabotage")
                 {
-                    //Decreases relation with Initiator
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                     UpdateThirdNPCsBeliefs("Friends", belief, -1);
                 }
@@ -217,8 +198,7 @@ namespace Bannerlord_Mod_Test
 
                 if (SEName == "FriendSabotage")
                 {
-                    //Decreases relation dating
-                    //InformationManager.DisplayMessage(new InformationMessage(CustomAgentInitiator.Name + " sabotaged " + CustomAgentReceiver.Name));
+                    //Decreases relation 
                     CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
                     SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
 
@@ -234,12 +214,8 @@ namespace Bannerlord_Mod_Test
             {
                 //Increases Relationship for both
                 if (SEName == "AskOut")
-                {
-                    //if they are not friends so start dating with a new belief
-                    ////If they are already friends, it updates for dating while keeping the same value 
+                { 
                     AskOutMethod();
-
-                    //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " is now dating " + CustomAgentInitiator.Name));
                 }
                 else if (SEName == "Flirt")
                 {
@@ -249,9 +225,7 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                CustomAgentInitiator.UpdateStatus("Anger", 1);
-                //InformationManager.DisplayMessage(new InformationMessage(CustomAgentReceiver.Name + " rejected " + CustomAgentInitiator.Name + " " + SEName));
-                
+                CustomAgentInitiator.UpdateStatus("Anger", 1);                
             }
             NPCsNearRomanticSocialMove();
         }
@@ -293,6 +267,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void NPCsNearRomanticSocialMove()
         {
             //Independentemente se aceitou ou nao.. 
@@ -454,9 +429,6 @@ namespace Bannerlord_Mod_Test
         
         private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
-            //string relation = GetRelationType(IR);
-            //IR.InitialValue = IR.CheckGoals(relation);
-
             IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.RelationName) : 0;
 
             IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
@@ -471,6 +443,19 @@ namespace Bannerlord_Mod_Test
             UpdateThirdNPCsBeliefs(relation, belief, value);
 
             NPCsNearFriendSocialMove();
+        }
+
+        private void ResetCustomAgentVariables(CustomAgent customAgent)
+        {
+            customAgent.SocialMove = "";
+            customAgent.IsInitiator = false;
+            customAgent.FullMessage = null;
+            customAgent.busy = false;
+            customAgent.message = "";
+            customAgent.cooldown = true;
+            customAgent.customTargetAgent = null;
+            customAgent.StopAnimation();
+            customAgent.EndFollowBehavior();
         }
 
         public IntentionEnum Intention { get; private set; }
@@ -514,28 +499,6 @@ namespace Bannerlord_Mod_Test
             {
                 //Rejected
             }
-        }
-        private static string GetRelationType(InfluenceRule IR)
-        {
-            string relation = "";
-            switch (IR.RelationType)
-            {
-                case IntentionEnum.Positive:
-                case IntentionEnum.Negative:
-                    relation = "Friends";
-                    break;
-                case IntentionEnum.Romantic:
-                    relation = "Dating";
-                    break;
-                case IntentionEnum.Hostile:
-                    break;
-                case IntentionEnum.Special:
-                    break;
-                default:
-                    break;
-            }
-
-            return relation;
         }
     }
 }

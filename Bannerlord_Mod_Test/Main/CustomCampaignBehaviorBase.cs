@@ -7,6 +7,8 @@ using System.Linq;
 using SandBox;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Bannerlord_Mod_Test
 {
@@ -16,46 +18,91 @@ namespace Bannerlord_Mod_Test
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnGameLoaded));
-            CampaignEvents.AfterSettlementEntered.AddNonSerializedListener(this, new Action<MobileParty, Settlement, Hero>(this.Tick2)); // Working
         }
 
-        private void Tick2(MobileParty mobileParty, Settlement settlement, Hero hero)
-        {
-        }
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
         {
         }
+        
         public override void SyncData(IDataStore dataStore)
         {
         }
+
+        private String inputToken;
+        private String outputToken;
+        private String text;
+
+        private Dictionary<int, ConversationSentence.OnConditionDelegate> dictionaryConditions;
+        private Dictionary<int, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
+
+        public void ReadJsonFile(CampaignGameStarter campaignGameStarter)
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/player_conversations.json");
+            CBB_Root myDeserializedCBB = JsonConvert.DeserializeObject<CBB_Root>(json);
+
+            if (myDeserializedCBB != null)
+            {
+                foreach (PlayerNPCDialog item in myDeserializedCBB.PlayerNPCDialogs)
+                {
+                    inputToken = item.InputToken;
+                    outputToken = item.OutputToken;
+                    text = item.Text;
+
+                    dictionaryConditions.TryGetValue(item.Condition, out ConversationSentence.OnConditionDelegate condition);
+                    dictionaryConsequences.TryGetValue(item.Consequence, out ConversationSentence.OnConsequenceDelegate consequence);
+
+                    if (item.PlayerDialog)
+                    {
+                        campaignGameStarter.AddPlayerLine("1", inputToken, outputToken, text, condition, consequence, 100, null, null);
+                    }
+                    else
+                    {
+                        campaignGameStarter.AddDialogLine("1", inputToken, outputToken, text, condition, consequence, 100, null);
+                    }
+                }
+            }
+        }
+
+        public void InitializeDictionaries()
+        {
+            dictionaryConditions = new Dictionary<int, ConversationSentence.OnConditionDelegate>() {
+                { 0 , null },
+                { 1 , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition) },
+                { 2 , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanFlirtWithNPC_condition) },
+                { 3 , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBullyWithNPC_condition) }
+            };
+
+            dictionaryConsequences = new Dictionary<int, ConversationSentence.OnConsequenceDelegate>()
+            {
+                { 0 , null}, 
+                { 1 , new ConversationSentence.OnConsequenceDelegate(Increase_Friendship) },
+                { 2 , new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship) },
+                { 3 , new ConversationSentence.OnConsequenceDelegate(Increase_Dating) },
+                { 4 , new ConversationSentence.OnConsequenceDelegate(Decrease_Dating) }
+            };
+        }
+
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
         {
             this.TavernEmployeesCampaignBehavior(campaignGameStarter);
-            this.AddVillageFarmerTradeAndLootDialogs(campaignGameStarter);
             this.AddTownspersonAndVillagerDialogs(campaignGameStarter);
             this.LordConversationsCampaignBehavior(campaignGameStarter);
+
+            #region Read Json File
+
+            InitializeDictionaries();
+
+            ReadJsonFile(campaignGameStarter);
+
+            #endregion
+
         }
+        
         //TaleWorlds.CampaignSystem.dll : TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors.Towns
         private void TavernEmployeesCampaignBehavior(CampaignGameStarter campaignGameStarter)
         {
-            //Start Dialog
-            //campaignGameStarter.AddDialogLine("tavernmaid_introduction", "start", "tavernmaid_greeting", "Hello Adventure! ", new ConversationSentence.OnConditionDelegate(testing_intro_tavernmaid), null, 101, null);
-            //campaignGameStarter.AddPlayerLine("tavernmaid_introduction", "tavernmaid_greeting", "close_window", "Thank you. ", null, null, 100, null, null);
-
-            //Dialog
-            //campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_testnews1", "{=E57VFXqU}Any News on this Town?", new ConversationSentence.OnConditionDelegate(this.Conversation1), null, 100, null, null);
-            //campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_test1", "AI - Can you say 'Hello World'? {GOLD_ICON}", null, null, 100, null, null);
-            //campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_test1", "tavernmaid_order_test2", "Social Engagement? That sounds interesting.", null, null, 100, null);
-
-            // Closes dialog with an Answer
-            //campaignGameStarter.AddPlayerLine("tavernmaid_test", "tavernmaid_order_test2", "close_window", "Yes, it is!", null, null, 100, null, null);
-
-            // Closes dialog with no Answer
-            //campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_testnews1", "close_window", "No news sr.", null, null, 100, null);
-
             campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant?", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
-
         }
         private bool talking_with_NotNegativeTraits()
         {
@@ -96,13 +143,7 @@ namespace Bannerlord_Mod_Test
 
             return false;
         }
-
-        //TaleWorlds.CampaignSystem.dll : CampaignSystem.SandBox.CampaignBehaviors.VillageBehaviors.VillagerCampaignBehavior
-        private void AddVillageFarmerTradeAndLootDialogs(CampaignGameStarter campaignGameStarter)
-        {
-            //campaignGameStarter.AddPlayerLine("village_farmer_buy_products", "village_farmer_talk", "village_farmer_player_trade", "I'm going to market too. Bye bye bye", null, null, 100, null, null);
-        }
-        
+  
         //TaleWorlds.CampaignSystem.dll : CampaignSystem.SandBox.Source.Towns.CommonVillagersCampaignBehavior
         private void AddTownspersonAndVillagerDialogs(CampaignGameStarter campaignGameStarter)
         {
@@ -187,7 +228,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddPlayerLine("1175", "hero_main_options", "hero_increase_courage", "You can fight against the bully. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_NotNegativeTraits), null, 100, null, null);
             campaignGameStarter.AddDialogLine("1175", "hero_increase_courage", "close_window", "Ok, I will try.", null, new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null);
 
-            campaignGameStarter.AddPlayerLine("1", "start", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
+            campaignGameStarter.AddPlayerLine("1", "hero_main_options", "lord_date", "You must give a chance to date. [Increase Courage]", new ConversationSentence.OnConditionDelegate(talking_with_Charming), new ConversationSentence.OnConsequenceDelegate(Increase_Courage), 100, null, null);
             campaignGameStarter.AddDialogLine("1", "lord_date", "close_window", "I don't know... Well, why not.", null, null, 100, null);
 
 
@@ -240,7 +281,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddDialogLine("1", "Friendly_step1", "close_window", "It's a pleasure to help you. [if:idle_pleased]", null, null, 100, null);
             campaignGameStarter.AddDialogLine("1", "Friendly_step2", "close_window", "Take it easy. There is no need to be rude. [rf:idle_angry]", null, null, 100, null);
 
-            /* NPC UnFriendly Interactions With Player */
+            /* NPC UnFriendly Interactions With Player */ 
             campaignGameStarter.AddDialogLine("1", "start", "UnFriendly_start", "Why are you listening people's conversation?", new ConversationSentence.OnConditionDelegate(UnFriendly), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step1", "Sorry, it wouldn't happen again. [Accept]", null, null, 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step2", "Just curiosity. [Reject]", null, null, 100, null, null);
@@ -284,9 +325,7 @@ namespace Bannerlord_Mod_Test
 
         private bool ThisAgentWillInteractWithPlayer()
         {
-            customAgentConversation = customAgents.Find( c => c == characterRef 
-                //&& c.customTargetAgent == customAgents.Find(c2 => c2.selfAgent == Agent.Main)
-                );
+            customAgentConversation = customAgents.Find( c => c == characterRef);
 
             if (customAgentConversation != null)
             {
@@ -368,7 +407,7 @@ namespace Bannerlord_Mod_Test
                     {
                         return true;
                     }
-                    else if (!isFaithful && isCharming)
+                    else if (!isFaithful || isCharming)
                     {
                         return true;
                     }
@@ -376,10 +415,6 @@ namespace Bannerlord_Mod_Test
                     {
                         return false; 
                     }
-                }
-                else
-                {
-                    return false;
                 }
             }
                 
@@ -404,7 +439,6 @@ namespace Bannerlord_Mod_Test
                 return false;
             }
         }
-
 
         public bool giveCourage { get; set; }
         public bool IncreaseFriendshipWithPlayer { get; set; }
@@ -602,6 +636,7 @@ namespace Bannerlord_Mod_Test
         }
 
         public bool EmergencyCallRunning = false;
+
         private bool Condition_EmergencyCall()
         {
             if (EmergencyCallRunning == false)
@@ -654,43 +689,12 @@ namespace Bannerlord_Mod_Test
         }
         private bool Conversation_with_lord()
         {
-            //Hero.MainHero.ChangeHeroGold(500000);                     // Increase Gold to the Player
-            //SetPersonalRelation(Hero.OneToOneConversationHero, 1000); // Increase NPC Influence
-
-            /*foreach (TraitObject traitObject in DefaultTraits.Personality)
-            {
-                // InformationManager.DisplayMessage(new InformationMessage("Hero.OneToOneConversationHero = " + Hero.OneToOneConversationHero.Name)); // Output: Caribos the Mercer
-                int traitLevel = Hero.OneToOneConversationHero.GetTraitLevel(traitObject);
-                
-                if (traitLevel != 0)
-                {
-                    MBTextManager.SetTextVariable("PERSONALITY_DESCRIPTION", traitObject.Description, false);
-                    if (traitLevel < 0)
-                    {
-                        MBTextManager.SetTextVariable("SIGN", "{=!}Neg", false);
-                    }
-                    if (traitLevel > 0)
-                    {
-                        MBTextManager.SetTextVariable("SIGN", "{=!}Pos", false);
-                    }
-                }
-            }*/
-
+            Hero.MainHero.ChangeHeroGold(500000);                     // Increase Gold to the Player
             SetPersonalRelation(Hero.OneToOneConversationHero, 1000); // Increase NPC Personal Relation
             Hero.MainHero.GetRelation(Hero.OneToOneConversationHero);
             return true;
         }
-        private void StealFromNPC()
-        {
-            GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
-            Hero.MainHero.ChangeHeroGold(5); // Increase Gold to the Player
-            InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name.ToString() + " stoled 5 GOLD from " + Hero.OneToOneConversationHero.Name));
-        }
-        private void NPCStealPlayer()
-        {
-            Hero.MainHero.ChangeHeroGold(-5);
-            InformationManager.DisplayMessage(new InformationMessage(Hero.OneToOneConversationHero.Name + " stoled 5 gold from " + Agent.Main.Name));
-        }
+        
         private void Conversation_with_lord3()
         {
             //string a = "";
@@ -716,14 +720,6 @@ namespace Bannerlord_Mod_Test
             //    }
             //    break;
             //}
-        }
-        private bool Conversation1()
-        {
-            //bool a = CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.TavernWench;
-            //return CharacterObject.OneToOneConversationCharacter.Occupation == Occupation.TavernWench && !this._orderedDrinkThisVisit && this._orderedDrinkThisDayInSettlement == Settlement.CurrentSettlement;
-            InformationManager.DisplayMessage(new InformationMessage("Testing OnConditionDelegate conversation1"));
-
-            return true;
         }
 
         public void SetPersonalRelation(Hero otherHero, int value)

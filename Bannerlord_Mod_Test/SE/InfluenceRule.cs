@@ -196,9 +196,9 @@ namespace Bannerlord_Mod_Test
         private int BreakUpRule(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value < 1)
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= 0)
             {
-                sum += 100;
+                sum += 2;
             }
 
             return sum;
@@ -305,43 +305,6 @@ namespace Bannerlord_Mod_Test
 
             return 0;
         }
-
-        /*public int CheckGoals(string _relation)
-        {
-            if (!Initiator.GoalsList.IsEmpty())
-            {
-                foreach (var _goal in Initiator.GoalsList)
-                {
-                    if (_goal.relationship == _relation && _goal.targetName == Receiver.Name)
-                    {
-                        // Belief = Null? So Add Belief to check if belief value < goal value 
-                        SocialNetworkBelief belief = Initiator.SelfGetBeliefWithAgent(Receiver);
-                        if (belief == null)
-                        {
-                            List<string> a = new List<string>() { Initiator.Name, Receiver.Name };
-                            List<int> b = new List<int>() { Initiator.Id, Receiver.Id };
-                            SocialNetworkBelief newBelief = new SocialNetworkBelief(_relation, a, b, 0);
-                            Initiator.AddBelief(newBelief);
-                        }
-
-                        foreach (var _belief in Initiator.SocialNetworkBeliefs)
-                        {
-                            if (_belief.agents.Contains(Initiator.Name) && _belief.agents.Contains(Receiver.Name)
-                                && _belief.IDs.Contains(Initiator.Id) && _belief.IDs.Contains(Receiver.Id))
-                            {
-                                if (_belief.value < _goal.value)
-                                {
-                                    return 100;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            return 0;
-        }*/
 
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }

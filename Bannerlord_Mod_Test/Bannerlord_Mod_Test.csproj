@@ -258,8 +258,10 @@
   </ItemGroup>
   <!-- Files & Classes -->
   <ItemGroup>
-    <Compile Include="NPC_Conversation\Culture.cs" />
+    <Compile Include="Player_NPC_Conversation\CBB_Root.cs" />
+    <Compile Include="NPC_NPC_Conversation\Culture.cs" />
     <Compile Include="CustomMessageNPC.cs" />
+    <Compile Include="Player_NPC_Conversation\PlayerNPCDialog.cs" />
     <Compile Include="SE\InfluenceRule.cs" />
     <Compile Include="Json\SocialNetworkBelief.cs" />
     <Compile Include="Json\CustomAgentJson.cs" />
@@ -273,14 +275,14 @@
     <Compile Include="Json\RootJsonData.cs" />
     <Compile Include="Json\SettlementJson.cs" />
     <Compile Include="Json\MemorySE.cs" />
-    <Compile Include="NPC_Conversation\NPCDialog.cs" />
-    <Compile Include="NPC_Conversation\RootMessageJson.cs" />
+    <Compile Include="NPC_NPC_Conversation\NPCDialog.cs" />
+    <Compile Include="NPC_NPC_Conversation\RootMessageJson.cs" />
     <Compile Include="SE\mostWantedSE.cs" />
     <Compile Include="SE\NextSE.cs" />
     <Compile Include="SE\SocialExchangeSE.cs" />
     <Compile Include="Main\SubModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NPC_Conversation\DialogsRoot.cs" />
+    <Compile Include="NPC_NPC_Conversation\DialogsRoot.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="Json\TriggerRule.cs" />
     <Compile Include="Json\Trait.cs" />
