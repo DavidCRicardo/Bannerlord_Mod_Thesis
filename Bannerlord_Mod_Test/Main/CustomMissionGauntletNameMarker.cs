@@ -36,7 +36,7 @@ namespace Bannerlord_Mod_Test
             {
                 _dataSource.Tick(dt);
 
-                _dataSource.EnableDataSource(_dataSource);
+                _dataSource.EnableDataSource();
 
                 if (_firstTick)
                 {
@@ -66,10 +66,10 @@ namespace Bannerlord_Mod_Test
 
         private void CheckIntentionFromNPCToPlayer(float dt)
         {
-            if (_dataSource.intentionReftoCampaignBehaviorBase != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.customCharacterReftoCampaignBehaviorBase != null)
+            if (_dataSource.intentionRefToCBB != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.customCharacterReftoCampaignBehaviorBase != null)
             {
                 CBB_ref.characterRef = _dataSource.customCharacterReftoCampaignBehaviorBase;
-                switch (_dataSource.intentionReftoCampaignBehaviorBase)
+                switch (_dataSource.intentionRefToCBB)
                 {
                     case SocialExchangeSE.IntentionEnum.Positive:
                         CBB_ref.FriendlyBool = true;

@@ -104,6 +104,7 @@ namespace Bannerlord_Mod_Test
             campaignGameStarter.AddPlayerLine("tavernmaid_order_food", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant?", null, null, 100, null, null);
             campaignGameStarter.AddDialogLine("tavernmaid_test", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
         }
+
         private bool talking_with_NotNegativeTraits()
         {
             string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();

@@ -24,17 +24,39 @@ namespace Bannerlord_Mod_Test
                 this.index = -1;
             }
 
+            /* Use Dictionary Here */
             switch (SEName)
             {
-                case "Compliment": Intention = IntentionEnum.Positive; break;
+                case "Compliment": 
+                    Intention = IntentionEnum.Positive;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
                 case "FriendSabotage":
-                case "Jealous": Intention = IntentionEnum.Negative; break;
+                case "Jealous": 
+                    Intention = IntentionEnum.Negative;
+                    CustomAgentInitiator.MarkerTyperRef = 1;
+                    break;
                 case "AskOut":
-                case "Flirt": Intention = IntentionEnum.Romantic; break;
-                case "RomanticSabotage":
-                case "Bully": Intention = IntentionEnum.Hostile; break;
-                case "Break": Intention = IntentionEnum.Special; break;
-                default: Intention = IntentionEnum.Undefined; break;
+                case "Flirt": 
+                    Intention = IntentionEnum.Romantic;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+                case "RomanticSabotage": 
+                    Intention = IntentionEnum.Hostile; 
+                    CustomAgentInitiator.MarkerTyperRef = 1; 
+                    break;
+                case "Bully": 
+                    Intention = IntentionEnum.Hostile; 
+                    CustomAgentInitiator.MarkerTyperRef = 2; 
+                    break;
+                case "Break": 
+                    Intention = IntentionEnum.Special;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+                default: 
+                    Intention = IntentionEnum.Undefined;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
             }
         }
 
@@ -393,8 +415,6 @@ namespace Bannerlord_Mod_Test
 
             CustomAgentInitiator.SEVolition = finalVolition;
 
-            //InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
-
             return CustomAgentInitiator.SEVolition;
         }
         
@@ -422,9 +442,7 @@ namespace Bannerlord_Mod_Test
 
             CustomAgentReceiver.SEVolition = finalVolition;
 
-            //InformationManager.DisplayMessage(new InformationMessage(SEName + " > " + finalVolition.ToString()));
-
-                return CustomAgentReceiver.SEVolition;
+            return CustomAgentReceiver.SEVolition;
         }
         
         private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)

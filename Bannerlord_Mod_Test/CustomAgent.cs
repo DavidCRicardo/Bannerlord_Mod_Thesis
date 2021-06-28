@@ -28,7 +28,6 @@ namespace Bannerlord_Mod_Test
         public List<Status> StatusList { get; set; }
         public List<CustomAgent> customAgentsList { get; set; }
         public List<Trait> TraitList { get; set; }
-        //public List<Goal> GoalsList { get; set; }
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         public List<Item> ItemList { get; set; }
         public List<MemorySE> MemorySEs { get; set; }
@@ -39,6 +38,7 @@ namespace Bannerlord_Mod_Test
         public bool cooldown { get; set; }
         public bool EnoughRest { get; set; }
         public bool NearPlayer { get; set; }
+        public int MarkerTyperRef { get; set; }
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }
@@ -56,7 +56,6 @@ namespace Bannerlord_Mod_Test
             this.customTargetAgent = null;
             this.customAgentsList = new List<CustomAgent>(); // reference to NPCs around 
             this.TraitList = new List<Trait>();
-            //this.GoalsList = new List<Goal>();
             this.SocialNetworkBeliefs = new List<SocialNetworkBelief>();
             this.ItemList = new List<Item>();
             this.MemorySEs = new List<MemorySE>();
@@ -64,6 +63,7 @@ namespace Bannerlord_Mod_Test
             this.StatusList = new List<Status>();
             this.IsInitiator = false;
             this.NearPlayer = false;
+            this.MarkerTyperRef = 1;
 
             AddStatusToCustomAgent(auxStatusList);
             this.Countdown = SetCountdownToCustomAgent();
@@ -123,9 +123,7 @@ namespace Bannerlord_Mod_Test
         internal void CheckDistanceBetweenAgentsToSocialExchange(string SEName, CustomAgent customAgent, Random rnd)
         {
             if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.customTargetAgent != null)
-            {
-                //InformationManager.DisplayMessage(new InformationMessage(customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position).ToString()));
-                
+            {                
                 if (customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
@@ -247,7 +245,6 @@ namespace Bannerlord_Mod_Test
                 {
                     _customAgentJson.TraitList = TraitList;
                     _customAgentJson.SocialNetworkBeliefs = SocialNetworkBeliefs;
-                    //_customAgentJson.GoalsList = GoalsList;
                     _customAgentJson.ItemsList = ItemList;
                 }
             }
@@ -269,11 +266,11 @@ namespace Bannerlord_Mod_Test
                 {
                     TraitList = _customAgentJson.TraitList;
                     SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
-                    //GoalsList = _customAgentJson.GoalsList;
                     ItemList = _customAgentJson.ItemsList;
                 }
             }
         }
+        
         internal void AbortSocialExchange()
         {
             IsInitiator = false;
@@ -284,6 +281,7 @@ namespace Bannerlord_Mod_Test
             }
             EndingSocialExchange = true;
         }
+        
         internal int CheckCountdownWithCurrentTraits()
         {
             int countdownChangesTemp = 0;

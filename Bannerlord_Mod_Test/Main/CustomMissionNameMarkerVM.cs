@@ -51,12 +51,11 @@ namespace Bannerlord_Mod_Test
                     rnd = new Random();
 
                     PreInitialize();
+
                     Initialize(giveTraitsToNPCs);
 
                     this._firstTick = false;
                 }
-
-                //InformationManager.DisplayMessage(new InformationMessage(onGoingSEs.ToString()));
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
@@ -64,26 +63,9 @@ namespace Bannerlord_Mod_Test
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
-
                         CustomAgentsNearPlayer(customAgent);
-
-                        if (customAgent.busy && customAgent.IsInitiator)
-                        {
-                            if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent == Agent.Main)
-                            {
-                                customCharacterReftoCampaignBehaviorBase = customAgent;
-                                intentionReftoCampaignBehaviorBase = GetIntentionToCampaignBehaviorBase(customAgent);
-                            }
-
-                            customAgent.CustomAgentHasDesire(dt, customAgent.SocialMove, customAgent, rnd, MegaDictionary);
-                            if (customAgent.EndingSocialExchange)
-                            {
-                                onGoingSEs--;
-                                customAgent.EndingSocialExchange = false;
-
-                                SaveAllInfoToJSON();
-                            }
-                        }
+                        
+                        CustomAgentGoingToSE(dt, customAgent);
                     }
 
                     DecreaseNPCsCountdown(dt);
@@ -100,7 +82,29 @@ namespace Bannerlord_Mod_Test
                         _firstTick2 = false;
                     }
                 }
+
                 UpdateTargetScreen();
+            }
+        }
+
+        private void CustomAgentGoingToSE(float dt, CustomAgent customAgent)
+        {
+            if (customAgent.busy && customAgent.IsInitiator)
+            {
+                if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent == Agent.Main)
+                {
+                    customCharacterReftoCampaignBehaviorBase = customAgent;
+                    intentionRefToCBB = GetIntentionToCBB(customAgent);
+                }
+
+                customAgent.CustomAgentHasDesire(dt, customAgent.SocialMove, customAgent, rnd, MegaDictionary);
+                if (customAgent.EndingSocialExchange)
+                {
+                    onGoingSEs--;
+                    customAgent.EndingSocialExchange = false;
+
+                    SaveAllInfoToJSON();
+                }
             }
         }
 
@@ -226,29 +230,6 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        private void AbortOnGoingSE(CustomAgent customAgent)
-        {
-            // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
-            // o player e o NPC interagido sao considerados como busy
-            // se algum outro NPC viria para interagir com o player ou o npc, então aborta a social exchange 
-
-            if (customAgent != null && customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent != Agent.Main)
-            {
-                if (customAgent.busy) // busy // target or not
-                {
-                    customAgent.AbortSocialExchange();
-
-                    if (customAgent.customTargetAgent != null) // if has target // its the initiator
-                    {
-                        if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
-                        if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); onGoingSEs--; }
-                    }
-                }
-                //customAgent.AbortSocialExchange();
-                //customAgent.EndingSocialExchange = false;
-            }
-        }
-
         private void PreInitialize()
         {
             CheckIfFileExists();
@@ -261,6 +242,7 @@ namespace Bannerlord_Mod_Test
             }
             else { giveTraitsToNPCs = true; }
         }
+
         private void Initialize(bool giveTraitsToNPCs)
         {
             InitializeSocialExchanges();
@@ -308,6 +290,7 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
+
         private void InitializeSocialExchanges()
         {
             onGoingSEs = 0;
@@ -334,7 +317,7 @@ namespace Bannerlord_Mod_Test
             {
                 if (customAgent.customTargetAgent != null && customAgent.customTargetAgent.Name == Agent.Main.Name)
                 {
-                    intentionReftoCampaignBehaviorBase = SocialExchangeSE.IntentionEnum.Undefined;
+                    intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
                     customCharacterReftoCampaignBehaviorBase = null;
                     SetCanResetCBB_refVariables(true);
 
@@ -401,14 +384,15 @@ namespace Bannerlord_Mod_Test
 
         private void LoadDialogsFromJSON()
         {
-            string myJsonResponse = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/npc_conversations.json");
-            RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(myJsonResponse);
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/npc_conversations.json");
+            RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(json);
 
             Dictionary<string, List<string>> fromIDGetListMessages = new Dictionary<string, List<string>>();
             Dictionary<string, Dictionary<string, List<string>>> fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
             Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
 
             fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
+
             //Only 1 DialogsRoot
             foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
             {
@@ -423,11 +407,11 @@ namespace Bannerlord_Mod_Test
                         {
                             fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
                         }
-                        if (_npcDialog.id == "accept")
+                        else if (_npcDialog.id == "accept")
                         {
                             fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
                         }
-                        if (_npcDialog.id == "reject")
+                        else if (_npcDialog.id == "reject")
                         {
                             fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
                         }
@@ -528,7 +512,6 @@ namespace Bannerlord_Mod_Test
                         if (_customAgentJson != null)
                         {
                             customAgent.TraitList = _customAgentJson.TraitList;
-                            //customAgent.GoalsList = _customAgentJson.GoalsList;
                             customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                             customAgent.ItemList = _customAgentJson.ItemsList;
                             customAgent.MemorySEs = _customAgentJson.MemoriesList;
@@ -592,7 +575,6 @@ namespace Bannerlord_Mod_Test
                         if (x != null)
                         {
                             _customAgentJson.TraitList = x.TraitList;
-                            //_customAgentJson.GoalsList = x.GoalsList;
                             _customAgentJson.SocialNetworkBeliefs = x.SocialNetworkBeliefs;
                             _customAgentJson.ItemsList = x.ItemList;
                             _customAgentJson.MemoriesList = x.MemorySEs;
@@ -623,10 +605,12 @@ namespace Bannerlord_Mod_Test
         private float dtControl;
 
         private static bool resetVariables { get; set; }
+
         public bool CanResetCBB_refVariables()
         {
             return resetVariables;
         }
+
         public void SetCanResetCBB_refVariables(bool value)
         {
             resetVariables = value;
@@ -634,8 +618,8 @@ namespace Bannerlord_Mod_Test
 
         public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
 
-        internal SocialExchangeSE.IntentionEnum intentionReftoCampaignBehaviorBase { get; set; }
-        private SocialExchangeSE.IntentionEnum GetIntentionToCampaignBehaviorBase(CustomAgent customAgent)
+        public SocialExchangeSE.IntentionEnum intentionRefToCBB { get; set; }
+        private SocialExchangeSE.IntentionEnum GetIntentionToCBB(CustomAgent customAgent)
         {
             if (customAgent.SocialMove != "")
             {
@@ -702,6 +686,7 @@ namespace Bannerlord_Mod_Test
                 this.UpdateTargetScreenPositions();
             }
         }
+
         private void UpdateTargetScreenPositions()
         {
             foreach (CustomMissionNameMarkerTargetVM missionNameMarkerTargetVM in this.Targets)
@@ -723,6 +708,7 @@ namespace Bannerlord_Mod_Test
             }
             this.Targets.Sort(this._distanceComparer);
         }
+
         private void UpdateTargetStates(bool state)
         {
             foreach (CustomMissionNameMarkerTargetVM missionNameMarkerTargetVM in this.Targets)
@@ -731,9 +717,9 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        public void EnableDataSource(CustomMissionNameMarkerVM _dataSource)
+        public void EnableDataSource()
         {
-            foreach (CustomMissionNameMarkerTargetVM item in _dataSource.Targets)
+            foreach (CustomMissionNameMarkerTargetVM item in this.Targets)
             {
                 CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.Id);
 
@@ -741,12 +727,34 @@ namespace Bannerlord_Mod_Test
                 {
                     if (customAgent.message != "")
                     {
+                        item.MarkerType = customAgent.MarkerTyperRef;
                         item.Message = customAgent.message;
                         item.IsEnabled = true;
                     }
                     else
                     {
                         item.IsEnabled = false;
+                    }
+                }
+            }
+        }
+
+        private void AbortOnGoingSE(CustomAgent customAgent)
+        {
+            // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
+            // o player e o NPC interagido sao considerados como busy
+            // se algum outro NPC viria para interagir com o player ou o npc, então aborta a social exchange 
+
+            if (customAgent != null && customAgent.customTargetAgent != null && customAgent.customTargetAgent.selfAgent != Agent.Main)
+            {
+                if (customAgent.busy) // busy // target or not
+                {
+                    customAgent.AbortSocialExchange();
+
+                    if (customAgent.customTargetAgent != null) // if has target // its the initiator
+                    {
+                        if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
+                        if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); onGoingSEs--; }
                     }
                 }
             }
