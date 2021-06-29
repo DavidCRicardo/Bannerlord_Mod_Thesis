@@ -13,11 +13,14 @@ namespace Bannerlord_Mod_Test
 
             SetCountdownToIncreaseDecrease(traitName);
         }
+
         [JsonProperty("traitName")]
         public string traitName { get; set; }
         
         private bool decreaseCountdown;
+
         private bool increaseCountdown;
+
         public bool GetdecreaseCountdown()
         {
             return decreaseCountdown;
