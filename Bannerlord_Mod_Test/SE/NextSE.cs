@@ -12,9 +12,6 @@
         public string SEName;
         public CustomAgent InitiatorAgent;
         public CustomAgent ReceiverAgent;
-        public string InitiatorName;
-        public string ReceiverName;
-        public int ReceiverId;
         public int Volition;
     }
 }

@@ -39,11 +39,16 @@ namespace Bannerlord_Mod_Test
         public bool EnoughRest { get; set; }
         public bool NearPlayer { get; set; }
         public int MarkerTyperRef { get; set; }
+        public bool Following { get; set; }
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }
+
         public SocialExchangeSE socialExchangeSE { get; set; }
         public SocialExchangeSE.IntentionEnum SEIntention { get; set; }
+
+        public bool NearEnoughToJoinConversation { get; private set; }
+
         private int memorySize = 3;
         public CustomAgent(Agent agent, int _id, List<string> auxStatusList = null)
         {
@@ -63,6 +68,7 @@ namespace Bannerlord_Mod_Test
             this.StatusList = new List<Status>();
             this.IsInitiator = false;
             this.NearPlayer = false;
+            this.Following = false;
             this.MarkerTyperRef = 1;
 
             AddStatusToCustomAgent(auxStatusList);
@@ -97,7 +103,7 @@ namespace Bannerlord_Mod_Test
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
 
-        public void startSE(string _SEName, CustomAgent _Receiver)
+        public void StartSE(string _SEName, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
             //this.selfAgent.SetLookAgent(targetAgent);
@@ -109,7 +115,7 @@ namespace Bannerlord_Mod_Test
 
             busy = true;
         }
-        internal void CustomAgentHasDesire(float dt, string SEName, CustomAgent customAgent, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             if (NearEnoughToStartConversation)
             {
@@ -117,24 +123,37 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                CheckDistanceBetweenAgentsToSocialExchange(SEName, customAgent, rnd);
+                CheckDistanceBetweenAgentsToSocialExchange(rnd);
             }
         }
-        internal void CheckDistanceBetweenAgentsToSocialExchange(string SEName, CustomAgent customAgent, Random rnd)
+
+        public void CustomAgentWithoutDesire(float dt)
         {
-            if (customAgent != null && customAgent.Name != Agent.Main.Name && customAgent.customTargetAgent != null)
+            if (NearEnoughToJoinConversation)
+            {
+                //JoinSocialExchange(dt);
+            }
+            else
+            {
+                //CheckDistanceBetweenAgentsToJoinSocialExchange(SEName, customAgent, rnd);
+            }
+        }
+
+        public void CheckDistanceBetweenAgentsToSocialExchange(Random rnd)
+        {
+            if (this.Name != Agent.Main.Name && this.customTargetAgent != null)
             {                
-                if (customAgent.selfAgent.Position.Distance(customAgent.customTargetAgent.selfAgent.Position) < 3)
+                if (this.selfAgent.Position.Distance(this.customTargetAgent.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
-                    socialExchangeSE = new SocialExchangeSE(SEName, customAgent, customAgentsList);
+                    socialExchangeSE = new SocialExchangeSE(SocialMove, this, customAgentsList);
                     socialExchangeSE.OnInitialize(rnd);
 
                     NearEnoughToStartConversation = true;
                 }
             }
         }
-        internal void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             int seconds = socialExchangeSE.ReduceDelay ? 0 : 3;
 
@@ -152,7 +171,7 @@ namespace Bannerlord_Mod_Test
             }
         }
 
-        internal void FinalizeSocialExchange()
+        public void FinalizeSocialExchange()
         {
             try
             {
@@ -170,7 +189,7 @@ namespace Bannerlord_Mod_Test
             EnoughRest = false;
             
         }
-        internal void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
         {
             if (_isInitiator)
             {

@@ -8,9 +8,12 @@ namespace Bannerlord_Mod_Test
 {
     public class SocialExchangeSE
     {
-        public SocialExchangeSE(string _SEname, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
+        public SocialExchangeSE(string _SEName, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
         {
-            this.SEName = _SEname;
+            //this.SocialExchange = _SocialExchange;
+
+            //this.SEName = _customAgentinitiator.SocialMove;
+            this.SEName = _SEName;
 
             if (_customAgentinitiator != null)
             {
@@ -22,55 +25,52 @@ namespace Bannerlord_Mod_Test
 
                 this.CustomAgentList = customAgents;
                 this.index = -1;
-            }
-
-            /* Use Dictionary Here */
-            switch (SEName)
-            {
-                case "Compliment": 
-                    Intention = IntentionEnum.Positive;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
-                    break;
-                case "FriendSabotage":
-                case "Jealous": 
-                    Intention = IntentionEnum.Negative;
-                    CustomAgentInitiator.MarkerTyperRef = 1;
-                    break;
-                case "AskOut":
-                case "Flirt": 
-                    Intention = IntentionEnum.Romantic;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
-                    break;
-                case "RomanticSabotage": 
-                    Intention = IntentionEnum.Hostile; 
-                    CustomAgentInitiator.MarkerTyperRef = 1; 
-                    break;
-                case "Bully": 
-                    Intention = IntentionEnum.Hostile; 
-                    CustomAgentInitiator.MarkerTyperRef = 2; 
-                    break;
-                case "Break": 
-                    Intention = IntentionEnum.Special;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
-                    break;
-                default: 
-                    Intention = IntentionEnum.Undefined;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
-                    break;
-            }
+            }  
         }
 
         public void OnInitialize(Random _rnd)
         {
             Rnd = _rnd;
+
+            switch (SEName)
+            {
+                case "Compliment":
+                    Intention = IntentionEnum.Positive;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+                case "FriendSabotage":
+                case "Jealous":
+                    Intention = IntentionEnum.Negative;
+                    CustomAgentInitiator.MarkerTyperRef = 1;
+                    break;
+                case "AskOut":
+                case "Flirt":
+                    Intention = IntentionEnum.Romantic;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+                case "RomanticSabotage":
+                    Intention = IntentionEnum.Hostile;
+                    CustomAgentInitiator.MarkerTyperRef = 1;
+                    break;
+                case "Bully":
+                    Intention = IntentionEnum.Hostile;
+                    CustomAgentInitiator.MarkerTyperRef = 2;
+                    break;
+                case "Break":
+                    Intention = IntentionEnum.Special;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+                default:
+                    Intention = IntentionEnum.Undefined;
+                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    break;
+            }
+
             SocialExchangeDoneAndReacted = false;
 
             ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
 
-            CustomAgentInitiator.SEIntention = Intention;
-
             CustomAgentReceiver.busy = true;
-            CustomAgentReceiver.SEIntention = Intention;
             CustomAgentReceiver.SocialMove = SEName;
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
@@ -401,6 +401,7 @@ namespace Bannerlord_Mod_Test
             }
         }
         
+        
         internal int InitiadorVolition()
         {
             int initialValue = 0;
@@ -472,6 +473,7 @@ namespace Bannerlord_Mod_Test
             customAgent.message = "";
             customAgent.cooldown = true;
             customAgent.customTargetAgent = null;
+            customAgent.MarkerTyperRef = 0;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
         }
@@ -491,6 +493,7 @@ namespace Bannerlord_Mod_Test
         public bool SocialExchangeDoneAndReacted { get; set; }
         public bool ReceptorIsPlayer { get; set; }
         public bool ReduceDelay { get; set; }
+
         public string SEName { get; set; }
         private Random Rnd { get; set; }
         private int auxToCheckWhoIsSpeaking { get; set; }
