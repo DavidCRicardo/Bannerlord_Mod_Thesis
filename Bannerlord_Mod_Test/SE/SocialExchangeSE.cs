@@ -20,7 +20,7 @@ namespace Bannerlord_Mod_Test
                 this.AgentInitiator = _customAgentinitiator.selfAgent;
                 this.CustomAgentInitiator = _customAgentinitiator;
 
-                this.CustomAgentReceiver = CustomAgentInitiator.customTargetAgent;
+                this.CustomAgentReceiver = CustomAgentInitiator.customAgentTarget;
                 this.AgentReceiver = CustomAgentReceiver.selfAgent;
 
                 this.CustomAgentList = customAgents;
@@ -70,7 +70,7 @@ namespace Bannerlord_Mod_Test
 
             ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
 
-            CustomAgentReceiver.busy = true;
+            CustomAgentReceiver.Busy = true;
             CustomAgentReceiver.SocialMove = SEName;
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
@@ -82,9 +82,9 @@ namespace Bannerlord_Mod_Test
                 index++;
 
                 CustomAgentInitiator.AgentGetMessage(true, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
-                if (CustomAgentInitiator.message != "")
+                if (CustomAgentInitiator.Message != "")
                 {
-                    CustomAgentReceiver.message = "";
+                    CustomAgentReceiver.Message = "";
                     ReduceDelay = false;
                 }
                 else { ReduceDelay = true; }
@@ -96,9 +96,9 @@ namespace Bannerlord_Mod_Test
                 CustomAgentReceiver.SEVolition = ReceiverVolition();
                 CustomAgentReceiver.AgentGetMessage(false, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
 
-                if (CustomAgentReceiver.message != "")
+                if (CustomAgentReceiver.Message != "")
                 {
-                    CustomAgentInitiator.message = "";
+                    CustomAgentInitiator.Message = "";
                     ReduceDelay = false;
                 }
                 else { ReduceDelay = true; }
@@ -106,7 +106,7 @@ namespace Bannerlord_Mod_Test
                 auxToCheckWhoIsSpeaking = 0;
             }
 
-            if ((CustomAgentInitiator.message == "" && CustomAgentReceiver.message == "") || ReceptorIsPlayer)
+            if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
                 if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
                 SocialExchangeDoneAndReacted = true; 
@@ -117,8 +117,8 @@ namespace Bannerlord_Mod_Test
         {
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
-            CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.Name, CustomAgentReceiver.Id, SEName));
-            CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.Name, CustomAgentInitiator.Id, SEName));
+            CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.selfAgent.Name, CustomAgentReceiver.Id, SEName));
+            CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id, SEName));
 
             ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
@@ -161,8 +161,7 @@ namespace Bannerlord_Mod_Test
         {
             if (true)
             {
-                CustomAgentInitiator.UpdateStatus("Anger", -1);
-                CustomAgentInitiator.UpdateStatus("Courage", -1);
+                CustomAgentInitiator.UpdateAllStatus(0, -1, -1, 0, 0);
 
                 BreakUpMethod();
             }
@@ -173,16 +172,12 @@ namespace Bannerlord_Mod_Test
             if (CustomAgentReceiver.SE_Accepted)
             {
                 //Bully or RomanticSabotage
-                CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-                CustomAgentInitiator.UpdateStatus("Shame", 1);
-                CustomAgentReceiver.UpdateStatus("Courage", -0.2);
-
-                CustomAgentInitiator.StopAnimation();
-                CustomAgentReceiver.StopAnimation();
+                CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 1, 0);
+                CustomAgentReceiver.UpdateAllStatus(0, -0.2, 0, 0, 0);
             }
             else
             {
-                CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 0, 0);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                 UpdateThirdNPCsBeliefs("Friends", belief, -1);
@@ -200,7 +195,7 @@ namespace Bannerlord_Mod_Test
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                     UpdateThirdNPCsBeliefs("Friends", belief, -1);
 
-                    CustomAgentInitiator.UpdateStatus("Anger", -0.3);
+                    CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 0, 0);
                 }
 
                 if (SEName == "FriendSabotage")
@@ -213,9 +208,8 @@ namespace Bannerlord_Mod_Test
             {
                 if (SEName == "Jealous")
                 {
-                    CustomAgentInitiator.UpdateStatus("Anger", -0.3);
-                    CustomAgentInitiator.UpdateStatus("Shame", 1);
-                    CustomAgentReceiver.UpdateStatus("Courage", -0.2);
+                    CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 1, 0);
+                    CustomAgentReceiver.UpdateAllStatus(0, -0.2, 0, 0, 0);
                 }
 
                 if (SEName == "FriendSabotage")
@@ -247,8 +241,9 @@ namespace Bannerlord_Mod_Test
             }
             else
             {
-                CustomAgentInitiator.UpdateStatus("Anger", 1);                
+                CustomAgentInitiator.UpdateAllStatus(0, 0, 1, 0, 0);
             }
+
             NPCsNearRomanticSocialMove();
         }
 
@@ -260,13 +255,13 @@ namespace Bannerlord_Mod_Test
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
                     UpdateThirdNPCsBeliefs("Friends", belief, 1);
-                    CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
+
+                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0);
                 }
             }
             else
             {
-                CustomAgentInitiator.UpdateStatus("SocialTalk", -1);
-                CustomAgentInitiator.UpdateStatus("Shame", 1);
+                CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 1, 0);
             }
         }
 
@@ -310,7 +305,7 @@ namespace Bannerlord_Mod_Test
                     if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
                     {
                         //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
-                        TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.Name, CustomAgentInitiator.Id);
+                        TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id);
                         customAgent.AddToTriggerRulesList(triggerRule);
                     }
                 }
@@ -346,7 +341,7 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
             if (belief == null)
             {
-                List<string> agents = new List<string>() { CustomAgentInitiator.Name, CustomAgentReceiver.Name };
+                List<string> agents = new List<string>() { CustomAgentInitiator.selfAgent.Name, CustomAgentReceiver.selfAgent.Name };
                 List<int> _ids = new List<int>() { CustomAgentInitiator.Id, CustomAgentReceiver.Id };
 
                 SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _ids, _value);
@@ -372,7 +367,7 @@ namespace Bannerlord_Mod_Test
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
                     SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => 
-                    b.agents.Contains(CustomAgentInitiator.Name) && b.agents.Contains(CustomAgentReceiver.Name));
+                    b.agents.Contains(CustomAgentInitiator.selfAgent.Name) && b.agents.Contains(CustomAgentReceiver.selfAgent.Name));
 
                     if (belief == null)
                     {
@@ -391,7 +386,7 @@ namespace Bannerlord_Mod_Test
                         int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
                         if (datingHowMany > 0)
                         {
-                            if (belief.agents.Contains(CustomAgentInitiator.Name) || belief.agents.Contains(CustomAgentReceiver.Name))
+                            if (belief.agents.Contains(CustomAgentInitiator.selfAgent.Name) || belief.agents.Contains(CustomAgentReceiver.selfAgent.Name))
                             {
                                 customAgent.UpdateBeliefWithNewValue(belief, _value * -1);
                             }
@@ -400,7 +395,6 @@ namespace Bannerlord_Mod_Test
                 }
             }
         }
-        
         
         internal int InitiadorVolition()
         {
@@ -421,7 +415,9 @@ namespace Bannerlord_Mod_Test
         
         private int CheckMemory(int finalVolition, int multiplyToDecrease)
         {
-            int howManyTimes = CustomAgentInitiator.MemorySEs.Count(m => m.NPC_Name == CustomAgentReceiver.Name && m.SE_Name == SEName);
+            int howManyTimes = CustomAgentInitiator.MemorySEs.Count(
+                memorySlot => memorySlot.NPC_Name == CustomAgentReceiver.selfAgent.Name && memorySlot.SE_Name == SEName);
+
             if (howManyTimes > 0)
             {
                 finalVolition -= howManyTimes * multiplyToDecrease;
@@ -469,10 +465,10 @@ namespace Bannerlord_Mod_Test
             customAgent.SocialMove = "";
             customAgent.IsInitiator = false;
             customAgent.FullMessage = null;
-            customAgent.busy = false;
-            customAgent.message = "";
-            customAgent.cooldown = true;
-            customAgent.customTargetAgent = null;
+            customAgent.Busy = false;
+            customAgent.Message = "";
+            customAgent.EnoughRest = false;
+            customAgent.customAgentTarget = null;
             customAgent.MarkerTyperRef = 0;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();

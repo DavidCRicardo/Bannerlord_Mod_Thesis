@@ -173,9 +173,9 @@ namespace Bannerlord_Mod_Test
 
         private SocialExchangeSE InitializeSocialExchange(CustomAgent customAgentConversation)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == customAgentConversation.Name && c.Id == customAgentConversation.Id);
+            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
             CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
-            MainCustomAgent.customTargetAgent = customAgent;
+            MainCustomAgent.customAgentTarget = customAgent;
 
             SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
             {
@@ -186,8 +186,8 @@ namespace Bannerlord_Mod_Test
 
         private void GiveCourageToCharacter(CustomAgent customAgentConversation)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.Name == customAgentConversation.Name && c.Id == customAgentConversation.Id);
-            customAgent.UpdateStatus("Courage", 1);
+            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
+            customAgent.UpdateAllStatus(0, 1, 0, 0, 0);
         }
 
         private void ResetCBB_refVariables()

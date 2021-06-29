@@ -173,9 +173,9 @@ namespace Bannerlord_Mod_Test
 
                 List<string> agentsOnRelation = tempList[index].agents;
 
-                if (agentsOnRelation.Contains(Initiator.Name))
+                if (agentsOnRelation.Contains(Initiator.selfAgent.Name))
                 {
-                    foreach (var agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
+                    foreach (string agent in agentsOnRelation.Where(agent => agent != Initiator.selfAgent.Name))
                     {
                         Initiator.thirdAgent = agent;
                         Initiator.thirdAgentId = index;
@@ -198,7 +198,7 @@ namespace Bannerlord_Mod_Test
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
             if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= 0)
             {
-                sum += 2;
+                sum += 100;
             }
 
             return sum;
@@ -249,12 +249,12 @@ namespace Bannerlord_Mod_Test
             return localSum;
         }
 
-        private int CheckFaithful(CustomAgent agent, CustomAgent otherAgent)
+        private int CheckFaithful(CustomAgent customAgent, CustomAgent otherAgent)
         {
-            SocialNetworkBelief belief = agent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
+            SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
             if (belief != null)
             {
-                if (belief.agents.Contains(agent.Name) && belief.agents.Contains(otherAgent.Name))
+                if (belief.agents.Contains(customAgent.selfAgent.Name) && belief.agents.Contains(otherAgent.selfAgent.Name))
                 {
                     if (belief.value > 0)
                     {
@@ -278,7 +278,7 @@ namespace Bannerlord_Mod_Test
 
         private Status CheckStatusIntensity(CustomAgent customAgent, string statusName)
         {
-            return customAgent.StatusList.Find(s => s.statusName == statusName);
+            return customAgent.StatusList.Find(s => s.Name == statusName);
         }
 
         public int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
@@ -296,7 +296,9 @@ namespace Bannerlord_Mod_Test
         {
             if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
             {
-                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(t => t.NPC_OnRule == agentChecked.Name && t.NPC_ID == agentChecked.Id && t.SocialExchangeToDo == relationName);
+                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(
+                    rule => rule.NPC_OnRule == agentChecked.selfAgent.Name && rule.NPC_ID == agentChecked.Id && rule.SocialExchangeToDo == relationName);
+                
                 if (triggerRule != null)
                 {
                     return 100;
