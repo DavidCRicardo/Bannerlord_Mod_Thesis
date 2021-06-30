@@ -1,0 +1,25 @@
+﻿<Module>
+  <Name value="Bannerlord_Social_AI"/>
+  <Id value="Bannerlord_Social_AI"/>
+  <Version value="v1.0.0"/>
+  <SingleplayerModule value="true"/>
+  <MultiplayerModule value="false"/>
+  <DependedModules>
+    <DependedModule Id="Native"/>
+    <DependedModule Id="SandBoxCore"/>
+    <DependedModule Id="Sandbox"/>
+    <DependedModule Id="StoryMode" />
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="Bannerlord_Social_AI"/>
+      <DLLName value="Bannerlord_Social_AI.dll"/>
+      <SubModuleClassType value="Bannerlord_Social_AI.SubModule"/>
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+  <Xmls/>
+</Module>
