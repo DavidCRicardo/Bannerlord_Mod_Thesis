@@ -107,10 +107,6 @@ namespace Bannerlord_Mod_Test
                     SaveAllInfoToJSON();
                 }
             }
-            else
-            {
-                customAgent.CustomAgentWithoutDesire(dt);
-            }
         }
 
         private void DecreaseNPCsCountdown(float dt)

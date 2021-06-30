@@ -30,12 +30,10 @@ namespace Bannerlord_Mod_Test
         internal string[] CheckSocialMoveInitiator()
         {
             Message = GetAMessage(SE, CurrentCulture, "start", Rnd);
-
-            //char[] delimiterChars = { '.', '!', '?' };
             char delimiterChar = '/';
             sentences = Message.Split(delimiterChar);
 
-            return sentences; // Message
+            return sentences; 
         }
         internal string[] CheckSocialMoveReceiver()
         {
@@ -43,10 +41,10 @@ namespace Bannerlord_Mod_Test
             string id = (IsAccepted) ? "accept" : "reject";
 
             Message = GetAMessage(SE, CurrentCulture, id, Rnd);
-            //char[] delimiterChars = { '.', '!', '?' };
             char delimiterChar = '/';
             sentences = Message.Split(delimiterChar);
-            return sentences; // Message
+
+            return sentences;
         }
         private void SetIsAccepted()
         {
