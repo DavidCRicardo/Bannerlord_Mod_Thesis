@@ -51,8 +51,6 @@ namespace Bannerlord_Mod_Test
         public string thirdAgent;
         public int thirdAgentId;
 
-        public bool Following { get; set; }
-
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
             this.selfAgent = _agent;
@@ -74,7 +72,6 @@ namespace Bannerlord_Mod_Test
 
             this.IsInitiator = false;
             this.NearPlayer = false;
-            this.Following = false;
             this.MarkerTyperRef = 1;
 
             AddStatusToCustomAgent(_statusList);
@@ -504,12 +501,12 @@ namespace Bannerlord_Mod_Test
 
         public void UpdateAllStatus(double _SocialTalk = 0, double _Courage = 0, double _Anger = 0, double _Shame = 0, double _Tiredness = 0)
         {
-            List<float> tempList = new List<float>() { _SocialTalk, _Courage, _Anger, _Shame, _Tiredness };
+            List<double> tempList = new List<double>() { _SocialTalk, _Courage, _Anger, _Shame, _Tiredness };
 
             for (int i = 0; i < StatusList.Count; i++)
             {
                 Status status = StatusList[i];
-                float value = tempList[i];
+                double value = tempList[i];
 
                 UpdateStatus(status.Name, value);
             }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
 namespace Bannerlord_Mod_Test
@@ -10,9 +9,6 @@ namespace Bannerlord_Mod_Test
     {
         public SocialExchangeSE(string _SEName, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
         {
-            //this.SocialExchange = _SocialExchange;
-
-            //this.SEName = _customAgentinitiator.SocialMove;
             this.SEName = _SEName;
 
             if (_customAgentinitiator != null)
@@ -192,17 +188,17 @@ namespace Bannerlord_Mod_Test
                 //Decreases relation with Initiator
                 if (SEName == "Jealous")
                 {
-                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                    UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                    
 
                     CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 0, 0);
                 }
-
-                if (SEName == "FriendSabotage")
+                else if (SEName == "FriendSabotage")
                 {
-                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                    UpdateThirdNPCsBeliefs("Friends", belief, -1);
+
                 }
+
+                SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
+                UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
             else
             {
@@ -212,7 +208,7 @@ namespace Bannerlord_Mod_Test
                     CustomAgentReceiver.UpdateAllStatus(0, -0.2, 0, 0, 0);
                 }
 
-                if (SEName == "FriendSabotage")
+                else if (SEName == "FriendSabotage")
                 {
                     //Decreases relation 
                     CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
@@ -396,7 +392,7 @@ namespace Bannerlord_Mod_Test
             }
         }
         
-        internal int InitiadorVolition()
+        public int InitiadorVolition()
         {
             int initialValue = 0;
 
@@ -426,7 +422,7 @@ namespace Bannerlord_Mod_Test
             return finalVolition;
         }
         
-        internal int ReceiverVolition()
+        public int ReceiverVolition()
         {
             int initialValue = 0;
 
@@ -482,8 +478,7 @@ namespace Bannerlord_Mod_Test
             Romantic,
             Negative,
             Hostile,
-            Special,
-            AllTypes
+            Special
         }
 
         public bool SocialExchangeDoneAndReacted { get; set; }
@@ -501,7 +496,6 @@ namespace Bannerlord_Mod_Test
         private Agent AgentInitiator { get; set; }
         private Agent AgentReceiver { get; set; }
 
-        //*
         private void ComputeOutcome(int _SEVolition, int minThreshold, int maxThreshold)
         {
             if (_SEVolition > maxThreshold)

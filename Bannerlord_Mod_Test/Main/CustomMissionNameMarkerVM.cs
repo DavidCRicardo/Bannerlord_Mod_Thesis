@@ -24,16 +24,17 @@ namespace Bannerlord_Mod_Test
 
         private List<SocialExchangeSE> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
-        private SocialExchangeSE socialExchangeSE { get; set; }
+        private NextSE nextSE { get; set; }
+
         public List<CustomAgent> customAgentsList { get; set; }
+        private SocialExchangeSE socialExchangeSE { get; set; }
         private List<string> StatusList { get; set; }
 
-        private int onGoingSEs { get; set; }
-        private int maximumSEs { get; set; }
+        private string CurrentSettlement { get; set; }
+        private string CurrentLocation { get; set; } // tavern, center, prison, lordshall
         private bool giveTraitsToNPCs { get; set; }
-        private string _currentSettlement { get; set; }
-        private string _currentLocation { get; set; } // tavern, center, prison, lordshall
-        private NextSE nextSE { get; set; }
+        private int OnGoingSEs { get; set; }
+        private int MaximumSEs { get; set; }
 
         private string auxSEName;
         private CustomAgent auxInitiatorAgent;
@@ -100,7 +101,7 @@ namespace Bannerlord_Mod_Test
                 customAgent.CustomAgentWithDesire(dt, rnd, MegaDictionary);
                 if (customAgent.EndingSocialExchange)
                 {
-                    onGoingSEs--;
+                    OnGoingSEs--;
                     customAgent.EndingSocialExchange = false;
 
                     SaveAllInfoToJSON();
@@ -114,7 +115,7 @@ namespace Bannerlord_Mod_Test
 
         private void DecreaseNPCsCountdown(float dt)
         {
-            if (onGoingSEs >= maximumSEs)
+            if (OnGoingSEs >= MaximumSEs)
             {
                 return;
             }
@@ -223,7 +224,7 @@ namespace Bannerlord_Mod_Test
             {
                 /* Get NPC & Start SE */
                 nextSE.InitiatorAgent.StartSE(nextSE.SEName, nextSE.ReceiverAgent);
-                onGoingSEs++;
+                OnGoingSEs++;
             }
         }
 
@@ -231,9 +232,9 @@ namespace Bannerlord_Mod_Test
         {
             CheckIfFileExists();
 
-            _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-            _currentLocation = CampaignMission.Current.Location.StringId;
-            if (CheckIfSettlementExistsOnFile(_currentSettlement, _currentLocation))
+            CurrentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+            CurrentLocation = CampaignMission.Current.Location.StringId;
+            if (CheckIfSettlementExistsOnFile(CurrentSettlement, CurrentLocation))
             {
                 giveTraitsToNPCs = false;
             }
@@ -254,7 +255,7 @@ namespace Bannerlord_Mod_Test
                     nextSE = new NextSE("", null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
 
-                    /* Reference to CustomAgent */
+                    /* Reference to CustomAgents Around */
                     customAgentsList = new List<CustomAgent>();
 
                     foreach (Agent agent in Mission.Current.Agents)
@@ -289,8 +290,8 @@ namespace Bannerlord_Mod_Test
 
         private void InitializeSocialExchanges()
         {
-            onGoingSEs = 0;
-            maximumSEs = _currentLocation == "center" ? 4 : 2;
+            OnGoingSEs = 0;
+            MaximumSEs = CurrentLocation == "center" ? 4 : 2;
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
@@ -323,7 +324,7 @@ namespace Bannerlord_Mod_Test
                     customCharacterReftoCampaignBehaviorBase = null;
                     SetCanResetCBB_refVariables(true);
 
-                    onGoingSEs--;
+                    OnGoingSEs--;
                     customAgent.EndingSocialExchange = false;
                     customAgent.FinalizeSocialExchange();
                     customAgent.customAgentTarget = null;
@@ -354,17 +355,17 @@ namespace Bannerlord_Mod_Test
 
                         if (tempDouble >= 0.5)
                         {
-                            int traitToAdd;
+                            int traitToAddindex;
                             if (tempDouble <= 0.75)
                             {
-                                traitToAdd = i;
+                                traitToAddindex = i;
                             }
                             else
                             {
-                                traitToAdd = i++;
+                                traitToAddindex = i + 1;
                             }
 
-                            customAgent.TraitList.Add(ListWithAllTraits[traitToAdd]);
+                            customAgent.TraitList.Add(ListWithAllTraits[traitToAddindex]);
                         }
 
                         i++;
@@ -403,6 +404,7 @@ namespace Bannerlord_Mod_Test
                 "Calm", "Aggressive", 
                 "Faithful", "Unfaithful"
             };
+
             List<Trait> AllTraitList = new List<Trait>();
 
             foreach (string traitName in TraitsListString)
@@ -523,7 +525,7 @@ namespace Bannerlord_Mod_Test
                 jsonlist.Add(json1);
             }
 
-            myDeserializedClass.SettlementJson.Add(new SettlementJson(_currentSettlement, _currentLocation, jsonlist));
+            myDeserializedClass.SettlementJson.Add(new SettlementJson(CurrentSettlement, CurrentLocation, jsonlist));
 
             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
@@ -535,7 +537,7 @@ namespace Bannerlord_Mod_Test
 
             foreach (SettlementJson _settlement in myDeserializedClass.SettlementJson)
             {
-                if (_settlement.Name == _currentSettlement && _settlement.LocationWithId == _currentLocation)
+                if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
@@ -598,7 +600,7 @@ namespace Bannerlord_Mod_Test
 
             foreach (SettlementJson item in myDeserializedClass.SettlementJson)
             {
-                if (item.Name == _currentSettlement && item.LocationWithId == _currentLocation)
+                if (item.Name == CurrentSettlement && item.LocationWithId == CurrentLocation)
                 {
                     foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
                     {
@@ -785,7 +787,7 @@ namespace Bannerlord_Mod_Test
                     if (customAgent.customAgentTarget != null) // if has target // its the initiator
                     {
                         if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
-                        if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); onGoingSEs--; }
+                        if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); OnGoingSEs--; }
                     }
                 }
             }
