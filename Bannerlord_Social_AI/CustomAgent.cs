@@ -17,14 +17,18 @@ namespace Bannerlord_Social_AI
         public Agent selfAgent; // reference to self
         public int Id { get; set; }
 
+        public CultureCode cultureCode { get; set; }
+        public List<CultureCode> CulturesFriendly { get; private set; }
+        public List<CultureCode> CulturesUnFriendly { get; private set; }
+
         public CustomAgent customAgentTarget;
         public int IdTarget { get; set; }
-   
+
         public string[] FullMessage { get; set; } // Output Full Message
         public string Message { get; set; } // Output Message
         public string SocialMove { get; set; }
         public bool SE_Accepted { get; set; }
-        public int SEVolition { get; set; } 
+        public int SEVolition { get; set; }
         public List<CustomAgent> CustomAgentsList { get; set; } // reference to NPCs around 
 
         public SocialExchangeSE socialExchangeSE { get; set; }
@@ -57,6 +61,8 @@ namespace Bannerlord_Social_AI
             this.Name = _agent.Name;
             this.Id = _id;
 
+            SetCultureCodeInfo(_agent);
+
             this.customAgentTarget = null;
             this.IdTarget = -1;
 
@@ -80,7 +86,57 @@ namespace Bannerlord_Social_AI
 
             this.Busy = false;
             this.EnoughRest = false;
+        }
 
+        private void SetCultureCodeInfo(Agent _agent)
+        {
+            cultureCode = _agent.Character.Culture.GetCultureCode();
+
+            switch (cultureCode)
+            {
+                case CultureCode.Empire:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Sturgia };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Aserai };
+                    break;
+                case CultureCode.Sturgia:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Empire };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Vlandia };
+                    break;
+                case CultureCode.Aserai:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Vlandia };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Empire };
+                    break;
+                case CultureCode.Vlandia:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Khuzait };
+                    CulturesUnFriendly = null;
+                    break;
+                case CultureCode.Khuzait:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Vlandia };
+                    CulturesUnFriendly = null;
+                    break;
+                case CultureCode.Vakken:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Battania };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Darshi };
+                    break;
+                case CultureCode.Battania:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Vakken };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Nord };
+                    break;
+                case CultureCode.Nord:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Darshi };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Battania };
+                    break;
+                case CultureCode.Darshi:
+                    CulturesFriendly = new List<CultureCode>() { CultureCode.Nord };
+                    CulturesUnFriendly = new List<CultureCode>() { CultureCode.Vakken };
+                    break;
+                case CultureCode.Invalid:
+                case CultureCode.AnyOtherCulture:
+                default:
+                    CulturesFriendly = null;
+                    CulturesUnFriendly = null;
+                    break;
+            }
         }
 
         private void AddStatusToCustomAgent(List<string> auxStatusList)
@@ -139,7 +195,7 @@ namespace Bannerlord_Social_AI
         public void CheckDistanceBetweenAgentsToSocialExchange(Random rnd)
         {
             if (this.Name != Agent.Main.Name && this.customAgentTarget != null)
-            {                
+            {
                 if (this.selfAgent.Position.Distance(this.customAgentTarget.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
@@ -184,7 +240,7 @@ namespace Bannerlord_Social_AI
             EndingSocialExchange = true;
 
             EnoughRest = false;
-            
+
         }
 
         public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
@@ -193,18 +249,16 @@ namespace Bannerlord_Social_AI
             {
                 if (FullMessage == null)
                 {
-                    CultureCode cultureCode = customAgentInitiator.selfAgent.Character.Culture.GetCultureCode();
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, _dialogsDictionary);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary);
 
                     FullMessage = messageNPC.MainSocialMove();
                 }
             }
-            else 
+            else
             {
                 if (FullMessage == null)
                 {
-                    CultureCode cultureCode = customAgentReceptor.selfAgent.Character.Culture.GetCultureCode();
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, _dialogsDictionary, customAgentReceptor.SEVolition);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary, customAgentReceptor.SEVolition);
                     FullMessage = messageNPC.MainSocialMove();
 
                     SE_Accepted = messageNPC.IsAccepted;
@@ -214,6 +268,11 @@ namespace Bannerlord_Social_AI
             Message = FullMessage.ElementAtOrDefault(_index);
             Message = (Message == null) ? Message = "" : Message;
 
+            MessageBuilderCheck(customAgentInitiator);
+        }
+
+        private void MessageBuilderCheck(CustomAgent customAgentInitiator)
+        {
             if (Message.Contains("{PERSON}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
@@ -232,6 +291,27 @@ namespace Bannerlord_Social_AI
                 {
                     builder.Replace("{PARTNER}", "wife");
                 }
+                Message = builder.ToString();
+            }
+
+            if (Message.Contains("{GENDER}"))
+            {
+                StringBuilder builder = new StringBuilder(Message);
+                if (customAgentInitiator.customAgentTarget.selfAgent.IsFemale)
+                {
+                    builder.Replace("{GENDER}", "she");
+                }
+                else
+                {
+                    builder.Replace("{GENDER}", "he");
+                }
+                Message = builder.ToString();
+            }
+
+            if (Message.Contains("{SETTLEMENT}"))
+            {
+                StringBuilder builder = new StringBuilder(Message);
+                builder.Replace("{SETTLEMENT}", Hero.MainHero.CurrentSettlement.Name.ToString());
                 Message = builder.ToString();
             }
         }
@@ -288,7 +368,7 @@ namespace Bannerlord_Social_AI
                 }
             }
         }
-        
+
         internal void AbortSocialExchange()
         {
             IsInitiator = false;
@@ -299,7 +379,7 @@ namespace Bannerlord_Social_AI
             }
             EndingSocialExchange = true;
         }
-        
+
         internal int CheckCountdownWithCurrentTraits()
         {
             int countdownChangesTemp = 0;
@@ -335,7 +415,7 @@ namespace Bannerlord_Social_AI
             foreach (CustomAgent item in CustomAgentsList)
             {
                 if (item.Name == _name && item.Id == _id)
-                { 
+                {
                     customAgent = item;
                     break;
                 }
@@ -354,7 +434,7 @@ namespace Bannerlord_Social_AI
         public void UpdateTarget(string _targetName, int _id)
         {
             Busy = true;
-            
+
             customAgentTarget = GetCustomAgentByName(_targetName, _id);
 
             StartFollowBehavior(selfAgent, customAgentTarget.selfAgent);
@@ -388,11 +468,11 @@ namespace Bannerlord_Social_AI
             SocialNetworkBelief _belief = belief;
             if (belief != null)
             {
-                _belief = SocialNetworkBeliefs.Find( b => b.relationship == belief.relationship
-                && belief.agents.Contains(b.agents[0])  && belief.agents.Contains(b.agents[1])
-                && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
+                _belief = SocialNetworkBeliefs.Find(b => b.relationship == belief.relationship
+               && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
+               && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
             }
-            
+
             if (_belief == null)
             {
                 AddBelief(belief);
@@ -439,10 +519,10 @@ namespace Bannerlord_Social_AI
         //Get Belief from itself with other
         public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
-            return this.SocialNetworkBeliefs.Find(belief 
-                => belief.agents.Contains(Name) 
-                && belief.agents.Contains(_otherCustomAgent.Name) 
-                && belief.IDs.Contains(Id) 
+            return this.SocialNetworkBeliefs.Find(belief
+                => belief.agents.Contains(Name)
+                && belief.agents.Contains(_otherCustomAgent.Name)
+                && belief.IDs.Contains(Id)
                 && belief.IDs.Contains(_otherCustomAgent.Id)
                 );
         }
@@ -450,10 +530,10 @@ namespace Bannerlord_Social_AI
         //Get Belief between 2 other NPCs
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
         {
-            return this.SocialNetworkBeliefs.Find(belief 
-                => belief.agents.Contains(customAgent1.Name) 
-                && belief.agents.Contains(customAgent2.Name) 
-                && belief.IDs.Contains(customAgent1.Id)  
+            return this.SocialNetworkBeliefs.Find(belief
+                => belief.agents.Contains(customAgent1.Name)
+                && belief.agents.Contains(customAgent2.Name)
+                && belief.IDs.Contains(customAgent1.Id)
                 && belief.IDs.Contains(customAgent2.Id)
                 );
         }
@@ -525,7 +605,7 @@ namespace Bannerlord_Social_AI
             if (MemorySEs.Count >= memorySize)
             {
                 MemorySEs.RemoveAt(0);
-            }            
+            }
 
             MemorySEs.Add(_newMemory);
         }
@@ -534,5 +614,6 @@ namespace Bannerlord_Social_AI
         {
             TriggerRuleList.Add(triggerRule);
         }
+
     }
 }

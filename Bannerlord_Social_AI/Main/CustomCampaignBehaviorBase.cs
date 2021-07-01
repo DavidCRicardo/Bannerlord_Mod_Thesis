@@ -266,7 +266,7 @@ namespace Bannerlord_Social_AI
             campaignGameStarter.AddDialogLine("1", "start", "UnFriendly_start", "Why are you listening people's conversation?", new ConversationSentence.OnConditionDelegate(UnFriendly), null, 200, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step1", "Sorry, it wouldn't happen again. [Accept]", null, null, 100, null, null);
             campaignGameStarter.AddPlayerLine("1", "UnFriendly_start", "UnFriendly_step2", "Just curiosity. [Reject]", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "UnFriendly_step1", "close_window", "I hope not, idiot.", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null);
+            campaignGameStarter.AddDialogLine("1", "UnFriendly_step1", "close_window", "I hope not.", null, new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship), 100, null);
             campaignGameStarter.AddDialogLine("1", "UnFriendly_step2", "close_window", "Curiosity, huh.", null, null, 100, null);
 
             /* NPC Romantic Interactions With Player */

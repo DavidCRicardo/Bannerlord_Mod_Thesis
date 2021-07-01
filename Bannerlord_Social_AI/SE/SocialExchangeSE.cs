@@ -461,11 +461,11 @@ namespace Bannerlord_Social_AI
             customAgent.SocialMove = "";
             customAgent.IsInitiator = false;
             customAgent.FullMessage = null;
-            customAgent.Busy = false;
             customAgent.Message = "";
+            customAgent.Busy = false;
             customAgent.EnoughRest = false;
             customAgent.customAgentTarget = null;
-            customAgent.MarkerTyperRef = 0;
+            customAgent.MarkerTyperRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
         }

@@ -24,38 +24,38 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Positive:
                     switch (RelationName)
                     {
-                        case "Compliment": return RunRules(Dictionary, true, false, false, false, false);
+                        case "Compliment": return RunRules(Dictionary, true, false, false, false, false, true);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Negative:
                     switch (RelationName)
                     {
-                        case "Jealous": return RunRules(Dictionary, true, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, true, false);
+                        case "Jealous": return RunRules(Dictionary, true, false, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, true, false, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, true, false, true, false, false);
-                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false);
+                        case "AskOut": return RunRules(Dictionary, true, false, true, false, false, true);
+                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false, true);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
                     switch (RelationName)
                     {
-                        case "Bully": return RunRules(Dictionary, false, true, false, false, false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false);
+                        case "Bully": return RunRules(Dictionary, false, true, false, false, false, false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
-                        case "Break": return RunRules(Dictionary, false, true, false, false, true);
+                        case "Break": return RunRules(Dictionary, false, true, false, false, true, false);
                         default: return 0;
                     }
 
@@ -66,7 +66,7 @@ namespace Bannerlord_Social_AI
 
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary,
              bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
-             bool GetNPCToSabotageBool, bool BreakUpRuleBool)
+             bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE)
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
@@ -98,7 +98,16 @@ namespace Bannerlord_Social_AI
                 });
             }
 
-            sum += IsReacting ? CheckStatus(Receiver) : CheckStatus(Initiator);
+            if (IsReacting)
+            {
+                sum += CheckStatus(Receiver);
+                sum += CheckCulturesRelationships(Receiver, Initiator, IsPositiveOrRomanticSE);
+            }
+            else
+            {
+                sum += CheckStatus(Initiator);
+                sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
+            }
 
             if (DecreaseIfDatingBool)
             {
@@ -122,6 +131,46 @@ namespace Bannerlord_Social_AI
             }
 
             return sum;
+        }
+
+        private int CheckCulturesRelationships(CustomAgent agent, CustomAgent otherAgent, bool IsPositiveOrRomanticSE)
+        {
+            int localsum = 0;
+            bool auxBool = false;
+
+            if (agent.CulturesFriendly != null)
+            {
+                auxBool = agent.CulturesFriendly.Contains(otherAgent.cultureCode);
+                if (auxBool)
+                {
+                    if (IsPositiveOrRomanticSE)
+                    {
+                        localsum += 2;
+                    }
+                    else
+                    {
+                        localsum -= 2;
+                    }
+                }
+            }
+
+            if (agent.CulturesUnFriendly != null)
+            {
+                auxBool = agent.CulturesUnFriendly.Contains(otherAgent.cultureCode);
+                if (auxBool)
+                {
+                    if (IsPositiveOrRomanticSE)
+                    {
+                        localsum -= 2;
+                    }
+                    else
+                    {
+                        localsum += 2;
+                    }
+                }
+            }
+            
+            return localsum;
         }
 
         // -100 if Dating
@@ -173,9 +222,9 @@ namespace Bannerlord_Social_AI
 
                 List<string> agentsOnRelation = tempList[index].agents;
 
-                if (agentsOnRelation.Contains(Initiator.selfAgent.Name))
+                if (agentsOnRelation.Contains(Initiator.Name))
                 {
-                    foreach (string agent in agentsOnRelation.Where(agent => agent != Initiator.selfAgent.Name))
+                    foreach (string agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
                     {
                         Initiator.thirdAgent = agent;
                         Initiator.thirdAgentId = index;
@@ -254,7 +303,7 @@ namespace Bannerlord_Social_AI
             SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
             if (belief != null)
             {
-                if (belief.agents.Contains(customAgent.selfAgent.Name) && belief.agents.Contains(otherAgent.selfAgent.Name))
+                if (belief.agents.Contains(customAgent.Name) && belief.agents.Contains(otherAgent.Name))
                 {
                     if (belief.value > 0)
                     {
@@ -297,7 +346,7 @@ namespace Bannerlord_Social_AI
             if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
             {
                 TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(
-                    rule => rule.NPC_OnRule == agentChecked.selfAgent.Name && rule.NPC_ID == agentChecked.Id && rule.SocialExchangeToDo == relationName);
+                    rule => rule.NPC_OnRule == agentChecked.Name && rule.NPC_ID == agentChecked.Id && rule.SocialExchangeToDo == relationName);
                 
                 if (triggerRule != null)
                 {
