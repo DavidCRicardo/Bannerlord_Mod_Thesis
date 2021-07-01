@@ -13,7 +13,7 @@ namespace Bannerlord_Social_AI
             IsInitiator = _isInitiator;
             CurrentCulture = culture;
             ReceiverVolition = receiverVolition;
-            MegaDictionary = _dialogsDictionary;
+            DialogsDictionary = _dialogsDictionary;
         }
 
         public string[] MainSocialMove()
@@ -27,6 +27,7 @@ namespace Bannerlord_Social_AI
                 return CheckSocialMoveReceiver();
             }
         }
+
         internal string[] CheckSocialMoveInitiator()
         {
             Message = GetAMessage(SE, CurrentCulture, "start", Rnd);
@@ -35,6 +36,7 @@ namespace Bannerlord_Social_AI
 
             return sentences; 
         }
+
         internal string[] CheckSocialMoveReceiver()
         {
             SetIsAccepted();
@@ -46,16 +48,18 @@ namespace Bannerlord_Social_AI
 
             return sentences;
         }
+
         private void SetIsAccepted()
         {
             IsAccepted = (ReceiverVolition > 0) ? true : false;
         }
+
         private SocialExchangeSE SE { get; }
         private string Message { get; set; }
         private Random Rnd { get; set; }
         private bool IsInitiator { get; }
         public int ReceiverVolition { get; }
-        private Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> MegaDictionary { get; }
+        private Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; }
         public bool IsAccepted { get; private set; }
         public string[] sentences { get; private set; }
         private CultureCode CurrentCulture { get; set; }
@@ -67,7 +71,7 @@ namespace Bannerlord_Social_AI
                 culture = CultureCode.AnyOtherCulture;
             }
 
-            bool containsIntention = MegaDictionary.TryGetValue(SE.SEName, out Dictionary<string, Dictionary<string, List<string>>> a);
+            bool containsIntention = DialogsDictionary.TryGetValue(SE.SEName, out Dictionary<string, Dictionary<string, List<string>>> a);
             if (containsIntention)
             {
                 bool containsCulture = a.TryGetValue(culture.ToString(), out Dictionary<string, List<string>> b);
