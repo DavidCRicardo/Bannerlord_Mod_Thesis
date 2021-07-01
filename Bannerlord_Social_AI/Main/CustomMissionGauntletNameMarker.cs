@@ -47,7 +47,7 @@ namespace Bannerlord_Social_AI
 
                 CheckIntentionFromNPCToPlayer(dt);
 
-                if (_dataSource.CanResetCBB_refVariables())
+                if (_dataSource.GetCanResetCBB_refVariables())
                 {
                     ResetCBB_refVariables();
                     _dataSource.SetCanResetCBB_refVariables(false);

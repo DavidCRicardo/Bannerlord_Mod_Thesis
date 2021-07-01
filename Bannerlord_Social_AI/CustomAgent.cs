@@ -49,10 +49,12 @@ namespace Bannerlord_Social_AI
         private readonly int memorySize = 3;
         public string thirdAgent;
         public int thirdAgentId;
+        public string Name { get; set; }
 
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
             this.selfAgent = _agent;
+            this.Name = _agent.Name;
             this.Id = _id;
 
             this.customAgentTarget = null;
@@ -112,7 +114,7 @@ namespace Bannerlord_Social_AI
 
         public void StartSE(string _SEName, CustomAgent _Receiver)
         {
-            UpdateTarget(_Receiver.selfAgent.Name, _Receiver.Id);
+            UpdateTarget(_Receiver.Name, _Receiver.Id);
             //this.selfAgent.SetLookAgent(targetAgent);
 
             customAgentTarget.Busy = true;
@@ -122,11 +124,11 @@ namespace Bannerlord_Social_AI
 
             Busy = true;
         }
-        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
         {
             if (NearEnoughToStartConversation)
             {
-                ConversationBetweenCustomAgents(dt, megaDictionary);
+                ConversationBetweenCustomAgents(dt, _dialogsDictionary);
             }
             else
             {
@@ -136,7 +138,7 @@ namespace Bannerlord_Social_AI
 
         public void CheckDistanceBetweenAgentsToSocialExchange(Random rnd)
         {
-            if (this.selfAgent.Name != Agent.Main.Name && this.customAgentTarget != null)
+            if (this.Name != Agent.Main.Name && this.customAgentTarget != null)
             {                
                 if (this.selfAgent.Position.Distance(this.customAgentTarget.selfAgent.Position) < 3)
                 {
@@ -149,13 +151,13 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
         {
             int seconds = socialExchangeSE.ReduceDelay ? 0 : 3;
 
             if (SecsDelay(dt, seconds) || socialExchangeSE.ReceptorIsPlayer)
             {
-                socialExchangeSE.OnGoingSocialExchange(megaDictionary);
+                socialExchangeSE.OnGoingSocialExchange(_dialogsDictionary);
 
                 if (socialExchangeSE.SocialExchangeDoneAndReacted)
                 {
@@ -169,15 +171,14 @@ namespace Bannerlord_Social_AI
 
         public void FinalizeSocialExchange()
         {
-            try
+            if (socialExchangeSE != null)
             {
                 socialExchangeSE.OnFinalize();
             }
-            catch
+            else
             {
-
+                socialExchangeSE = null;
             }
-            socialExchangeSE = null;
 
             NearEnoughToStartConversation = false;
             EndingSocialExchange = true;
@@ -186,14 +187,14 @@ namespace Bannerlord_Social_AI
             
         }
 
-        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
         {
             if (_isInitiator)
             {
                 if (FullMessage == null)
                 {
                     CultureCode cultureCode = customAgentInitiator.selfAgent.Character.Culture.GetCultureCode();
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, megaDictionary);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, _dialogsDictionary);
 
                     FullMessage = messageNPC.MainSocialMove();
                 }
@@ -203,7 +204,7 @@ namespace Bannerlord_Social_AI
                 if (FullMessage == null)
                 {
                     CultureCode cultureCode = customAgentReceptor.selfAgent.Character.Culture.GetCultureCode();
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, megaDictionary, customAgentReceptor.SEVolition);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, cultureCode, _dialogsDictionary, customAgentReceptor.SEVolition);
                     FullMessage = messageNPC.MainSocialMove();
 
                     SE_Accepted = messageNPC.IsAccepted;
@@ -249,13 +250,13 @@ namespace Bannerlord_Social_AI
 
         public void SaveDataFromAgentToJson(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);
 
             if (settlementJson != null)
             {
-                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name && c.Id == Id);
+                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == Name && c.Id == Id);
 
                 if (_customAgentJson != null)
                 {
@@ -265,19 +266,19 @@ namespace Bannerlord_Social_AI
                 }
             }
 
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         public void LoadDataFromJsonToAgent(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Mod_Test/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);
 
             if (settlementJson != null)
             {
-                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == selfAgent.Name && c.Id == Id);
+                CustomAgentJson _customAgentJson = settlementJson.CustomAgentJsonList.Find(c => c.Name == Name && c.Id == Id);
 
                 if (_customAgentJson != null)
                 {
@@ -333,7 +334,7 @@ namespace Bannerlord_Social_AI
             CustomAgent customAgent = null;
             foreach (CustomAgent item in CustomAgentsList)
             {
-                if (item.selfAgent.Name == _name && item.Id == _id)
+                if (item.Name == _name && item.Id == _id)
                 { 
                     customAgent = item;
                     break;
@@ -341,7 +342,7 @@ namespace Bannerlord_Social_AI
             }
 
             customAgent = null;
-            foreach (var item in CustomAgentsList.Where(item => item.selfAgent.Name == _name && item.Id == _id))
+            foreach (var item in CustomAgentsList.Where(item => item.Name == _name && item.Id == _id))
             {
                 customAgent = item;
                 break;
@@ -439,8 +440,8 @@ namespace Bannerlord_Social_AI
         public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
             return this.SocialNetworkBeliefs.Find(belief 
-                => belief.agents.Contains(selfAgent.Name) 
-                && belief.agents.Contains(_otherCustomAgent.selfAgent.Name) 
+                => belief.agents.Contains(Name) 
+                && belief.agents.Contains(_otherCustomAgent.Name) 
                 && belief.IDs.Contains(Id) 
                 && belief.IDs.Contains(_otherCustomAgent.Id)
                 );
@@ -450,8 +451,8 @@ namespace Bannerlord_Social_AI
         public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
         {
             return this.SocialNetworkBeliefs.Find(belief 
-                => belief.agents.Contains(customAgent1.selfAgent.Name) 
-                && belief.agents.Contains(customAgent2.selfAgent.Name) 
+                => belief.agents.Contains(customAgent1.Name) 
+                && belief.agents.Contains(customAgent2.Name) 
                 && belief.IDs.Contains(customAgent1.Id)  
                 && belief.IDs.Contains(customAgent2.Id)
                 );
@@ -461,7 +462,7 @@ namespace Bannerlord_Social_AI
         {
             return customAgent.SocialNetworkBeliefs.Count(
                 belief => belief.relationship == "Dating"
-                && belief.agents.Contains(customAgent.selfAgent.Name)
+                && belief.agents.Contains(customAgent.Name)
                 && belief.IDs.Contains(customAgent.Id)
                 );
         }

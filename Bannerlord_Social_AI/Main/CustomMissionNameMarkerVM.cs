@@ -68,13 +68,15 @@ namespace Bannerlord_Social_AI
                         
                         CustomAgentGoingToSE(dt, customAgent);
 
-                        DecreaseNPCsCountdown(dt, customAgent);
+                        //DecreaseNPCsCountdown(dt, customAgent);
 
                         if (SecsDelay(dt, 1))
                         {
                             UpdateStatus(customAgent);
                         }
-                    }                 
+                    }
+
+                    DecreaseNPCsCountdown(dt);
                 }
                 else
                 {
@@ -98,7 +100,7 @@ namespace Bannerlord_Social_AI
                     intentionRefToCBB = GetIntentionToCBB(customAgent);
                 }
 
-                customAgent.CustomAgentWithDesire(dt, rnd, MegaDictionary);
+                customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary);
                 if (customAgent.EndingSocialExchange)
                 {
                     OnGoingSEs--;
@@ -109,21 +111,24 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void DecreaseNPCsCountdown(float dt, CustomAgent customAgent)
+        private void DecreaseNPCsCountdown(float dt)
         {
             if (OnGoingSEs >= MaximumSEs)
             {
                 return;
             }
 
-            if (CustomAgentHasEnoughRest(customAgent))
+            foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                if (CustomAgentHasEnoughRest(customAgent))
                 {
-                    customAgent.EnoughRest = true;
+                    if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                    {
+                        customAgent.EnoughRest = true;
+                    }
                 }
             }
-            
+
             DesireFormation();
         }
 
@@ -258,23 +263,28 @@ namespace Bannerlord_Social_AI
 
                     if (giveTraitsToNPCs)
                     {
-                        GiveRandomTraitsToAgents();
+                        InitializeTraitsToAgents();
                         SaveNewAgentsInfoToJSON(customAgentsList);
                     }
 
                     LoadAllInfoFromJSON();
-
-                    // Set CustomAgent countdown depending of the traits
-                    foreach (CustomAgent customAgent in customAgentsList)
-                    {
-                        customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
-                    }
+ 
+                    InitializeCountdownToAgents(); // Set CustomAgent countdown depending of the traits
 
                     customAgentsList.ForEach(c => c.CustomAgentsList = customAgentsList);
-                    GiveRandomEnergyToAgents();
+
+                    InitializeEnergyToAgents();
 
                     LoadDialogsFromJSON();
                 }
+            }
+        }
+
+        private void InitializeCountdownToAgents()
+        {
+            foreach (CustomAgent customAgent in customAgentsList)
+            {
+                customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
             }
         }
 
@@ -305,10 +315,10 @@ namespace Bannerlord_Social_AI
 
         public void OnConversationEndWithPlayer(CustomAgent custom)
         {
-            CustomAgent customAgent = customAgentsList.Find(c => c.selfAgent == custom.selfAgent && c.Id == custom.Id);
+            CustomAgent customAgent = customAgentsList.Find(c => c.Name == custom.Name && c.Id == custom.Id);
             if (customAgent != null)
             {
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent.Name == Agent.Main.Name)
+                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name)
                 {
                     intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
                     customCharacterReftoCampaignBehaviorBase = null;
@@ -323,15 +333,15 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void GiveRandomEnergyToAgents()
+        private void InitializeEnergyToAgents()
         {
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                customAgent.UpdateAllStatus(0, 0, 0, 0, rnd.NextDouble());
+                customAgent.UpdateAllStatus(0, 0, 0, 0, rnd.Next(5));
             }
         }
 
-        private void GiveRandomTraitsToAgents()
+        private void InitializeTraitsToAgents()
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
 
@@ -342,11 +352,11 @@ namespace Bannerlord_Social_AI
                     for (int i = 0; i < ListWithAllTraits.Count; i++)
                     {
                         double tempDouble = rnd.NextDouble();
-
-                        if (tempDouble >= 0.5)
+                        if (tempDouble > 0.5)
                         {
                             int traitToAddindex;
-                            if (tempDouble <= 0.75)
+                            double tempDouble2 = rnd.NextDouble();
+                            if (tempDouble2 > 0.5)
                             {
                                 traitToAddindex = i;
                             }
@@ -446,7 +456,7 @@ namespace Bannerlord_Social_AI
                 fromIntentionGetCulture.Add(_socialExchange.SocialExchange, fromCultureGetID);
             }
 
-            MegaDictionary = fromIntentionGetCulture;
+            DialogsDictionary = fromIntentionGetCulture;
         }
 
         private void CheckIfFileExists()
@@ -474,7 +484,7 @@ namespace Bannerlord_Social_AI
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (customAgent.selfAgent.Name == customAgentTemp.selfAgent.Name && customAgent.Id == customAgentTemp.Id)
+                if (customAgent.Name == customAgentTemp.Name && customAgent.Id == customAgentTemp.Id)
                 {
                     customAgentTemp.Id++;
                 }
@@ -503,6 +513,31 @@ namespace Bannerlord_Social_AI
             }
         }
 
+        private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)
+        {
+            List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
+
+            for (int i = 0; i < ListWithAllTraits.Count; i++)
+            {
+                double j = rnd.NextDouble();
+                if (j > 0.5)
+                {
+                    if (i % 2 == 0)
+                    {
+                        customAgent.TraitList.Add(ListWithAllTraits[i]);
+                    }
+                    else
+                    {
+                        bool agentHasTrait = !customAgent.TraitList.Contains(ListWithAllTraits[i - 1]);
+                        if (agentHasTrait)
+                        {
+                            customAgent.TraitList.Add(ListWithAllTraits[i]);
+                        }
+                    }
+                }
+            }
+        }
+
         private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
@@ -511,7 +546,7 @@ namespace Bannerlord_Social_AI
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                CustomAgentJson json1 = new CustomAgentJson(customAgent.selfAgent.Name, customAgent.Id, customAgent.TraitList);
+                CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList);
                 jsonlist.Add(json1);
             }
 
@@ -531,20 +566,19 @@ namespace Bannerlord_Social_AI
                 {
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
-                        CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.selfAgent.Name && c.Id == customAgent.Id);
+                        CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
                         if (_customAgentJson != null)
                         {
                             customAgent.TraitList = _customAgentJson.TraitList;
                             customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                             customAgent.ItemList = _customAgentJson.ItemsList;
                             customAgent.MemorySEs = _customAgentJson.MemoriesList;
-                            customAgent.TriggerRuleList = _customAgentJson.TriggerRulesList;
                         }
                         else
                         {
                             //Checking if there is any NPC new on the town who hasn't on the 1st time when the file was generated
                             GenerateRandomTraitsForThisNPC(customAgent);
-                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.selfAgent.Name, customAgent.Id, customAgent.TraitList));
+                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList));
 
                             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
@@ -555,30 +589,6 @@ namespace Bannerlord_Social_AI
                         }
                     }
                     break;
-                }
-            }
-        }
-
-        private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)
-        {
-            List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
-
-            for (int i = 0; i < ListWithAllTraits.Count; i++)
-            {
-                if (rnd.NextDouble() > 0.5)
-                {
-                    if (i % 2 == 0)
-                    {
-                        customAgent.TraitList.Add(ListWithAllTraits[i]);
-                    }
-                    else
-                    {
-                        bool agentHasTrait = !customAgent.TraitList.Contains(ListWithAllTraits[i - 1]);
-                        if (agentHasTrait)
-                        {
-                            customAgent.TraitList.Add(ListWithAllTraits[i]);
-                        }
-                    }
                 }
             }
         }
@@ -594,14 +604,13 @@ namespace Bannerlord_Social_AI
                 {
                     foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
                     {
-                        CustomAgent x = customAgentsList.Find(c => c.selfAgent.Name == _customAgentJson.Name && c.Id == _customAgentJson.Id);
+                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name && c.Id == _customAgentJson.Id);
                         if (x != null)
                         {
                             _customAgentJson.TraitList = x.TraitList;
                             _customAgentJson.SocialNetworkBeliefs = x.SocialNetworkBeliefs;
                             _customAgentJson.ItemsList = x.ItemList;
                             _customAgentJson.MemoriesList = x.MemorySEs;
-                            _customAgentJson.TriggerRulesList = x.TriggerRuleList;
                         }
                     }
                     break;
@@ -610,6 +619,7 @@ namespace Bannerlord_Social_AI
 
             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
+
         public void SaveToJson()
         {
             SaveAllInfoToJSON();
@@ -627,20 +637,17 @@ namespace Bannerlord_Social_AI
         }
         private float dtControl;
 
-        private static bool resetVariables { get; set; }
-
-        public bool CanResetCBB_refVariables()
-        {
-            return resetVariables;
-        }
-
         public void SetCanResetCBB_refVariables(bool value)
         {
             resetVariables = value;
         }
+        public bool GetCanResetCBB_refVariables()
+        {
+            return resetVariables;
+        }
+        private static bool resetVariables { get; set; }
 
         public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
-
         public SocialExchangeSE.IntentionEnum intentionRefToCBB { get; set; }
         private SocialExchangeSE.IntentionEnum GetIntentionToCBB(CustomAgent customAgent)
         {
@@ -744,7 +751,7 @@ namespace Bannerlord_Social_AI
         {
             foreach (CustomMissionNameMarkerTargetVM item in this.Targets)
             {
-                CustomAgent customAgent = customAgentsList.Find(c => c.selfAgent.Name == item.Name && c.Id == item.Id);
+                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.Id);
 
                 if (customAgent != null)
                 {
@@ -816,7 +823,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        public Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> MegaDictionary { get; private set; }
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; private set; }
 
         private readonly Camera _missionCamera;
         private bool _firstTick = true;

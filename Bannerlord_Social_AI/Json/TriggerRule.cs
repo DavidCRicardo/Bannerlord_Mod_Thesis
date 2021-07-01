@@ -4,11 +4,11 @@ namespace Bannerlord_Social_AI
 {
     public class TriggerRule
     {
-        [JsonProperty("SocialExchangeToDo")]
+        //[JsonProperty("SocialExchangeToDo")]
         public string SocialExchangeToDo { get; set; }
-        [JsonProperty("NPC_OnRule")]
+        //[JsonProperty("NPC_OnRule")]
         public string NPC_OnRule { get; set; }
-        [JsonProperty("NPC_ID")]
+        //[JsonProperty("NPC_ID")]
         public int NPC_ID { get; set; }
 
         public TriggerRule(string _socialExchangeToDoName, string _npcOnRule, int _npcID)

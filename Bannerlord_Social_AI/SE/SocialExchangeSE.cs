@@ -71,13 +71,13 @@ namespace Bannerlord_Social_AI
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
 
-        public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> megaDictionary)
+        public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
         {
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
                 index++;
 
-                CustomAgentInitiator.AgentGetMessage(true, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
+                CustomAgentInitiator.AgentGetMessage(true, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, _dialogsDictionary);
                 if (CustomAgentInitiator.Message != "")
                 {
                     CustomAgentReceiver.Message = "";
@@ -90,7 +90,7 @@ namespace Bannerlord_Social_AI
             else
             {
                 CustomAgentReceiver.SEVolition = ReceiverVolition();
-                CustomAgentReceiver.AgentGetMessage(false, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, megaDictionary);
+                CustomAgentReceiver.AgentGetMessage(false, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, _dialogsDictionary);
 
                 if (CustomAgentReceiver.Message != "")
                 {
