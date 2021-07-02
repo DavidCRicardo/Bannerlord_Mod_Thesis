@@ -31,7 +31,7 @@ namespace Bannerlord_Social_AI
         private List<string> StatusList { get; set; }
 
         private string CurrentSettlement { get; set; }
-        private string CurrentLocation { get; set; } // tavern, center, prison, lordshall
+        private string CurrentLocation { get; set; }
         private bool giveTraitsToNPCs { get; set; }
         private int OnGoingSEs { get; set; }
         private int MaximumSEs { get; set; }
@@ -67,8 +67,6 @@ namespace Bannerlord_Social_AI
                         CustomAgentsNearPlayer(customAgent);
                         
                         CustomAgentGoingToSE(dt, customAgent);
-
-                        //DecreaseNPCsCountdown(dt, customAgent);
 
                         if (SecsDelay(dt, 1))
                         {

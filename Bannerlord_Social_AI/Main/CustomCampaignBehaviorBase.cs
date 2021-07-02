@@ -1,12 +1,10 @@
 ﻿using System;
-using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 using System.Linq;
 using SandBox;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using Newtonsoft.Json;
 

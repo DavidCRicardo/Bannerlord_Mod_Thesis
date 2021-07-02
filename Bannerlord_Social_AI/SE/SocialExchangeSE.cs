@@ -21,7 +21,7 @@ namespace Bannerlord_Social_AI
 
                 this.CustomAgentList = customAgents;
                 this.index = -1;
-            }  
+            }
         }
 
         public void OnInitialize(Random _rnd)
@@ -51,6 +51,8 @@ namespace Bannerlord_Social_AI
                 case "Bully":
                     Intention = IntentionEnum.Hostile;
                     CustomAgentInitiator.MarkerTyperRef = 2;
+                    CustomAgentInitiator.PlayAnimation("act_bully");
+                    CustomAgentReceiver.PlayAnimation("act_bullied");
                     break;
                 case "Break":
                     Intention = IntentionEnum.Special;
@@ -114,7 +116,7 @@ namespace Bannerlord_Social_AI
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
             CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.selfAgent.Name, CustomAgentReceiver.Id, SEName));
-            CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id, SEName));
+            //CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id, SEName));
 
             ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
