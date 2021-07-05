@@ -17,9 +17,9 @@ namespace Bannerlord_Social_AI
         public string Text { get; set; }
 
         [JsonProperty("Condition")]
-        public int Condition { get; set; }
+        public string Condition { get; set; }
 
         [JsonProperty("Consequence")]
-        public int Consequence { get; set; }
+        public string Consequence { get; set; }
     }
 }

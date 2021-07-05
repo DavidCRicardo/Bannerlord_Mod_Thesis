@@ -267,7 +267,7 @@ namespace Bannerlord_Social_AI
 
                     LoadAllInfoFromJSON();
  
-                    InitializeCountdownToAgents(); // Set CustomAgent countdown depending of the traits
+                    InitializeCountdownToAgents(); // Set CustomAgent countdown depending of traits
 
                     customAgentsList.ForEach(c => c.CustomAgentsList = customAgentsList);
 
@@ -368,26 +368,6 @@ namespace Bannerlord_Social_AI
 
                         i++;
                     }
-
-                    /*for (int i = 0; i < ListWithAllTraits.Count; i++)
-                    {
-                        if (rnd.NextDouble() > 0.5)
-                        {
-                            if (i % 2 == 0)
-                            {
-                                customAgent.TraitList.Add(ListWithAllTraits[i]);
-                            }
-                            else
-                            {
-                                bool agentHasTrait = !customAgent.TraitList.Contains(
-                                    ListWithAllTraits[i - 1]);
-                                if (agentHasTrait)
-                                {
-                                    customAgent.TraitList.Add(ListWithAllTraits[i]);
-                                }
-                            }
-                        }
-                    }*/
                 }
             }
         }
