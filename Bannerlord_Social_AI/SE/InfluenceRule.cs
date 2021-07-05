@@ -24,38 +24,39 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Positive:
                     switch (RelationName)
                     {
-                        case "Compliment": return RunRules(Dictionary, true, false, false, false, false, true);
+                        case "Compliment": return RunRules(Dictionary, false, true, false, false, false, false, true);
+                        case "GiveGift": return RunRules(Dictionary, true, true, false, false, false, false, true);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Negative:
                     switch (RelationName)
                     {
-                        case "Jealous": return RunRules(Dictionary, true, false, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, true, false, false);
+                        case "Jealous": return RunRules(Dictionary, false, true, false, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, true, false, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, true, false, true, false, false, true);
-                        case "Flirt": return RunRules(Dictionary, false, true, false, false, false, true);
+                        case "AskOut": return RunRules(Dictionary, false, true, false, true, false, false, true);
+                        case "Flirt": return RunRules(Dictionary, false, false, true, false, false, false, true);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
                     switch (RelationName)
                     {
-                        case "Bully": return RunRules(Dictionary, false, true, false, false, false, false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false);
+                        case "Bully": return RunRules(Dictionary, false, false, true, false, false, false, false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
-                        case "Break": return RunRules(Dictionary, false, true, false, false, true, false);
+                        case "Break": return RunRules(Dictionary, false, false, true, false, false, true, false);
                         default: return 0;
                     }
 
@@ -64,7 +65,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary,
+        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool ItemBool,
              bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE)
         {
@@ -109,6 +110,10 @@ namespace Bannerlord_Social_AI
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
 
+            if (ItemBool)
+            {
+                sum += CheckItem(sum);
+            }
             if (DecreaseIfDatingBool)
             {
                 sum += DecreaseIfDating(sum);
@@ -253,6 +258,19 @@ namespace Bannerlord_Social_AI
             return sum;
         }
         
+        private int CheckItem(int sum)
+        {
+            if (Initiator.ItemList.IsEmpty())
+            {
+                sum -= 100;
+            }
+            else 
+            { 
+                sum += 2; 
+            }
+            return sum;
+        }
+
         private int CheckStatus(CustomAgent customAgent)
         {
             int localSum = 0;

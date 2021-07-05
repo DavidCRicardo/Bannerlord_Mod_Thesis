@@ -16,6 +16,7 @@ namespace Bannerlord_Social_AI
     {
         public Agent selfAgent; // reference to self
         public int Id { get; set; }
+        public string Name { get; set; }
 
         public CultureCode cultureCode { get; set; }
         public List<CultureCode> CulturesFriendly { get; private set; }
@@ -53,7 +54,6 @@ namespace Bannerlord_Social_AI
         private readonly int memorySize = 3;
         public string thirdAgent;
         public int thirdAgentId;
-        public string Name { get; set; }
 
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
@@ -314,6 +314,13 @@ namespace Bannerlord_Social_AI
                 builder.Replace("{SETTLEMENT}", Hero.MainHero.CurrentSettlement.Name.ToString());
                 Message = builder.ToString();
             }
+
+            if (Message.Contains("{ITEM}"))
+            {
+                StringBuilder builder = new StringBuilder(Message);
+                builder.Replace("{ITEM}", customAgentInitiator.ItemList[0].itemName);
+                Message = builder.ToString();
+            }
         }
 
         public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CustomAgent _customAgent)
@@ -453,8 +460,12 @@ namespace Bannerlord_Social_AI
         {
             selfAgent.ResetLookAgent();
 
-            DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-            behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
+            //try
+            //{
+                DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
+            //}
+            //catch (Exception e){}   
         }
 
         #region /* Add / Update Beliefs  / Get Beliefs */ 
@@ -581,12 +592,40 @@ namespace Bannerlord_Social_AI
         }
         #endregion
 
-        #region /* Add Item */
-        public void AddItem(string _itemName, int _quantity)
+        #region /* Add Item / Remove Item */
+        public void AddItem(string _itemName, int _quantity = 0)
         {
-            Item r = new Item(_itemName, _quantity);
-            ItemList.Add(r);
+            Item item = ItemList.Find(i => i.itemName == _itemName);
+
+            if (item == null)
+            {
+                Item newItem = new Item(_itemName, _quantity);
+                ItemList.Add(newItem);
+            }
+            else
+            {
+                item.quantity += _quantity;
+            }
         }
+
+        public void RemoveItem(string _itemName, int _quantity = 0)
+        {
+            Item item = ItemList.Find(i => i.itemName == _itemName);
+
+            item.quantity += _quantity;   
+
+            if (item.quantity <= 0)
+            {
+                ItemList.Remove(item);
+            }
+        }
+
+        public Item GetItem()
+        {
+            Item item = ItemList[0];
+            return item;
+        }
+
         #endregion
 
         #region /* Play Animation / Stop Animation */

@@ -24,6 +24,7 @@ namespace Bannerlord_Social_AI
 
         private List<SocialExchangeSE> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
+        private List<NextSE> nextSEs { get; set; }
         private NextSE nextSE { get; set; }
 
         public List<CustomAgent> customAgentsList { get; set; }
@@ -213,6 +214,8 @@ namespace Bannerlord_Social_AI
                 }
             }
 
+            //Randomly one
+
             if (nextSE.Volition > 0)
             {
                 /* Get NPC & Start SE */
@@ -244,16 +247,14 @@ namespace Bannerlord_Social_AI
             {
                 if (customAgentsList == null)
                 {
-                    /* Reference to Next SE & Most Wanted SE */
                     nextSE = new NextSE("", null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
 
-                    /* Reference to CustomAgents Around */
                     customAgentsList = new List<CustomAgent>();
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {
-                        if (agent.IsHuman && agent.Character != null) //to allow all the NPCs
+                        if (agent.IsHuman && agent.Character != null)
                         {
                             CreateCustomAgent(agent);
                         }
@@ -293,7 +294,7 @@ namespace Bannerlord_Social_AI
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
-            List<string> Temp_SEs = new List<string>() { "Compliment", "Jealous", "FriendSabotage", "AskOut", "Flirt", "RomanticSabotage", "Bully", "Break" };
+            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "RomanticSabotage", "Bully", "Break" };
             foreach (string SE_Name in Temp_SEs)
             {
                 SocialExchangesList.Add(new SocialExchangeSE(SE_Name, null, null));
@@ -468,11 +469,22 @@ namespace Bannerlord_Social_AI
                 }
             }
 
+            RandomItem(customAgentTemp);
+
             customAgentsList.Add(customAgentTemp);
             AddAgentTarget(agent, customAgentTemp.Id);
 
             mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
             mostWantedSEList.Add(sE);
+        }
+
+        private void RandomItem(CustomAgent customAgent)
+        {
+            double temp = rnd.NextDouble();
+            if (temp <= 0.25)
+            {
+                customAgent.AddItem("gem", 1);
+            }
         }
 
         private bool CheckIfSettlementExistsOnFile(string _currentSettlementName, string _currentLocationName)
@@ -497,22 +509,24 @@ namespace Bannerlord_Social_AI
 
             for (int i = 0; i < ListWithAllTraits.Count; i++)
             {
-                double j = rnd.NextDouble();
-                if (j > 0.5)
+                double tempDouble = rnd.NextDouble();
+                if (tempDouble > 0.5)
                 {
-                    if (i % 2 == 0)
+                    int traitToAddindex;
+                    double tempDouble2 = rnd.NextDouble();
+                    if (tempDouble2 > 0.5)
                     {
-                        customAgent.TraitList.Add(ListWithAllTraits[i]);
+                        traitToAddindex = i;
                     }
                     else
                     {
-                        bool agentHasTrait = !customAgent.TraitList.Contains(ListWithAllTraits[i - 1]);
-                        if (agentHasTrait)
-                        {
-                            customAgent.TraitList.Add(ListWithAllTraits[i]);
-                        }
+                        traitToAddindex = i + 1;
                     }
+
+                    customAgent.TraitList.Add(ListWithAllTraits[traitToAddindex]);
                 }
+
+                i++;
             }
         }
 
@@ -524,7 +538,7 @@ namespace Bannerlord_Social_AI
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList);
+                CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList);
                 jsonlist.Add(json1);
             }
 
@@ -556,7 +570,8 @@ namespace Bannerlord_Social_AI
                         {
                             //Checking if there is any NPC new on the town who hasn't on the 1st time when the file was generated
                             GenerateRandomTraitsForThisNPC(customAgent);
-                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList));
+                            RandomItem(customAgent);
+                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList));
 
                             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
@@ -631,7 +646,7 @@ namespace Bannerlord_Social_AI
         {
             if (customAgent.SocialMove != "")
             {
-                if (customAgent.SocialMove == "Compliment")
+                if (customAgent.SocialMove == "Compliment" || customAgent.SocialMove == "GiveGift")
                 {
                     return SocialExchangeSE.IntentionEnum.Positive;
                 }

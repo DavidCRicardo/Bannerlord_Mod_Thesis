@@ -31,6 +31,7 @@ namespace Bannerlord_Social_AI
             switch (SEName)
             {
                 case "Compliment":
+                case "GiveGift":
                     Intention = IntentionEnum.Positive;
                     CustomAgentInitiator.MarkerTyperRef = 0;
                     break;
@@ -107,7 +108,7 @@ namespace Bannerlord_Social_AI
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
                 if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
-                SocialExchangeDoneAndReacted = true; 
+                SocialExchangeDoneAndReacted = true; ReceptorIsPlayer = false; 
             }
         }
 
@@ -116,7 +117,6 @@ namespace Bannerlord_Social_AI
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
             CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.selfAgent.Name, CustomAgentReceiver.Id, SEName));
-            //CustomAgentReceiver.AddToMemory(new MemorySE(CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id, SEName));
 
             ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
@@ -255,6 +255,17 @@ namespace Bannerlord_Social_AI
                     UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0);
+                }
+                else if (SEName == "GiveGift")
+                {
+                    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
+                    UpdateThirdNPCsBeliefs("Friends", belief, 1);
+
+                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0);
+
+                    Item tempItem = CustomAgentInitiator.GetItem();
+                    CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
+                    CustomAgentReceiver.AddItem(tempItem.itemName, 1);
                 }
             }
             else

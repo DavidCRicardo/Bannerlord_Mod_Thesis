@@ -6,13 +6,13 @@ namespace Bannerlord_Social_AI
 {
     public class CustomAgentJson
     {
-        public CustomAgentJson(string name, int id, List<Trait> traitList)
+        public CustomAgentJson(string name, int id, List<Trait> traitList, List<Item> itemList)
         {
             Name = name;
             Id = id;
             TraitList = traitList;
             SocialNetworkBeliefs = new List<SocialNetworkBelief>();
-            ItemsList = new List<Item>();
+            ItemsList = itemList;
             MemoriesList = new List<MemorySE>();
         }
 

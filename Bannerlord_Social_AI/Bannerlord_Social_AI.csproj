@@ -265,7 +265,6 @@
     <Compile Include="SE\InfluenceRule.cs" />
     <Compile Include="Json\SocialNetworkBelief.cs" />
     <Compile Include="Json\CustomAgentJson.cs" />
-    <Compile Include="Json\Goal.cs" />
     <Compile Include="Json\Item.cs" />
     <Compile Include="Main\CustomMissionNameMarkerTargetVM.cs" />
     <Compile Include="Main\CustomMissionNameMarkerVM.cs" />
