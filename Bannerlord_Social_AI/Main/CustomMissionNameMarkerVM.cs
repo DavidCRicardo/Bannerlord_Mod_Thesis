@@ -133,14 +133,31 @@ namespace Bannerlord_Social_AI
 
         private void UpdateStatus(CustomAgent customAgent)
         {
+            double socialTalk = 0;
+            double bullyNeed = 0;
+            double getTired = 0;
+
             if (customAgent.customAgentTarget != null) // if he has a target and it's going to it 
             {
-                customAgent.UpdateAllStatus(0.05, -0.05, -0.05, -0.05, 0.05);
+                getTired = 0.1;
             }
-            else // else is resting
+            else
             {
-                customAgent.UpdateAllStatus(0.05, -0.05, -0.05, -0.05, -0.05);
+                getTired = -0.1;
             }
+
+            if (customAgent.TraitList.Exists(t => t.traitName == "Friendly"))
+            {
+                
+                socialTalk = 0.1;
+            }
+
+            if (customAgent.TraitList.Exists(t => t.traitName == "UnFriendly" || t.traitName == "Aggressive" || t.traitName == "Hostile"))
+            {
+                bullyNeed = rnd.NextDouble();
+            }
+
+            customAgent.UpdateAllStatus(socialTalk, bullyNeed, -0.1, -0.1, -0.1, getTired);
         }
 
         private void DesireFormation()
@@ -181,7 +198,7 @@ namespace Bannerlord_Social_AI
                     {
                         se.CustomAgentInitiator = c1;
                         se.CustomAgentReceiver = c2;
-                        
+
                         if (se.InitiadorVolition() > auxVolition)
                         {
                             auxVolition = se.CustomAgentInitiator.SEVolition;
@@ -213,8 +230,6 @@ namespace Bannerlord_Social_AI
                     nextSE.Volition = k.nextSE.Volition;
                 }
             }
-
-            //Randomly one
 
             if (nextSE.Volition > 0)
             {
@@ -303,17 +318,22 @@ namespace Bannerlord_Social_AI
         
         private void InitializeStatusList()
         {
-            StatusList = new List<string>() { "SocialTalk", "Courage", "Anger", "Shame", "Tiredness" };
+            StatusList = new List<string>() { "SocialTalk", "BullyNeed", "Courage", "Anger", "Shame", "Tiredness" };
         }
 
         private static bool CustomAgentHasEnoughRest(CustomAgent customAgent)
         {
-            customAgent.EnoughRest = customAgent.StatusList.Find(_status => _status.Name == "Tiredness").intensity <= 0.5;
+            customAgent.EnoughRest = customAgent.StatusList.Find(_status => _status.Name == "Tiredness").intensity < 0.5;
             return customAgent.EnoughRest;
         }
 
         public void OnConversationEndWithPlayer(CustomAgent custom)
         {
+            if (custom == null)
+            {
+                return;
+            }
+
             CustomAgent customAgent = customAgentsList.Find(c => c.Name == custom.Name && c.Id == custom.Id);
             if (customAgent != null)
             {
@@ -336,13 +356,15 @@ namespace Bannerlord_Social_AI
         {
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                customAgent.UpdateAllStatus(0, 0, 0, 0, rnd.Next(5));
+                customAgent.UpdateAllStatus(0, 0, 0, 0, 0, rnd.Next(3));
             }
         }
 
         private void InitializeTraitsToAgents()
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
+
+            double auxDouble = 0;
 
             foreach (var customAgent in customAgentsList)
             {
@@ -351,16 +373,19 @@ namespace Bannerlord_Social_AI
                     for (int i = 0; i < ListWithAllTraits.Count; i++)
                     {
                         double tempDouble = rnd.NextDouble();
-                        if (tempDouble > 0.5)
+                        if (tempDouble > 0.25)
                         {
                             int traitToAddindex;
                             double tempDouble2 = rnd.NextDouble();
+                            tempDouble2 += auxDouble;
                             if (tempDouble2 > 0.5)
                             {
                                 traitToAddindex = i;
+                                auxDouble -= 0.1;
                             }
                             else
                             {
+                                auxDouble += 0.1;
                                 traitToAddindex = i + 1;
                             }
 
@@ -481,7 +506,7 @@ namespace Bannerlord_Social_AI
         private void RandomItem(CustomAgent customAgent)
         {
             double temp = rnd.NextDouble();
-            if (temp <= 0.25)
+            if (temp < 0.15)
             {
                 customAgent.AddItem("gem", 1);
             }

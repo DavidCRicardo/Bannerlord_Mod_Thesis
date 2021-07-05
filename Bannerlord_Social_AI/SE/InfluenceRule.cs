@@ -71,7 +71,7 @@ namespace Bannerlord_Social_AI
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-
+            
             if (!IsReacting)
             {
                 sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
@@ -109,10 +109,20 @@ namespace Bannerlord_Social_AI
                 sum += CheckStatus(Initiator);
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
+/*
+            if (RelationType == SocialExchangeSE.IntentionEnum.Romantic && InitialValue > 1)
+            {
+                sum += 2;
+            }
+            if (RelationType == SocialExchangeSE.IntentionEnum.Hostile && InitialValue < -1)
+            {
+                sum += 2;
+            }
+*/
 
             if (ItemBool)
             {
-                sum += CheckItem(sum);
+                sum += CheckItem(sum, InitialValue);
             }
             if (DecreaseIfDatingBool)
             {
@@ -150,11 +160,11 @@ namespace Bannerlord_Social_AI
                 {
                     if (IsPositiveOrRomanticSE)
                     {
-                        localsum += 2;
+                        localsum += 5;
                     }
                     else
                     {
-                        localsum -= 2;
+                        localsum -= 5;
                     }
                 }
             }
@@ -166,11 +176,11 @@ namespace Bannerlord_Social_AI
                 {
                     if (IsPositiveOrRomanticSE)
                     {
-                        localsum -= 2;
+                        localsum -= 5;
                     }
                     else
                     {
-                        localsum += 2;
+                        localsum += 5;
                     }
                 }
             }
@@ -234,7 +244,7 @@ namespace Bannerlord_Social_AI
                         Initiator.thirdAgent = agent;
                         Initiator.thirdAgentId = index;
 
-                        sum += 2;
+                        sum += 4;
                     }
                 }
             }
@@ -250,7 +260,7 @@ namespace Bannerlord_Social_AI
         private int BreakUpRule(int sum)
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= 0)
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= -1)
             {
                 sum += 100;
             }
@@ -258,15 +268,15 @@ namespace Bannerlord_Social_AI
             return sum;
         }
         
-        private int CheckItem(int sum)
+        private int CheckItem(int sum, int InitialValue)
         {
-            if (Initiator.ItemList.IsEmpty())
+            if (!Initiator.ItemList.IsEmpty())
             {
-                sum -= 100;
+                sum += 2;
             }
             else 
             { 
-                sum += 2; 
+                sum -= 100; 
             }
             return sum;
         }
@@ -293,11 +303,20 @@ namespace Bannerlord_Social_AI
             status = CheckStatusIntensity(customAgent, "SocialTalk");
             if (status.intensity > 0.5)
             {
-                if (RelationType == SocialExchangeSE.IntentionEnum.Positive)
+                if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
                 {
                     localSum += 2;
                 }
             }
+
+            status = CheckStatusIntensity(customAgent, "BullyNeed");
+            if (status.intensity > 0.5)
+            {
+                if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+                {
+                    localSum += 2;
+                }
+            }   
 
             /* Anger Status */
             status = CheckStatusIntensity(customAgent, "Anger");

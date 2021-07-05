@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
 namespace Bannerlord_Social_AI
@@ -21,6 +22,8 @@ namespace Bannerlord_Social_AI
 
                 this.CustomAgentList = customAgents;
                 this.index = -1;
+
+                SetIntention();
             }
         }
 
@@ -28,6 +31,17 @@ namespace Bannerlord_Social_AI
         {
             Rnd = _rnd;
 
+            SocialExchangeDoneAndReacted = false;
+
+            ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
+
+            CustomAgentReceiver.Busy = true;
+            CustomAgentReceiver.SocialMove = SEName;
+            CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
+        }
+
+        private void SetIntention()
+        {
             switch (SEName)
             {
                 case "Compliment":
@@ -52,8 +66,8 @@ namespace Bannerlord_Social_AI
                 case "Bully":
                     Intention = IntentionEnum.Hostile;
                     CustomAgentInitiator.MarkerTyperRef = 2;
-                    CustomAgentInitiator.PlayAnimation("act_bully");
-                    CustomAgentReceiver.PlayAnimation("act_bullied");
+                    //CustomAgentInitiator.PlayAnimation("act_bully");
+                    //CustomAgentReceiver.PlayAnimation("act_bullied");
                     break;
                 case "Break":
                     Intention = IntentionEnum.Special;
@@ -64,14 +78,6 @@ namespace Bannerlord_Social_AI
                     CustomAgentInitiator.MarkerTyperRef = 0;
                     break;
             }
-
-            SocialExchangeDoneAndReacted = false;
-
-            ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
-
-            CustomAgentReceiver.Busy = true;
-            CustomAgentReceiver.SocialMove = SEName;
-            CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
 
         public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
@@ -107,8 +113,8 @@ namespace Bannerlord_Social_AI
 
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
-                SocialExchangeDoneAndReacted = true; ReceptorIsPlayer = false; 
+                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); ReceptorIsPlayer = false; }
+                SocialExchangeDoneAndReacted = true;  
             }
         }
 
@@ -116,7 +122,11 @@ namespace Bannerlord_Social_AI
         {
             AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
 
-            CustomAgentInitiator.AddToMemory(new MemorySE(CustomAgentReceiver.selfAgent.Name, CustomAgentReceiver.Id, SEName));
+            List<string> tempListNames = new List<string>() { CustomAgentInitiator.Name , CustomAgentReceiver.Name };
+            List<int> tempListIds = new List<int>() { CustomAgentInitiator.Id , CustomAgentReceiver.Id };
+            MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SEName);
+            CustomAgentInitiator.AddToMemory(newMemory);
+            CustomAgentReceiver.AddToMemory(newMemory);
 
             ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
@@ -159,7 +169,7 @@ namespace Bannerlord_Social_AI
         {
             if (true)
             {
-                CustomAgentInitiator.UpdateAllStatus(0, -1, -1, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0, -1, -1, 0, 0);
 
                 BreakUpMethod();
             }
@@ -170,12 +180,12 @@ namespace Bannerlord_Social_AI
             if (CustomAgentReceiver.SE_Accepted)
             {
                 //Bully or RomanticSabotage
-                CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 1, 0);
-                CustomAgentReceiver.UpdateAllStatus(0, -0.2, 0, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0, 0, -0.3, 1, 0);
+                CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
             }
             else
             {
-                CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0, 0, -0.3, 0, 0);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                 UpdateThirdNPCsBeliefs("Friends", belief, -1);
@@ -190,13 +200,11 @@ namespace Bannerlord_Social_AI
                 //Decreases relation with Initiator
                 if (SEName == "Jealous")
                 {
-                    
-
-                    CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 0, 0);
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
                 }
                 else if (SEName == "FriendSabotage")
                 {
-
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
                 }
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
@@ -206,12 +214,14 @@ namespace Bannerlord_Social_AI
             {
                 if (SEName == "Jealous")
                 {
-                    CustomAgentInitiator.UpdateAllStatus(0, 0, -0.3, 1, 0);
-                    CustomAgentReceiver.UpdateAllStatus(0, -0.2, 0, 0, 0);
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 1, 0);
+                    CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
                 }
 
                 else if (SEName == "FriendSabotage")
                 {
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, -0.2, 0, 0, 0);
+
                     //Decreases relation 
                     CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
                     SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
@@ -239,7 +249,7 @@ namespace Bannerlord_Social_AI
             }
             else
             {
-                CustomAgentInitiator.UpdateAllStatus(0, 0, 1, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0, 0, 1, 0, 0);
             }
 
             NPCsNearRomanticSocialMove();
@@ -254,14 +264,14 @@ namespace Bannerlord_Social_AI
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
                     UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
-                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0);
+                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
                 }
                 else if (SEName == "GiveGift")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
                     UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
-                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0);
+                    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
 
                     Item tempItem = CustomAgentInitiator.GetItem();
                     CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
@@ -270,7 +280,7 @@ namespace Bannerlord_Social_AI
             }
             else
             {
-                CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 1, 0);
+                CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 1, 0);
             }
         }
 
@@ -407,6 +417,8 @@ namespace Bannerlord_Social_AI
         
         public int InitiadorVolition()
         {
+            SetIntention();
+
             int initialValue = 0;
 
             InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, false, initialValue)
@@ -415,7 +427,7 @@ namespace Bannerlord_Social_AI
                 RelationType = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
-            finalVolition = CheckMemory(finalVolition, 2);
+            finalVolition = CheckMemory(finalVolition, 3);
 
             CustomAgentInitiator.SEVolition = finalVolition;
 
@@ -425,7 +437,13 @@ namespace Bannerlord_Social_AI
         private int CheckMemory(int finalVolition, int multiplyToDecrease)
         {
             int howManyTimes = CustomAgentInitiator.MemorySEs.Count(
-                memorySlot => memorySlot.NPC_Name == CustomAgentReceiver.selfAgent.Name && memorySlot.SE_Name == SEName);
+                memorySlot => 
+                memorySlot.SE_Name == SEName && 
+                memorySlot.agents.Contains(CustomAgentInitiator.Name) && 
+                memorySlot.agents.Contains(CustomAgentReceiver.Name) && 
+                memorySlot.IDs.Contains(CustomAgentInitiator.Id) && 
+                memorySlot.IDs.Contains(CustomAgentReceiver.Id)
+                );
 
             if (howManyTimes > 0)
             {
@@ -467,6 +485,8 @@ namespace Bannerlord_Social_AI
             UpdateThirdNPCsBeliefs(relation, belief, value);
 
             NPCsNearFriendSocialMove();
+
+            InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " is " + belief.value));
         }
 
         private void ResetCustomAgentVariables(CustomAgent customAgent)

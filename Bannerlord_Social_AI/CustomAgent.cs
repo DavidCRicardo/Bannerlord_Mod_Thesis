@@ -51,7 +51,7 @@ namespace Bannerlord_Social_AI
         public bool NearPlayer { get; set; }
         public int MarkerTyperRef { get; set; }
 
-        private readonly int memorySize = 3;
+        private readonly int memorySize = 5;
         public string thirdAgent;
         public int thirdAgentId;
 
@@ -458,14 +458,13 @@ namespace Bannerlord_Social_AI
 
         public void EndFollowBehavior()
         {
-            selfAgent.ResetLookAgent();
+            if (selfAgent != Agent.Main)
+            {
+                selfAgent.ResetLookAgent();
 
-            //try
-            //{
                 DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
                 behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
-            //}
-            //catch (Exception e){}   
+            } 
         }
 
         #region /* Add / Update Beliefs  / Get Beliefs */ 
@@ -571,16 +570,16 @@ namespace Bannerlord_Social_AI
                 {
                     status.intensity = 0;
                 }
-                else if (status.intensity > 1)
+                else if (status.intensity > 3)
                 {
-                    status.intensity = 1;
+                    status.intensity = 3;
                 }
             }
         }
 
-        public void UpdateAllStatus(double _SocialTalk = 0, double _Courage = 0, double _Anger = 0, double _Shame = 0, double _Tiredness = 0)
+        public void UpdateAllStatus(double _SocialTalk = 0, double _BullyNeed = 0, double _Courage = 0, double _Anger = 0, double _Shame = 0, double _Tiredness = 0)
         {
-            List<double> tempList = new List<double>() { _SocialTalk, _Courage, _Anger, _Shame, _Tiredness };
+            List<double> tempList = new List<double>() { _SocialTalk, _BullyNeed, _Courage, _Anger, _Shame, _Tiredness };
 
             for (int i = 0; i < StatusList.Count; i++)
             {

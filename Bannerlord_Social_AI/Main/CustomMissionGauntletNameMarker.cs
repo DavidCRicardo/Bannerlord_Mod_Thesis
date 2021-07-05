@@ -145,6 +145,8 @@ namespace Bannerlord_Social_AI
                 GiveCourageToCharacter(customAgentConversation);
                 CBB_ref.giveCourage = false;
             }
+
+
         }
 
         private void DoBreak(CustomAgent customAgentConversation)
@@ -187,7 +189,7 @@ namespace Bannerlord_Social_AI
         private void GiveCourageToCharacter(CustomAgent customAgentConversation)
         {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
-            customAgent.UpdateAllStatus(0, 1, 0, 0, 0);
+            customAgent.UpdateAllStatus(0, 0, 1, 0, 0, 0);
         }
 
         private void ResetCBB_refVariables()
