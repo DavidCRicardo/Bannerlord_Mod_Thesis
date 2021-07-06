@@ -46,7 +46,7 @@ namespace Bannerlord_Social_AI
 
         public void Tick(float dt)
         {
-            if (Hero.MainHero.CurrentSettlement != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 if (this._firstTick)
                 {
@@ -139,11 +139,11 @@ namespace Bannerlord_Social_AI
 
             if (customAgent.customAgentTarget != null) // if he has a target and it's going to it 
             {
-                getTired = 0.1;
+                getTired = rnd.NextDouble();
             }
             else
             {
-                getTired = -0.1;
+                getTired = -1 * rnd.NextDouble();
             }
 
             if (customAgent.TraitList.Exists(t => t.traitName == "Friendly"))
@@ -305,7 +305,7 @@ namespace Bannerlord_Social_AI
         private void InitializeSocialExchanges()
         {
             OnGoingSEs = 0;
-            MaximumSEs = CurrentLocation == "center" ? 4 : 2;
+            MaximumSEs = CurrentLocation == "center" ? 5 : 3;
 
             SocialExchangesList = new List<SocialExchangeSE>();
 

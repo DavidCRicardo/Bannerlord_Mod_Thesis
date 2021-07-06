@@ -653,5 +653,9 @@ namespace Bannerlord_Social_AI
             TriggerRuleList.Add(triggerRule);
         }
 
+        public void RemoveTriggerRule(TriggerRule triggerRule)
+        {
+            TriggerRuleList.Remove(triggerRule);
+        }
     }
 }

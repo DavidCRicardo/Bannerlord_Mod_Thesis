@@ -180,12 +180,12 @@ namespace Bannerlord_Social_AI
             if (CustomAgentReceiver.SE_Accepted)
             {
                 //Bully or RomanticSabotage
-                CustomAgentInitiator.UpdateAllStatus(0, 0, 0, -0.3, 1, 0);
-                CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, -0.3, 1, 0);
+                CustomAgentReceiver.UpdateAllStatus(0, 0.5, -0.2, 0, 0, 0);
             }
             else
             {
-                CustomAgentInitiator.UpdateAllStatus(0, 0, 0, -0.3, 0, 0);
+                CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, 0.5, 0, 0);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                 UpdateThirdNPCsBeliefs("Friends", belief, -1);
@@ -427,7 +427,7 @@ namespace Bannerlord_Social_AI
                 RelationType = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
-            finalVolition = CheckMemory(finalVolition, 3);
+            finalVolition = CheckMemory(finalVolition, 5);
 
             CustomAgentInitiator.SEVolition = finalVolition;
 

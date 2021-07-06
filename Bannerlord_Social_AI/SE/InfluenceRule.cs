@@ -65,6 +65,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
+
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool ItemBool,
              bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE)
@@ -109,16 +110,8 @@ namespace Bannerlord_Social_AI
                 sum += CheckStatus(Initiator);
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
-/*
-            if (RelationType == SocialExchangeSE.IntentionEnum.Romantic && InitialValue > 1)
-            {
-                sum += 2;
-            }
-            if (RelationType == SocialExchangeSE.IntentionEnum.Hostile && InitialValue < -1)
-            {
-                sum += 2;
-            }
-*/
+
+            sum += CheckMemoryForPreviousSEs(RelationName, sum, Initiator, Receiver);
 
             if (ItemBool)
             {
@@ -147,6 +140,7 @@ namespace Bannerlord_Social_AI
 
             return sum;
         }
+
 
         private int CheckCulturesRelationships(CustomAgent agent, CustomAgent otherAgent, bool IsPositiveOrRomanticSE)
         {
@@ -209,7 +203,10 @@ namespace Bannerlord_Social_AI
             {
                 sum -= 100;
             }
-
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Friends" && socialNetworkBelief.value < -2)
+            {
+                sum += 101;
+            }
             return sum;
         }
 
@@ -310,27 +307,53 @@ namespace Bannerlord_Social_AI
             }
 
             status = CheckStatusIntensity(customAgent, "BullyNeed");
-            if (status.intensity > 0.5)
+            if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
             {
-                if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+                if (status.intensity > 0.5 && status.intensity < 1)
                 {
-                    localSum += 2;
+                    localSum = 2;
                 }
-            }   
+                else if (status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum += 5;
+                }
+            }
+
 
             /* Anger Status */
             status = CheckStatusIntensity(customAgent, "Anger");
-            if (status.intensity > 0.5)
+            if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
             {
-                if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+                if (status.intensity > 0.5 && status.intensity < 1)
                 {
                     localSum -= 2;
                 }
-                else if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+                else if (status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum -= 4;
+                }
+                else if (status.intensity >= 1.5)
+                {
+                    localSum -= 6;
+                }
+            }
+            else if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+            {
+                if (status.intensity > 0.5 && status.intensity < 1)
                 {
                     localSum += 2;
                 }
+                else if(status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum += 4;
+                }
+                else if(status.intensity >= 1.5)
+                {
+                    localSum += 6;
+                }
             }
+
+
 
             return localSum;
         }
@@ -387,6 +410,7 @@ namespace Bannerlord_Social_AI
                 
                 if (triggerRule != null)
                 {
+                    agentWhoWillCheck.RemoveTriggerRule(triggerRule);
                     return 100;
                 }
             }
@@ -467,5 +491,71 @@ namespace Bannerlord_Social_AI
                     };
             }
         }
+
+
+        private int CheckMemoryForPreviousSEs(string SEName, int localSum, CustomAgent c1, CustomAgent c2)
+        {
+            MemorySE memory = GetMemory("Break", c1, c2);
+            if (memory != null && SEName == "AskOut")
+            {
+                localSum -= 100;
+            }
+
+            memory = GetMemory("GiveGift", c1, c2);
+            if (memory != null && SEName == "GiveGift")
+            {
+                localSum -= 100;
+            }
+
+            int howMany = CountMemory(SEName, c1, c2);
+            if (howMany == 1)
+            {
+                localSum -= 2;
+            }
+
+            howMany = CountMemory("RomanticSabotage", c1, c2);
+            if (howMany == 1 && SEName == "Bully")
+            {
+                localSum += 100;
+            }
+            if (howMany == 1 && SEName == "RomanticSabotage")
+            {
+                localSum -= 100;
+            }
+            if (howMany == 1 && SEName == "Jealous")
+            {
+                localSum += 100;
+            }
+            
+            return localSum;
+        }
+
+
+        private MemorySE GetMemory(string _SEName, CustomAgent c1, CustomAgent c2)
+        {
+            MemorySE _memory = c1.MemorySEs.Find(
+                            memorySlot =>
+                            memorySlot.SE_Name == _SEName &&
+                            memorySlot.agents.Contains(c1.Name) &&
+                            memorySlot.agents.Contains(c2.Name) &&
+                            memorySlot.IDs.Contains(c1.Id) &&
+                            memorySlot.IDs.Contains(c2.Id)
+                            );
+            return _memory;
+        }
+
+        private int CountMemory(string _SEName, CustomAgent c1, CustomAgent c2)
+        {
+            int _howManyTimes = c1.MemorySEs.Count(
+                            memorySlot =>
+                            memorySlot.SE_Name == _SEName &&
+                            memorySlot.agents.Contains(c1.Name) &&
+                            memorySlot.agents.Contains(c2.Name) &&
+                            memorySlot.IDs.Contains(c1.Id) &&
+                            memorySlot.IDs.Contains(c2.Id)
+                            );
+            return _howManyTimes;
+        }
+
     }
 }
