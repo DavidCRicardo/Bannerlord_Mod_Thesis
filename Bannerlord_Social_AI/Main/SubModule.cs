@@ -27,7 +27,7 @@ namespace Bannerlord_Social_AI
             {
                 CampaignGameStarter gameInitializer = (CampaignGameStarter)starterObject;
 
-                CBBref = new CustomCampaignBehaviorBase();
+                CBBref = new CiF_CampaignBehavior_Dialogs();
                 gameInitializer.AddBehavior(CBBref);
             }
         }
@@ -35,7 +35,7 @@ namespace Bannerlord_Social_AI
         {
         }
 
-        private CustomCampaignBehaviorBase CBBref;
+        private CiF_CampaignBehavior_Dialogs CBBref;
 
         public override void OnMissionBehaviourInitialize(Mission mission)
         {

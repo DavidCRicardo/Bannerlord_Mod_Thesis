@@ -23,7 +23,7 @@ namespace Bannerlord_Social_AI
                 this.CustomAgentList = customAgents;
                 this.index = -1;
 
-                SetIntention();
+                SetIntention(true);
             }
         }
 
@@ -40,39 +40,69 @@ namespace Bannerlord_Social_AI
             CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
         }
 
-        private void SetIntention()
+        private void SetIntention(bool OnSocialExchange)
         {
             switch (SEName)
             {
                 case "Compliment":
                 case "GiveGift":
                     Intention = IntentionEnum.Positive;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
                 case "FriendSabotage":
                 case "Jealous":
                     Intention = IntentionEnum.Negative;
-                    CustomAgentInitiator.MarkerTyperRef = 1;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
                 case "AskOut":
                 case "Flirt":
                     Intention = IntentionEnum.Romantic;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
                 case "RomanticSabotage":
                     Intention = IntentionEnum.Hostile;
-                    CustomAgentInitiator.MarkerTyperRef = 1;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
                 case "Bully":
+
                     Intention = IntentionEnum.Hostile;
-                    CustomAgentInitiator.MarkerTyperRef = 2;
-                    //CustomAgentInitiator.PlayAnimation("act_bully");
-                    //CustomAgentReceiver.PlayAnimation("act_bullied");
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 2;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
                 case "Break":
                     Intention = IntentionEnum.Special;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.PlayAnimation("act_bully");
+                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                    }
                     break;
+                
                 default:
                     Intention = IntentionEnum.Undefined;
                     CustomAgentInitiator.MarkerTyperRef = 0;
@@ -417,7 +447,7 @@ namespace Bannerlord_Social_AI
         
         public int InitiadorVolition()
         {
-            SetIntention();
+            SetIntention(false);
 
             int initialValue = 0;
 

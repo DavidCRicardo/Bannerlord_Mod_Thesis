@@ -24,7 +24,6 @@ namespace Bannerlord_Social_AI
 
         private List<SocialExchangeSE> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
-        private List<NextSE> nextSEs { get; set; }
         private NextSE nextSE { get; set; }
 
         public List<CustomAgent> customAgentsList { get; set; }
@@ -86,6 +85,59 @@ namespace Bannerlord_Social_AI
                 }
 
                 UpdateTargetScreen();
+            }
+            else
+            {
+                MissionMode missionMode = CampaignMission.Current.Mode;
+                if (missionMode == MissionMode.Battle)
+                {
+                    if (this._firstTick)
+                    {
+                        // Pre Initialize
+                        rnd = new Random();
+
+                        int HowManySpeaking = 1;
+                        
+
+                        this._firstTick = false;
+
+                        customAgentsList = new List<CustomAgent>();
+                    }
+
+                    // Initialize 
+                    if (customAgentsList.Count == 0)
+                    {
+                        int index = -1;
+                        foreach (Team team in Mission.Current.Teams)
+                        {
+                            foreach (Agent agent in team.ActiveAgents)
+                            {
+                                if (agent.IsHuman && agent.Character != null)
+                                {
+                                    CreateCustomAgent(agent, false);
+
+                                    index++;
+                                    customAgentsList[index].IsPlayerTeam = team.IsPlayerTeam;                        
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (CustomAgent customAgent in customAgentsList)
+                        {
+                            if (customAgent.IsPlayerTeam)
+                            {
+                                customAgent.MarkerTyperRef = 1;
+                            }
+                            else { customAgent.MarkerTyperRef = 2; }
+                            
+                            customAgent.Message = "Charge!!";
+                        }
+
+                        UpdateTargetScreen();
+                    }
+                }
             }
         }
 
@@ -262,16 +314,16 @@ namespace Bannerlord_Social_AI
             {
                 if (customAgentsList == null)
                 {
+                    customAgentsList = new List<CustomAgent>();
+
                     nextSE = new NextSE("", null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
-
-                    customAgentsList = new List<CustomAgent>();
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {
                         if (agent.IsHuman && agent.Character != null)
                         {
-                            CreateCustomAgent(agent);
+                            CreateCustomAgent(agent, true);
                         }
                     }
 
@@ -305,7 +357,7 @@ namespace Bannerlord_Social_AI
         private void InitializeSocialExchanges()
         {
             OnGoingSEs = 0;
-            MaximumSEs = CurrentLocation == "center" ? 5 : 3;
+            MaximumSEs = CurrentLocation == "center" ? 4 : 2;
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
@@ -422,7 +474,7 @@ namespace Bannerlord_Social_AI
 
         private void LoadDialogsFromJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/npc_conversations.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/npc_conversations.json");
             RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(json);
 
             Dictionary<string, List<string>> fromIDGetListMessages = new Dictionary<string, List<string>>();
@@ -467,21 +519,21 @@ namespace Bannerlord_Social_AI
         {
             try
             {
-                File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+                File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             }
             catch
             {
-                FileStream file = File.Create(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+                FileStream file = File.Create(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
                 file.Close();
 
                 string text = "{ " + "SettlementJson" + ": [] }";
                 RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(text);
 
-                File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
 
-        private void CreateCustomAgent(Agent agent)
+        private void CreateCustomAgent(Agent agent, bool ToPerformSEs)
         {
             int id = 0;
             CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList);
@@ -494,27 +546,35 @@ namespace Bannerlord_Social_AI
                 }
             }
 
-            RandomItem(customAgentTemp);
-
             customAgentsList.Add(customAgentTemp);
             AddAgentTarget(agent, customAgentTemp.Id);
 
-            mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
-            mostWantedSEList.Add(sE);
+            if (ToPerformSEs)
+            {
+                RandomItem(customAgentTemp);
+
+                mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
+                mostWantedSEList.Add(sE);
+            }
         }
 
         private void RandomItem(CustomAgent customAgent)
         {
+            List<String> listItems = new List<string>() { "gem", "gift" } ;
+
             double temp = rnd.NextDouble();
             if (temp < 0.15)
             {
-                customAgent.AddItem("gem", 1);
+                Random rnd = new Random();
+                string item = listItems[rnd.Next(listItems.Count)];
+
+                customAgent.AddItem(item, 1);
             }
         }
 
         private bool CheckIfSettlementExistsOnFile(string _currentSettlementName, string _currentLocationName)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             if (myDeserializedClass == null)
@@ -557,7 +617,7 @@ namespace Bannerlord_Social_AI
 
         private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
@@ -569,12 +629,12 @@ namespace Bannerlord_Social_AI
 
             myDeserializedClass.SettlementJson.Add(new SettlementJson(CurrentSettlement, CurrentLocation, jsonlist));
 
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         private void LoadAllInfoFromJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             foreach (SettlementJson _settlement in myDeserializedClass.SettlementJson)
@@ -598,7 +658,7 @@ namespace Bannerlord_Social_AI
                             RandomItem(customAgent);
                             _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList));
 
-                            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
 
                         foreach (Trait trait in customAgent.TraitList)
@@ -613,7 +673,7 @@ namespace Bannerlord_Social_AI
 
         private void SaveAllInfoToJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             foreach (SettlementJson item in myDeserializedClass.SettlementJson)
@@ -635,7 +695,7 @@ namespace Bannerlord_Social_AI
                 }
             }
 
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         public void SaveToJson()
@@ -851,6 +911,8 @@ namespace Bannerlord_Social_AI
         private readonly CustomMissionNameMarkerVM.MarkerDistanceComparer _distanceComparer;
         private MBBindingList<CustomMissionNameMarkerTargetVM> _targets;
         private bool _isEnabled;
+        private bool isPlayerTeam;
+
         private class MarkerDistanceComparer : IComparer<CustomMissionNameMarkerTargetVM>
         {
             public int Compare(CustomMissionNameMarkerTargetVM x, CustomMissionNameMarkerTargetVM y)

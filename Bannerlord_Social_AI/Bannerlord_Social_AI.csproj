@@ -269,7 +269,7 @@
     <Compile Include="Main\CustomMissionNameMarkerTargetVM.cs" />
     <Compile Include="Main\CustomMissionNameMarkerVM.cs" />
     <Compile Include="CustomAgent.cs" />
-    <Compile Include="Main\CustomCampaignBehaviorBase.cs" />
+    <Compile Include="Main\CiF_CampaignBehavior_Dialogs.cs" />
     <Compile Include="Main\CustomMissionGauntletNameMarker.cs" />
     <Compile Include="Json\RootJsonData.cs" />
     <Compile Include="Json\SettlementJson.cs" />

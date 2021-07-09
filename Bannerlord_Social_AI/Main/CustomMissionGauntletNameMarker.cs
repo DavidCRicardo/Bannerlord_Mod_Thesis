@@ -10,9 +10,9 @@ namespace Bannerlord_Social_AI
     class CustomMissionGauntletNameMarker : MissionView
     {
         public int ViewOrderPriority { get; }
-        public CustomMissionGauntletNameMarker(CustomCampaignBehaviorBase CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
+        public CustomMissionGauntletNameMarker(CiF_CampaignBehavior_Dialogs CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
         private CustomMissionNameMarkerVM _dataSource;
-        private CustomCampaignBehaviorBase CBB_ref;
+        private CiF_CampaignBehavior_Dialogs CBB_ref;
         private GauntletLayer _gauntletLayer;
         private Mission mission;
         private bool _firstTick = true;
@@ -100,12 +100,12 @@ namespace Bannerlord_Social_AI
                 _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
             }
 
-            if (_dataSource != null && CBB_ref.AskWhatsGoinOn)
-            {
-                Random rnd = new Random();
-                CustomAgent custom = _dataSource.customAgentsList[rnd.Next(_dataSource.customAgentsList.Count)];
-                custom.selfAgent.OnUse(Agent.Main);
-            }
+            //if (_dataSource != null && CBB_ref.AskWhatsGoinOn)
+            //{
+            //    Random rnd = new Random();
+            //    CustomAgent custom = _dataSource.customAgentsList[rnd.Next(_dataSource.customAgentsList.Count)];
+            //    custom.selfAgent.OnUse(Agent.Main);
+            //}
         }
         
         private void CheckIfThereIsAnyChange(CustomAgent customAgentConversation)

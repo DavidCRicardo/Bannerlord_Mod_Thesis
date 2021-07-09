@@ -55,6 +55,8 @@ namespace Bannerlord_Social_AI
         public string thirdAgent;
         public int thirdAgentId;
 
+        public bool IsPlayerTeam { get; set; }
+
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
             this.selfAgent = _agent;
@@ -337,7 +339,7 @@ namespace Bannerlord_Social_AI
 
         public void SaveDataFromAgentToJson(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);
 
@@ -353,12 +355,12 @@ namespace Bannerlord_Social_AI
                 }
             }
 
-            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         public void LoadDataFromJsonToAgent(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);
