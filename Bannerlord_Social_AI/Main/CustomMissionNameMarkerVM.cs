@@ -51,21 +51,19 @@ namespace Bannerlord_Social_AI
                 {
                     rnd = new Random();
 
-                    PreInitialize();
+                    PreInitializeOnSettlement();
 
-                    Initialize(giveTraitsToNPCs);
+                    InitializeOnSettlement(giveTraitsToNPCs);
 
                     this._firstTick = false;
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
-                    _firstTick2 = true;
-
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         CustomAgentsNearPlayer(customAgent);
-                        
+
                         CustomAgentGoingToSE(dt, customAgent);
 
                         if (SecsDelay(dt, 1))
@@ -75,13 +73,6 @@ namespace Bannerlord_Social_AI
                     }
 
                     DecreaseNPCsCountdown(dt);
-                }
-                else
-                {
-                    if (_firstTick2)
-                    {
-                        _firstTick2 = false;
-                    }
                 }
 
                 UpdateTargetScreen();
@@ -93,53 +84,204 @@ namespace Bannerlord_Social_AI
                 {
                     if (this._firstTick)
                     {
-                        // Pre Initialize
-                        rnd = new Random();
-
-                        int HowManySpeaking = 1;
-                        
+                        PreInitializeOnBattle();
 
                         this._firstTick = false;
-
-                        customAgentsList = new List<CustomAgent>();
                     }
 
-                    // Initialize 
-                    if (customAgentsList.Count == 0)
+                    if (Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
                     {
-                        int index = -1;
-                        foreach (Team team in Mission.Current.Teams)
-                        {
-                            foreach (Agent agent in team.ActiveAgents)
-                            {
-                                if (agent.IsHuman && agent.Character != null)
-                                {
-                                    CreateCustomAgent(agent, false);
+                        InitializeOnBattle(rnd);
 
-                                    index++;
-                                    customAgentsList[index].IsPlayerTeam = team.IsPlayerTeam;                        
-                                }
-                            }
-                        }
+                        _secondTick = false;
                     }
                     else
                     {
-                        foreach (CustomAgent customAgent in customAgentsList)
-                        {
-                            if (customAgent.IsPlayerTeam)
-                            {
-                                customAgent.MarkerTyperRef = 1;
-                            }
-                            else { customAgent.MarkerTyperRef = 2; }
-                            
-                            customAgent.Message = "Charge!!";
-                        }
+                        OnBattle();
+
+                        DecreaseCountdownOnBattle(dt);
 
                         UpdateTargetScreen();
                     }
                 }
             }
         }
+
+        #region On Battle
+          
+        private void DecreaseCountdownOnBattle(float dt)
+        {
+            foreach (CustomAgent customAgent in customAgentsList)
+            {
+                if (customAgent.Message != "" && customAgent.SecsDelay(dt, customAgent.Countdown))
+                {
+                    customAgent.Message = "";
+                    if (customAgent.IsPlayerTeam)
+                    {
+                        PlayerTeamCurrentSpeakers--;
+                    }
+                    else
+                    {
+                        OtherTeamCurrentSpeakers--;
+                    }
+                }
+            }
+        }
+
+        private void OnBattle()
+        {
+            int teamOpponentCount = 0;
+            int teamPlayerCount = 0;
+            int auxCountPlayerTeam = 0;
+
+            CheckDeadAgents(ref teamOpponentCount, ref teamPlayerCount, ref auxCountPlayerTeam);
+
+            int DifferencePlayerTroops = teamOpponentCount - teamPlayerCount;
+
+            if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
+            {
+                return;
+            }
+
+            int index = rnd.Next(customAgentsList.Count);
+            CustomAgent customAgent = customAgentsList[index];
+
+            if (customAgent.IsDead)
+            {
+                customAgent.Message = "";
+            }
+            else
+            {
+                if (customAgent.IsPlayerTeam)
+                {
+                    customAgent.MarkerTyperRef = 1;
+                    PlayerTeamCurrentSpeakers++;
+                }
+                else
+                {
+                    customAgent.MarkerTyperRef = 2;
+                    OtherTeamCurrentSpeakers++;
+                }
+
+                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, DifferencePlayerTroops, rnd);
+            }
+        }
+
+        private void CheckDeadAgents(ref int teamOpponentCount, ref int teamPlayerCount, ref int auxCountPlayerTeam)
+        {
+            foreach (Team team in Mission.Current.Teams)
+            {
+                if (!team.IsPlayerTeam)
+                {
+                    teamPlayerCount = CheckAgentWhoIsDead(team);
+                    auxCountPlayerTeam = team.TeamAgents.Count;
+                }
+                else
+                {
+                    teamOpponentCount = CheckAgentWhoIsDead(team, auxCountPlayerTeam);
+                }
+            }
+        }
+
+        private int CheckAgentWhoIsDead(Team team, int auxInt = 0)
+        {
+            int teamPlayerCount;
+            for (int i = 0; i < team.TeamAgents.Count; i++)
+            {
+                Agent item = team.TeamAgents[i];
+                if (!item.IsActive())
+                {
+                    customAgentsList[auxInt + i].IsDead = true;
+                }
+            }
+            teamPlayerCount = (team.ActiveAgents.Count - team.TeamAgents.Count) * 100;
+            return teamPlayerCount;
+        }
+
+        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, int differenceTroops, Random rnd)
+        {
+            if (differenceTroops < 0)
+            {
+                if (isPlayerTeam)
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                }
+                else
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                }
+            }
+            else if (differenceTroops > 0)
+            {
+                if (isPlayerTeam)
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                }
+                else
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                }
+            }
+            else
+            {
+                GetBattleSingleSentence(customAgent, BattleDictionary.Neutral, rnd);
+            }
+        }
+
+        private void GetBattleSingleSentence(CustomAgent customAgent, BattleDictionary key, Random rnd)
+        {
+            battleDictionarySentences.TryGetValue(key, out List<string> BattleSentences);
+
+            int index = rnd.Next(BattleSentences.Count);
+            customAgent.Message = BattleSentences[index];
+        }
+
+        private void InitializeOnBattle(Random rnd)
+        {
+            int index = 0;
+            foreach (Team team in Mission.Current.Teams)
+            {
+                foreach (Agent agent in team.TeamAgents)
+                {
+                    if (agent.IsHuman && agent.Character != null)
+                    {
+                        CreateCustomAgent(agent, false, rnd);
+
+                        customAgentsList[index].IsPlayerTeam = team.IsPlayerTeam;
+                        index++;
+                    }
+                }
+            }
+        }
+
+        private void PreInitializeOnBattle()
+        {
+            OtherTeamCurrentSpeakers = 0;
+            PlayerTeamCurrentSpeakers = 0;
+            rnd = new Random();
+            customAgentsList = new List<CustomAgent>();
+            battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
+
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/battle_conversations.json");
+            BattleConversationsJson deserializedBattleClass = JsonConvert.DeserializeObject<BattleConversationsJson>(json);
+            if (deserializedBattleClass != null)
+            {
+                battleDictionarySentences.Add(BattleDictionary.Winning, deserializedBattleClass.Winning);
+                battleDictionarySentences.Add(BattleDictionary.Neutral, deserializedBattleClass.Neutral);
+                battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
+                OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
+                PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
+            }
+        }
+
+        private Dictionary<BattleDictionary, List<string>> battleDictionarySentences { get; set; }
+        private enum BattleDictionary { Losing, Winning, Neutral }
+        private int OtherTeamLimitSpeakers { get; set; }
+        private int PlayerTeamLimitSpeakers { get; set; }
+        private int OtherTeamCurrentSpeakers { get; set; }
+        private int PlayerTeamCurrentSpeakers { get; set; }
+
+        #endregion
 
         private void CustomAgentGoingToSE(float dt, CustomAgent customAgent)
         {
@@ -200,7 +342,7 @@ namespace Bannerlord_Social_AI
 
             if (customAgent.TraitList.Exists(t => t.traitName == "Friendly"))
             {
-                
+
                 socialTalk = 0.1;
             }
 
@@ -291,7 +433,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void PreInitialize()
+        private void PreInitializeOnSettlement()
         {
             CheckIfFileExists();
 
@@ -304,7 +446,7 @@ namespace Bannerlord_Social_AI
             else { giveTraitsToNPCs = true; }
         }
 
-        private void Initialize(bool giveTraitsToNPCs)
+        private void InitializeOnSettlement(bool giveTraitsToNPCs)
         {
             InitializeSocialExchanges();
 
@@ -334,7 +476,7 @@ namespace Bannerlord_Social_AI
                     }
 
                     LoadAllInfoFromJSON();
- 
+
                     InitializeCountdownToAgents(); // Set CustomAgent countdown depending of traits
 
                     customAgentsList.ForEach(c => c.CustomAgentsList = customAgentsList);
@@ -367,7 +509,7 @@ namespace Bannerlord_Social_AI
                 SocialExchangesList.Add(new SocialExchangeSE(SE_Name, null, null));
             }
         }
-        
+
         private void InitializeStatusList()
         {
             StatusList = new List<string>() { "SocialTalk", "BullyNeed", "Courage", "Anger", "Shame", "Tiredness" };
@@ -452,12 +594,12 @@ namespace Bannerlord_Social_AI
 
         private List<Trait> InitializeListWithAllTraits()
         {
-            List<string> TraitsListString = new List<string>() 
-            { 
-                "Friendly", "Hostile", 
-                "Charming", "UnCharming", 
-                "Shy", "Brave", 
-                "Calm", "Aggressive", 
+            List<string> TraitsListString = new List<string>()
+            {
+                "Friendly", "Hostile",
+                "Charming", "UnCharming",
+                "Shy", "Brave",
+                "Calm", "Aggressive",
                 "Faithful", "Unfaithful"
             };
 
@@ -483,7 +625,6 @@ namespace Bannerlord_Social_AI
 
             fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
 
-            //Only 1 DialogsRoot
             foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
             {
                 fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
@@ -533,7 +674,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void CreateCustomAgent(Agent agent, bool ToPerformSEs)
+        private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null)
         {
             int id = 0;
             CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList);
@@ -556,11 +697,15 @@ namespace Bannerlord_Social_AI
                 mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
                 mostWantedSEList.Add(sE);
             }
+            else 
+            {
+                customAgentTemp.Countdown = rnd.Next(1, 3);
+            }
         }
 
         private void RandomItem(CustomAgent customAgent)
         {
-            List<String> listItems = new List<string>() { "gem", "gift" } ;
+            List<String> listItems = new List<string>() { "gem", "gift" };
 
             double temp = rnd.NextDouble();
             if (temp < 0.15)
@@ -847,27 +992,6 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void AbortOnGoingSE(CustomAgent customAgent)
-        {
-            // se o player ou o NPC interagido pelo player formos os targets ou tiver o target em alguem.. então é tudo abortado
-            // o player e o NPC interagido sao considerados como busy
-            // se algum outro NPC viria para interagir com o player ou o npc, então aborta a social exchange 
-
-            if (customAgent != null && customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent != Agent.Main)
-            {
-                if (customAgent.Busy) // busy // target or not
-                {
-                    customAgent.AbortSocialExchange();
-
-                    if (customAgent.customAgentTarget != null) // if has target // its the initiator
-                    {
-                        if (customAgent.IsInitiator) { customAgent.IsInitiator = false; }
-                        if (socialExchangeSE != null) { socialExchangeSE.OnFinalize(); OnGoingSEs--; }
-                    }
-                }
-            }
-        }
-
         [DataSourceProperty]
         public MBBindingList<CustomMissionNameMarkerTargetVM> Targets
         {
@@ -905,13 +1029,12 @@ namespace Bannerlord_Social_AI
 
         private readonly Camera _missionCamera;
         private bool _firstTick = true;
-        private bool _firstTick2 = true;
+        private bool _secondTick = true;
         private readonly Mission _mission;
         private Vec3 _heightOffset = new Vec3(0f, 0f, 2f, -1f);
         private readonly CustomMissionNameMarkerVM.MarkerDistanceComparer _distanceComparer;
         private MBBindingList<CustomMissionNameMarkerTargetVM> _targets;
         private bool _isEnabled;
-        private bool isPlayerTeam;
 
         private class MarkerDistanceComparer : IComparer<CustomMissionNameMarkerTargetVM>
         {

@@ -56,6 +56,7 @@ namespace Bannerlord_Social_AI
         public int thirdAgentId;
 
         public bool IsPlayerTeam { get; set; }
+        public bool IsDead { get; set; }
 
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
