@@ -45,63 +45,66 @@ namespace Bannerlord_Social_AI
 
         public void Tick(float dt)
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
-            {
-                if (this._firstTick)
-                {
-                    rnd = new Random();
-
-                    PreInitializeOnSettlement();
-
-                    InitializeOnSettlement(giveTraitsToNPCs);
-
-                    this._firstTick = false;
-                }
-
-                if (CharacterObject.OneToOneConversationCharacter == null)
-                {
-                    foreach (CustomAgent customAgent in customAgentsList)
-                    {
-                        CustomAgentsNearPlayer(customAgent);
-
-                        CustomAgentGoingToSE(dt, customAgent);
-
-                        if (SecsDelay(dt, 1))
-                        {
-                            UpdateStatus(customAgent);
-                        }
-                    }
-
-                    DecreaseNPCsCountdown(dt);
-                }
-
-                UpdateTargetScreen();
-            }
-            else
+            if (CampaignMission.Current != null)
             {
                 MissionMode missionMode = CampaignMission.Current.Mode;
-                if (missionMode == MissionMode.Battle)
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && missionMode != MissionMode.StartUp && missionMode != MissionMode.Battle)
                 {
                     if (this._firstTick)
                     {
-                        PreInitializeOnBattle();
+                        rnd = new Random();
+
+                        PreInitializeOnSettlement();
+
+                        InitializeOnSettlement(giveTraitsToNPCs);
 
                         this._firstTick = false;
                     }
 
-                    if (Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
+                    if (CharacterObject.OneToOneConversationCharacter == null)
                     {
-                        InitializeOnBattle(rnd);
+                        foreach (CustomAgent customAgent in customAgentsList)
+                        {
+                            CustomAgentsNearPlayer(customAgent);
 
-                        _secondTick = false;
+                            CustomAgentGoingToSE(dt, customAgent);
+
+                            if (SecsDelay(dt, 1))
+                            {
+                                UpdateStatus(customAgent);
+                            }
+                        }
+
+                        DecreaseNPCsCountdown(dt);
                     }
-                    else
+
+                    UpdateTargetScreen();
+                }
+                else
+                {                   
+                    if (missionMode == MissionMode.Battle && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena")
                     {
-                        OnBattle();
+                        if (this._firstTick)
+                        {
+                            PreInitializeOnBattle();
 
-                        DecreaseCountdownOnBattle(dt);
+                            this._firstTick = false;
+                        }
 
-                        UpdateTargetScreen();
+                        if (Mission.Current.Teams.Count != 0 && Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
+                        {
+                            InitializeOnBattle(rnd);
+
+                            _secondTick = false;
+                        }
+                        else
+                        {
+                            OnBattle();
+
+                            DecreaseCountdownOnBattle(dt);
+
+                            UpdateTargetScreen();
+                        }
                     }
                 }
             }
@@ -189,7 +192,7 @@ namespace Bannerlord_Social_AI
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
                 Agent item = team.TeamAgents[i];
-                if (!item.IsActive())
+                if (!item.IsActive() || item.Health <= 0)
                 {
                     customAgentsList[auxInt + i].IsDead = true;
                 }

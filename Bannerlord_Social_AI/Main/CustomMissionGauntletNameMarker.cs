@@ -25,7 +25,12 @@ namespace Bannerlord_Social_AI
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
-            CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
+            
+            try
+            {
+                CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
+            }
+            catch (Exception e) { }
         }
         
         public override void OnMissionScreenTick(float dt)

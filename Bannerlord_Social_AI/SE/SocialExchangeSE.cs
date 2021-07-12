@@ -24,6 +24,8 @@ namespace Bannerlord_Social_AI
                 this.index = -1;
 
                 SetIntention(true);
+
+                CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
             }
         }
 
@@ -50,8 +52,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_bully");
-                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                        CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
+                        CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
                 case "FriendSabotage":
@@ -60,8 +62,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 1;
-                        CustomAgentInitiator.PlayAnimation("act_bully");
-                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                        CustomAgentInitiator.PlayAnimation("act_gossip");
+                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
                 case "AskOut":
@@ -70,8 +72,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_bully");
-                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                        CustomAgentInitiator.PlayAnimation("act_argue_soft_1");
+                        CustomAgentReceiver.PlayAnimation("act_argue_soft_2");
                     }
                     break;
                 case "RomanticSabotage":
@@ -79,8 +81,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 1;
-                        CustomAgentInitiator.PlayAnimation("act_bully");
-                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                        CustomAgentInitiator.PlayAnimation("act_argue_1");
+                        CustomAgentReceiver.PlayAnimation("act_argue_2");
                     }
                     break;
                 case "Bully":
@@ -98,8 +100,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_bully");
-                        CustomAgentReceiver.PlayAnimation("act_bullied");
+                        CustomAgentInitiator.PlayAnimation("act_argue_3");
+                        CustomAgentReceiver.PlayAnimation("act_argue_4");
                     }
                     break;
                 

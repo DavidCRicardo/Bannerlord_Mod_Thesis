@@ -454,6 +454,11 @@ namespace Bannerlord_Social_AI
         {
             _agent.SetLookAgent(_agentTarget);
 
+            if (_agent.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
+            {
+                return;
+            }
+
             DailyBehaviorGroup behaviorGroup = _agent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
             behaviorGroup.AddBehavior<FollowAgentBehavior>().SetTargetAgent(_agentTarget);
             behaviorGroup.SetScriptedBehavior<FollowAgentBehavior>();
@@ -464,6 +469,11 @@ namespace Bannerlord_Social_AI
             if (selfAgent != Agent.Main)
             {
                 selfAgent.ResetLookAgent();
+
+                if (selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
+                {
+                    return;
+                }
 
                 DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
                 behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
