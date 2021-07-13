@@ -7,6 +7,7 @@ using SandBox;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using TaleWorlds.Core;
 
 namespace Bannerlord_Social_AI
 {
@@ -72,7 +73,7 @@ namespace Bannerlord_Social_AI
                 { "CanBreak" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
                 { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition) },
                 { "NPCReactsToAskOut" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
-
+                { "CanOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
 
                 { "Friendly_NPC" , new ConversationSentence.OnConditionDelegate(FriendlyNPC) },
                 { "UnFriendly_NPC" , new ConversationSentence.OnConditionDelegate(UnFriendlyNPC) },
@@ -90,7 +91,9 @@ namespace Bannerlord_Social_AI
                 { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
                 { "Increase_Dating" , new ConversationSentence.OnConsequenceDelegate(Increase_Dating) },
                 { "Decrease_Dating" , new ConversationSentence.OnConsequenceDelegate(Decrease_Dating) },
-                { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) }
+                { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) },
+                { "LoseGold" , new ConversationSentence.OnConsequenceDelegate(PlayerLosesSomeGold) },
+                { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) }
             };
         }
 
@@ -245,6 +248,7 @@ namespace Bannerlord_Social_AI
         public bool DecreaseFriendshipWithPlayer { get; set; }
         public bool IncreaseDatingWithPlayer { get; set; }
         public bool DecreaseDatingWithPlayer { get; set; }
+        public bool IncreaseRelationshipWithPlayer { get; set; }
 
         private void Increase_Courage()
         {
@@ -283,6 +287,18 @@ namespace Bannerlord_Social_AI
         private void Do_BreakUp()
         {
             DoBreak = true;
+        }
+
+        private void Increase_Relation()
+        {
+            IncreaseRelationshipWithPlayer = true;
+        }
+
+        private void PlayerLosesSomeGold()
+        {
+            Hero.MainHero.ChangeHeroGold(-5);
+            GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
+            InformationManager.DisplayMessage(new InformationMessage(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name));
         }
 
         public List<CustomAgent> customAgents;
@@ -473,61 +489,31 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        #region Emergency Call 
+        private bool CheckIfPlayerCanOfferGiftToCompanion_condition() 
+        {
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            {
+                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                string _currentLocation = CampaignMission.Current.Location.StringId;
 
-        //public bool AskWhatsGoinOn { get; set; }
-        //private bool Condition_EmergencyCallGoingOn()
-        //{
-        //    return AskWhatsGoinOn;
-        //}
-        //private void Consequence_EmergencyCallGoingOn()
-        //{
-        //    AskWhatsGoinOn = false;
-        //}
+                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-        //public bool EmergencyCallRunning = false;
+                if (customAgentConversation != null)
+                {
+                    Hero hero = Hero.OneToOneConversationHero;
 
-        //private bool Condition_EmergencyCall()
-        //{
-        //    if (EmergencyCallRunning == false)
-        //    {
-        //        return true;
-        //    }
-        //    else { return false; }
-        //}
-        //private void Consequence_EmergencyCall()
-        //{
-        //    foreach (Agent agent in Mission.Current.Agents)
-        //    {
-        //        if (agent != Agent.Main && agent != null && agent.IsHuman)
-        //        {
-        //            DailyBehaviorGroup behaviorGroup = agent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-        //            behaviorGroup.AddBehavior<FollowAgentBehavior>().SetTargetAgent(Agent.Main);
-        //            behaviorGroup.SetScriptedBehavior<FollowAgentBehavior>();
-        //        }
-        //    }
-        //    EmergencyCallRunning = true;
-        //    AskWhatsGoinOn = true;
-
-        //}
-        //private bool Condition_StopEmergencyCall()
-        //{
-        //    return EmergencyCallRunning;
-        //}
-        //private void Consequence_StopEmergencyCall()
-        //{
-        //    foreach (Agent agent in Mission.Current.Agents)
-        //    {
-        //        if (agent != Agent.Main && agent != null && agent.IsHuman)
-        //        {
-        //            DailyBehaviorGroup behaviorGroup = agent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-        //            behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
-        //        }
-        //    }
-
-        //    EmergencyCallRunning = false;
-        //}
-        #endregion
+                    if (hero != null && hero.IsPlayerCompanion)
+                    {
+                        return true;
+                    }
+                    else 
+                    { 
+                        return false; 
+                    }
+                }
+            }
+            return false;
+        }
 
         private void Conversation_tavernmaid_test_on_condition()
         {

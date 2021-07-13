@@ -48,7 +48,7 @@ namespace Bannerlord_Social_AI
             if (CampaignMission.Current != null)
             {
                 MissionMode missionMode = CampaignMission.Current.Mode;
-                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && missionMode != MissionMode.StartUp && missionMode != MissionMode.Battle)
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena" /*missionMode != MissionMode.StartUp*/ && missionMode != MissionMode.Battle)
                 {
                     if (this._firstTick)
                     {

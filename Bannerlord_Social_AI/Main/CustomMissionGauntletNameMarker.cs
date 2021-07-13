@@ -43,7 +43,7 @@ namespace Bannerlord_Social_AI
 
                 _dataSource.EnableDataSource();
 
-                if (_firstTick)
+                if (_firstTick || CBB_ref.customAgents == null)
                 {
                     _dataSource.IsEnabled = true;
                     CBB_ref.customAgents = _dataSource.customAgentsList;
@@ -145,6 +145,24 @@ namespace Bannerlord_Social_AI
                 UpdateRelationWithPlayerChoice(customAgentConversation, "Dating", -1, Agent.Main);
                 CBB_ref.DecreaseDatingWithPlayer = false;
             }
+            else if (CBB_ref.IncreaseRelationshipWithPlayer)
+            {
+                CustomAgent AgentPlayer = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
+                SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
+
+                string localstring = "";
+                if (belief == null)
+                {
+                    localstring = "Friends";
+                }
+                else
+                {
+                    localstring = belief.relationship;
+                }
+
+                UpdateRelationWithPlayerChoice(customAgentConversation, localstring, -1, Agent.Main);
+                CBB_ref.DecreaseDatingWithPlayer = false;
+            }
             else if (CBB_ref.giveCourage)
             {
                 GiveCourageToCharacter(customAgentConversation);
@@ -206,6 +224,7 @@ namespace Bannerlord_Social_AI
             CBB_ref.SpecialBool = false;
             CBB_ref.StartDating = false;
             CBB_ref.DoBreak = false;
+            CBB_ref.IncreaseRelationshipWithPlayer = false;
         }
     }
 }
