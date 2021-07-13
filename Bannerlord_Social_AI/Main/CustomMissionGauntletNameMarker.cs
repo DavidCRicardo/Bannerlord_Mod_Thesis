@@ -37,7 +37,7 @@ namespace Bannerlord_Social_AI
         {
             base.OnMissionScreenTick(dt);
 
-            if (!MBCommon.IsPaused)
+            if (!MBCommon.IsPaused && CampaignMission.Current != null)
             {
                 _dataSource.Tick(dt);
 
@@ -150,17 +150,17 @@ namespace Bannerlord_Social_AI
                 CustomAgent AgentPlayer = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
                 SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
 
-                string localstring = "";
+                string localRelation = "";
                 if (belief == null)
                 {
-                    localstring = "Friends";
+                    localRelation = "Friends";
                 }
                 else
                 {
-                    localstring = belief.relationship;
+                    localRelation = belief.relationship;
                 }
 
-                UpdateRelationWithPlayerChoice(customAgentConversation, localstring, -1, Agent.Main);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1, Agent.Main);
                 CBB_ref.DecreaseDatingWithPlayer = false;
             }
             else if (CBB_ref.giveCourage)

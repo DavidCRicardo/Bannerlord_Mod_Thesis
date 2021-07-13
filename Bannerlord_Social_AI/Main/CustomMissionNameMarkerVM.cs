@@ -45,73 +45,104 @@ namespace Bannerlord_Social_AI
 
         public void Tick(float dt)
         {
-            if (CampaignMission.Current != null)
+            MissionMode missionMode = CampaignMission.Current.Mode;
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena" /*missionMode != MissionMode.StartUp*/ && missionMode != MissionMode.Battle)
             {
-                MissionMode missionMode = CampaignMission.Current.Mode;
-                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena" /*missionMode != MissionMode.StartUp*/ && missionMode != MissionMode.Battle)
+                if (this._firstTick)
+                {
+                    rnd = new Random();
+
+                    PreInitializeOnSettlement();
+
+                    InitializeOnSettlement(giveTraitsToNPCs);
+
+                    this._firstTick = false;
+                }
+
+                if (CharacterObject.OneToOneConversationCharacter == null)
+                {
+                    foreach (CustomAgent customAgent in customAgentsList)
+                    {
+                        CustomAgentsNearPlayer(customAgent);
+
+                        CustomAgentGoingToSE(dt, customAgent);
+
+                        if (SecsDelay(dt, 1))
+                        {
+                            UpdateStatus(customAgent);
+                        }
+                    }
+
+                    DecreaseNPCsCountdown(dt);
+                }
+
+                UpdateTargetScreen();
+            }
+            else
+            {
+                if (missionMode == MissionMode.Battle && PlacesAvailableToSpeak())
                 {
                     if (this._firstTick)
                     {
-                        rnd = new Random();
-
-                        PreInitializeOnSettlement();
-
-                        InitializeOnSettlement(giveTraitsToNPCs);
+                        PreInitializeOnBattle();
 
                         this._firstTick = false;
                     }
 
-                    if (CharacterObject.OneToOneConversationCharacter == null)
+                    if (Mission.Current.Teams.Count != 0 && Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
                     {
-                        foreach (CustomAgent customAgent in customAgentsList)
-                        {
-                            CustomAgentsNearPlayer(customAgent);
+                        InitializeOnBattle(rnd);
 
-                            CustomAgentGoingToSE(dt, customAgent);
-
-                            if (SecsDelay(dt, 1))
-                            {
-                                UpdateStatus(customAgent);
-                            }
-                        }
-
-                        DecreaseNPCsCountdown(dt);
+                        _secondTick = false;
                     }
-
-                    UpdateTargetScreen();
-                }
-                else
-                {                   
-                    if (missionMode == MissionMode.Battle && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena")
+                    else
                     {
-                        if (this._firstTick)
-                        {
-                            PreInitializeOnBattle();
+                        OnBattle();
 
-                            this._firstTick = false;
-                        }
+                        DecreaseCountdownOnBattle(dt);
 
-                        if (Mission.Current.Teams.Count != 0 && Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
-                        {
-                            InitializeOnBattle(rnd);
-
-                            _secondTick = false;
-                        }
-                        else
-                        {
-                            OnBattle();
-
-                            DecreaseCountdownOnBattle(dt);
-
-                            UpdateTargetScreen();
-                        }
+                        UpdateTargetScreen();
                     }
                 }
             }
+
         }
 
         #region On Battle
-          
+        private static bool PlacesAvailableToSpeak()
+        {
+            if (CampaignMission.Current.Location == null)
+            {
+                if (Hero.MainHero.CurrentSettlement == null)
+                {
+                    return true; // battle open world
+                }
+                else
+                {
+                    if (Hero.MainHero.CurrentSettlement.IsHideout())
+                    {
+                        return false; // hideout
+                    }
+                    else if (Hero.MainHero.CurrentSettlement.IsVillage)
+                    {
+                        return true; // raid village
+                    }
+                    else 
+                    { 
+                        return false; // arena - tournament
+                    }
+                }
+            }
+            else
+            {
+                if (CampaignMission.Current.Location.StringId != "arena")
+                {
+                    return false; // arena - practice fight
+                }
+                else { return false; }
+            }
+        }
+
         private void DecreaseCountdownOnBattle(float dt)
         {
             foreach (CustomAgent customAgent in customAgentsList)
@@ -139,7 +170,7 @@ namespace Bannerlord_Social_AI
 
             CheckDeadAgents(ref teamOpponentCount, ref teamPlayerCount, ref auxCountPlayerTeam);
 
-            int DifferencePlayerTroops = teamOpponentCount - teamPlayerCount;
+            int DifferencePlayerTroops =  teamPlayerCount - teamOpponentCount;
 
             if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
             {
@@ -170,25 +201,25 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void CheckDeadAgents(ref int teamOpponentCount, ref int teamPlayerCount, ref int auxCountPlayerTeam)
+        private void CheckDeadAgents(ref int teamOpponentCount, ref int teamPlayerCount, ref int auxCountOpponentTeam)
         {
             foreach (Team team in Mission.Current.Teams)
             {
                 if (!team.IsPlayerTeam)
                 {
-                    teamPlayerCount = CheckAgentWhoIsDead(team);
-                    auxCountPlayerTeam = team.TeamAgents.Count;
+                    teamOpponentCount = CheckAgentWhoIsDead(team);
+                    auxCountOpponentTeam = team.TeamAgents.Count;
                 }
                 else
                 {
-                    teamOpponentCount = CheckAgentWhoIsDead(team, auxCountPlayerTeam);
+                    teamPlayerCount = CheckAgentWhoIsDead(team, auxCountOpponentTeam);
                 }
             }
         }
-
+        
         private int CheckAgentWhoIsDead(Team team, int auxInt = 0)
         {
-            int teamPlayerCount;
+            int teamCountActiveAgents;
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
                 Agent item = team.TeamAgents[i];
@@ -197,8 +228,8 @@ namespace Bannerlord_Social_AI
                     customAgentsList[auxInt + i].IsDead = true;
                 }
             }
-            teamPlayerCount = (team.ActiveAgents.Count - team.TeamAgents.Count) * 100;
-            return teamPlayerCount;
+            //teamCountActiveAgents = (team.TeamAgents.Count - ;
+            return team.ActiveAgents.Count;
         }
 
         private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, int differenceTroops, Random rnd)
@@ -700,7 +731,7 @@ namespace Bannerlord_Social_AI
                 mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
                 mostWantedSEList.Add(sE);
             }
-            else 
+            else
             {
                 customAgentTemp.Countdown = rnd.Next(1, 3);
             }
