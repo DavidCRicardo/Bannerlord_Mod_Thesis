@@ -160,12 +160,13 @@ namespace Bannerlord_Social_AI
             CustomAgentInitiator.AddToMemory(newMemory);
             CustomAgentReceiver.AddToMemory(newMemory);
 
-            ResetCustomAgentVariables(CustomAgentInitiator);
             if (!ReceptorIsPlayer)
             {
-                ResetCustomAgentVariables(CustomAgentReceiver);
                 UpdateBeliefsAndStatus();
+                ResetCustomAgentVariables(CustomAgentReceiver);
             }
+            ResetCustomAgentVariables(CustomAgentInitiator);
+
         }
 
         private void UpdateBeliefsAndStatus()
@@ -256,9 +257,13 @@ namespace Bannerlord_Social_AI
 
                     //Decreases relation 
                     CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
-                    SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
 
-                    CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
+                    if (CAtoDecrease != null)
+                    {
+                        SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
+
+                        CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
+                    }  
                 }
             }
             NPCsNearFriendSocialMove();
@@ -315,6 +320,7 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 1, 0);
             }
         }
+
 
         private void NPCsNearFriendSocialMove()
         {
@@ -530,6 +536,8 @@ namespace Bannerlord_Social_AI
             customAgent.Busy = false;
             customAgent.EnoughRest = false;
             customAgent.customAgentTarget = null;
+            customAgent.thirdAgent = "";
+            customAgent.thirdAgentId = 0;
             customAgent.MarkerTyperRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
@@ -561,20 +569,5 @@ namespace Bannerlord_Social_AI
         private Agent AgentInitiator { get; set; }
         private Agent AgentReceiver { get; set; }
 
-        private void ComputeOutcome(int _SEVolition, int minThreshold, int maxThreshold)
-        {
-            if (_SEVolition > maxThreshold)
-            {
-                //Accepted
-            }
-            else if (_SEVolition < maxThreshold && _SEVolition > minThreshold)
-            {
-                //Neutral
-            }
-            else if (_SEVolition < minThreshold)
-            {
-                //Rejected
-            }
-        }
     }
 }

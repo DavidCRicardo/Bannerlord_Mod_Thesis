@@ -219,7 +219,6 @@ namespace Bannerlord_Social_AI
         
         private int CheckAgentWhoIsDead(Team team, int auxInt = 0)
         {
-            int teamCountActiveAgents;
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
                 Agent item = team.TeamAgents[i];
@@ -228,7 +227,6 @@ namespace Bannerlord_Social_AI
                     customAgentsList[auxInt + i].IsDead = true;
                 }
             }
-            //teamCountActiveAgents = (team.TeamAgents.Count - ;
             return team.ActiveAgents.Count;
         }
 

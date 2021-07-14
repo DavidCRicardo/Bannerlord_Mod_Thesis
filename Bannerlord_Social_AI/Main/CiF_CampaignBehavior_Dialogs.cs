@@ -3,11 +3,11 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 using System.Linq;
-using SandBox;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace Bannerlord_Social_AI
 {
@@ -46,18 +46,17 @@ namespace Bannerlord_Social_AI
                     inputToken = item.InputToken;
                     outputToken = item.OutputToken;
                     text = item.Text;
-                    //priority = item.Priority;
 
                     dictionaryConditions.TryGetValue(item.Condition, out ConversationSentence.OnConditionDelegate condition);
                     dictionaryConsequences.TryGetValue(item.Consequence, out ConversationSentence.OnConsequenceDelegate consequence);
 
                     if (item.PlayerDialog)
                     {
-                        campaignGameStarter.AddPlayerLine("1", inputToken, outputToken, text, condition, consequence, 100, null, null);
+                        campaignGameStarter.AddPlayerLine("1", inputToken, outputToken, text, condition, consequence, 101, null, null);
                     }
                     else
                     {
-                        campaignGameStarter.AddDialogLine("1", inputToken, outputToken, text, condition, consequence, 100, null);
+                        campaignGameStarter.AddDialogLine("1", inputToken, outputToken, text, condition, consequence, 101, null);
                     }
                 }
             }
@@ -86,14 +85,11 @@ namespace Bannerlord_Social_AI
             dictionaryConsequences = new Dictionary<string, ConversationSentence.OnConsequenceDelegate>()
             {
                 { "None" , null}, 
-                { "Increase_Friendship" , new ConversationSentence.OnConsequenceDelegate(Increase_Friendship) },
-                { "Decrease_Friendship" , new ConversationSentence.OnConsequenceDelegate(Decrease_Friendship) },
                 { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
-                { "Increase_Dating" , new ConversationSentence.OnConsequenceDelegate(Increase_Dating) },
-                { "Decrease_Dating" , new ConversationSentence.OnConsequenceDelegate(Decrease_Dating) },
                 { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) },
                 { "LoseGold" , new ConversationSentence.OnConsequenceDelegate(PlayerLosesSomeGold) },
-                { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) }
+                { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) },
+                { "Decrease_Relation" , new ConversationSentence.OnConsequenceDelegate(Decrease_Relation) }
             };
         }
 
@@ -101,9 +97,10 @@ namespace Bannerlord_Social_AI
         private void AddSocialAgentsDialogs(CampaignGameStarter campaignGameStarter)
         {
             /**/
-            campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant? {GOLD_ICON} ", null, null, 100, null, null);
-            campaignGameStarter.AddDialogLine("1", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
-            campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
+            //campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant? {GOLD_ICON} ", null, null, 100, null, null);
+            //campaignGameStarter.AddDialogLine("1", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
+            //campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
+            
             //campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
             //campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
@@ -119,6 +116,12 @@ namespace Bannerlord_Social_AI
             InitializeDictionaries();
 
             ReadJsonFile(campaignGameStarter);
+        }
+
+        public bool giveCourage { get; set; }
+        private void Increase_Courage()
+        {
+            giveCourage = true;
         }
 
         private bool talking_with_NotNegativeTraits()
@@ -242,39 +245,6 @@ namespace Bannerlord_Social_AI
             else { return false; }
         }
 
-
-        public bool giveCourage { get; set; }
-        public bool IncreaseFriendshipWithPlayer { get; set; }
-        public bool DecreaseFriendshipWithPlayer { get; set; }
-        public bool IncreaseDatingWithPlayer { get; set; }
-        public bool DecreaseDatingWithPlayer { get; set; }
-        public bool IncreaseRelationshipWithPlayer { get; set; }
-
-        private void Increase_Courage()
-        {
-            giveCourage = true;
-        }
-
-        private void Increase_Friendship()
-        {
-            IncreaseFriendshipWithPlayer = true;
-        }
-
-        private void Decrease_Friendship()
-        {
-            DecreaseFriendshipWithPlayer = true;
-        }
-
-        private void Increase_Dating()
-        {
-            IncreaseDatingWithPlayer = true;
-        }
-
-        private void Decrease_Dating()
-        {
-            DecreaseDatingWithPlayer = true;
-        }
-
         /* Start Dating aka AskOut */
         public bool StartDating { get; set; }
         private void Start_Dating()
@@ -289,16 +259,24 @@ namespace Bannerlord_Social_AI
             DoBreak = true;
         }
 
+        public bool IncreaseRelationshipWithPlayer { get; set; }
         private void Increase_Relation()
         {
             IncreaseRelationshipWithPlayer = true;
         }
 
+        public bool DecreaseRelationshipWithPlayer { get; set; }
+        private void Decrease_Relation()
+        {
+            DecreaseRelationshipWithPlayer = true;
+        }
+
         private void PlayerLosesSomeGold()
         {
             Hero.MainHero.ChangeHeroGold(-5);
+            TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);
             GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
-            InformationManager.DisplayMessage(new InformationMessage(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name));
+            InformationManager.DisplayMessage(new InformationMessage(text.ToString()));
         }
 
         public List<CustomAgent> customAgents;
@@ -522,14 +500,6 @@ namespace Bannerlord_Social_AI
             Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
             CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
             PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
-        }
-
-        private bool Conversation_with_lord()
-        {
-            Hero.MainHero.ChangeHeroGold(500000);                     // Increase Gold to the Player
-            SetPersonalRelation(Hero.OneToOneConversationHero, 1000); // Increase NPC Personal Relation
-            Hero.MainHero.GetRelation(Hero.OneToOneConversationHero);
-            return true;
         }
         
         public void SetPersonalRelation(Hero otherHero, int value)

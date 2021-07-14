@@ -104,13 +104,6 @@ namespace Bannerlord_Social_AI
                 CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
                 _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
             }
-
-            //if (_dataSource != null && CBB_ref.AskWhatsGoinOn)
-            //{
-            //    Random rnd = new Random();
-            //    CustomAgent custom = _dataSource.customAgentsList[rnd.Next(_dataSource.customAgentsList.Count)];
-            //    custom.selfAgent.OnUse(Agent.Main);
-            //}
         }
         
         private void CheckIfThereIsAnyChange(CustomAgent customAgentConversation)
@@ -119,57 +112,53 @@ namespace Bannerlord_Social_AI
             {
                 Start_Dating(customAgentConversation);
                 CBB_ref.StartDating = false;
+                InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is now Dating with " + customAgentConversation.Name));
             }
             else if (CBB_ref.DoBreak)
             {
                 DoBreak(customAgentConversation);
                 CBB_ref.DoBreak = false;
-            }
-            else if (CBB_ref.IncreaseFriendshipWithPlayer)
-            {
-                UpdateRelationWithPlayerChoice(customAgentConversation, "Friends", 1, Agent.Main);
-                CBB_ref.IncreaseFriendshipWithPlayer = false;
-            }
-            else if (CBB_ref.DecreaseFriendshipWithPlayer)
-            {
-                UpdateRelationWithPlayerChoice(customAgentConversation, "Friends", -1, Agent.Main);
-                CBB_ref.DecreaseFriendshipWithPlayer = false;
-            }
-            else if (CBB_ref.IncreaseDatingWithPlayer)
-            {
-                UpdateRelationWithPlayerChoice(customAgentConversation, "Dating", 1, Agent.Main);
-                CBB_ref.IncreaseDatingWithPlayer = false;
-            }
-            else if (CBB_ref.DecreaseDatingWithPlayer)
-            {
-                UpdateRelationWithPlayerChoice(customAgentConversation, "Dating", -1, Agent.Main);
-                CBB_ref.DecreaseDatingWithPlayer = false;
+
+                InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
+
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer)
             {
-                CustomAgent AgentPlayer = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
-                SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
+                string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
-                string localRelation = "";
-                if (belief == null)
-                {
-                    localRelation = "Friends";
-                }
-                else
-                {
-                    localRelation = belief.relationship;
-                }
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1, Agent.Main);
+                CBB_ref.IncreaseRelationshipWithPlayer = false;
+            }
+            else if (CBB_ref.DecreaseRelationshipWithPlayer)
+            {
+                string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
                 UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1, Agent.Main);
-                CBB_ref.DecreaseDatingWithPlayer = false;
+                CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.giveCourage)
             {
                 GiveCourageToCharacter(customAgentConversation);
                 CBB_ref.giveCourage = false;
             }
+        }
 
+        private string GetRelationshipBetweenPlayerAndNPC()
+        {
+            CustomAgent AgentPlayer = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
+            SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
 
+            string localRelation = "";
+            if (belief == null)
+            {
+                localRelation = "Friends";
+            }
+            else
+            {
+                localRelation = belief.relationship;
+            }
+
+            return localRelation;
         }
 
         private void DoBreak(CustomAgent customAgentConversation)
@@ -225,6 +214,7 @@ namespace Bannerlord_Social_AI
             CBB_ref.StartDating = false;
             CBB_ref.DoBreak = false;
             CBB_ref.IncreaseRelationshipWithPlayer = false;
+            CBB_ref.DecreaseRelationshipWithPlayer = false;
         }
     }
 }
