@@ -130,14 +130,14 @@ namespace Bannerlord_Social_AI
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
             }
-            else if (CBB_ref.IncreaseRelationshipWithPlayer)
+            else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
                 UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1);
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
-            else if (CBB_ref.DecreaseRelationshipWithPlayer)
+            else if (CBB_ref.DecreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
