@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.MountAndBlade;
 
 namespace Bannerlord_Social_AI
 {
@@ -24,39 +26,39 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Positive:
                     switch (RelationName)
                     {
-                        case "Compliment": return RunRules(Dictionary, false, true, false, false, false, false, true);
-                        case "GiveGift": return RunRules(Dictionary, true, true, false, false, false, false, true);
+                        case "Compliment": return RunRules(Dictionary, false, true, false, false, false, false, true, false);
+                        case "GiveGift": return RunRules(Dictionary, true, true, false, false, false, false, true, true);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Negative:
                     switch (RelationName)
                     {
-                        case "Jealous": return RunRules(Dictionary, false, true, false, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, true, false, false);
+                        case "Jealous": return RunRules(Dictionary, false, true, false, false, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, true, false, false, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, false, true, false, true, false, false, true);
-                        case "Flirt": return RunRules(Dictionary, false, false, true, false, false, false, true);
+                        case "AskOut": return RunRules(Dictionary, false, true, false, true, false, false, true, false);
+                        case "Flirt": return RunRules(Dictionary, false, false, true, false, false, false, true, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
                     switch (RelationName)
                     {
-                        case "Bully": return RunRules(Dictionary, false, false, true, false, false, false, false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false);
+                        case "Bully": return RunRules(Dictionary, false, false, true, false, false, false, false, false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, false);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
-                        case "Break": return RunRules(Dictionary, false, false, true, false, false, true, false);
+                        case "Break": return RunRules(Dictionary, false, false, true, false, false, true, false, false);
                         default: return 0;
                     }
 
@@ -68,7 +70,7 @@ namespace Bannerlord_Social_AI
 
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool ItemBool,
              bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
-             bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE)
+             bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE, bool OfferGiftToPlayerBool)
         {
             int sum = 0;
             sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
@@ -113,6 +115,11 @@ namespace Bannerlord_Social_AI
 
             sum += CheckMemoryForPreviousSEs(RelationName, sum, Initiator, Receiver);
 
+            if (OfferGiftToPlayerBool)
+            {
+                sum += CompanionsOfferGiftToPlayer(sum);
+            }
+
             if (ItemBool)
             {
                 sum += CheckItem(sum, InitialValue);
@@ -141,6 +148,20 @@ namespace Bannerlord_Social_AI
             return sum;
         }
 
+        private int CompanionsOfferGiftToPlayer(int sum)
+        {
+            if (Initiator.selfAgent.IsHero)
+            {
+                Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
+                if (hero != null && hero.IsPlayerCompanion && Receiver.selfAgent == Agent.Main && Initiator.ItemList.Count > 0)
+                {
+                    sum += 2;
+                }
+                else { sum -= 100; }
+            }
+            
+            return sum;
+        }
 
         private int CheckCulturesRelationships(CustomAgent agent, CustomAgent otherAgent, bool IsPositiveOrRomanticSE)
         {
@@ -492,7 +513,6 @@ namespace Bannerlord_Social_AI
             }
         }
 
-
         private int CheckMemoryForPreviousSEs(string SEName, int localSum, CustomAgent c1, CustomAgent c2)
         {
             MemorySE memory = GetMemory("Break", c1, c2);
@@ -530,7 +550,6 @@ namespace Bannerlord_Social_AI
             return localSum;
         }
 
-
         private MemorySE GetMemory(string _SEName, CustomAgent c1, CustomAgent c2)
         {
             MemorySE _memory = c1.MemorySEs.Find(
@@ -556,6 +575,5 @@ namespace Bannerlord_Social_AI
                             );
             return _howManyTimes;
         }
-
     }
 }

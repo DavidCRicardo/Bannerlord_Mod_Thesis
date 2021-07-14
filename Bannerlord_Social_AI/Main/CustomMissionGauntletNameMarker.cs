@@ -50,7 +50,7 @@ namespace Bannerlord_Social_AI
                     _firstTick = false;
                 }
 
-                CheckIntentionFromNPCToPlayer(dt);
+                CheckIntentionFromNPCToPlayer();
 
                 if (_dataSource.GetCanResetCBB_refVariables())
                 {
@@ -69,15 +69,23 @@ namespace Bannerlord_Social_AI
             _dataSource = null;
         }
 
-        private void CheckIntentionFromNPCToPlayer(float dt)
+        private void CheckIntentionFromNPCToPlayer()
         {
             if (_dataSource.intentionRefToCBB != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.customCharacterReftoCampaignBehaviorBase != null)
             {
+                // check social move from character (offergift e.g) 
                 CBB_ref.characterRef = _dataSource.customCharacterReftoCampaignBehaviorBase;
                 switch (_dataSource.intentionRefToCBB)
                 {
                     case SocialExchangeSE.IntentionEnum.Positive:
-                        CBB_ref.FriendlyBool = true;
+                        if (CBB_ref.characterRef.SocialMove == "GiveGift")
+                        {
+                            CBB_ref.OfferGift = true;
+                        }
+                        else
+                        {
+                            CBB_ref.FriendlyBool = true;
+                        }
                         break;
                     case SocialExchangeSE.IntentionEnum.Romantic:
                         CBB_ref.RomanticBool = true;
@@ -126,14 +134,14 @@ namespace Bannerlord_Social_AI
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1, Agent.Main);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1);
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.DecreaseRelationshipWithPlayer)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1, Agent.Main);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1);
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.giveCourage)
@@ -177,7 +185,7 @@ namespace Bannerlord_Social_AI
             _dataSource.SaveToJson();
         }
 
-        private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value , Agent agent = null)
+        private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value)
         {
             SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
             se.PlayerConversationWithNPC(relation, value);
@@ -207,6 +215,7 @@ namespace Bannerlord_Social_AI
         private void ResetCBB_refVariables()
         {
             CBB_ref.FriendlyBool = false;
+            CBB_ref.OfferGift = false;
             CBB_ref.RomanticBool = false;
             CBB_ref.UnFriendlyBool = false;
             CBB_ref.HostileBool = false;

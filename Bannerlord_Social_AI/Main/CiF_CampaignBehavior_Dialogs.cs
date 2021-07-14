@@ -75,6 +75,7 @@ namespace Bannerlord_Social_AI
                 { "CanOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
 
                 { "Friendly_NPC" , new ConversationSentence.OnConditionDelegate(FriendlyNPC) },
+                { "OfferGift_NPC" , new ConversationSentence.OnConditionDelegate(OfferGiftNPC) },
                 { "UnFriendly_NPC" , new ConversationSentence.OnConditionDelegate(UnFriendlyNPC) },
                 { "Romantic_NPC" , new ConversationSentence.OnConditionDelegate(RomanticNPC) },
                 { "Hostile_NPC" , new ConversationSentence.OnConditionDelegate(HostileNPC) },
@@ -180,6 +181,17 @@ namespace Bannerlord_Social_AI
             if (customAgentConversation != null)
             {
                 characterRef = null;
+                return true;
+            }
+            else { return false; }
+        }
+
+        public bool OfferGift { get; set; }
+        private bool OfferGiftNPC()
+        {
+            if (OfferGift && ThisAgentWillInteractWithPlayer())
+            {
+                OfferGift = false;
                 return true;
             }
             else { return false; }
