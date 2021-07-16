@@ -72,7 +72,8 @@ namespace Bannerlord_Social_AI
                 { "CanBreak" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
                 { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition) },
                 { "NPCReactsToAskOut" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
-                { "CanOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
+                { "PlayerOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
+                { "CompanionOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfCompanionCanOfferGiftToPlayer_condition) },
 
                 { "Friendly_NPC" , new ConversationSentence.OnConditionDelegate(FriendlyNPC) },
                 { "OfferGift_NPC" , new ConversationSentence.OnConditionDelegate(OfferGiftNPC) },
@@ -107,7 +108,6 @@ namespace Bannerlord_Social_AI
             //campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
             //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
-
         }
 
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -119,6 +119,7 @@ namespace Bannerlord_Social_AI
             ReadJsonFile(campaignGameStarter);
         }
 
+        #region old
         public bool giveCourage { get; set; }
         private void Increase_Courage()
         {
@@ -170,6 +171,7 @@ namespace Bannerlord_Social_AI
 
             return false;
         }
+        #endregion 
 
         public CustomAgent customAgentConversation { get; set; }
         public CustomAgent characterRef { get; set; }
@@ -285,10 +287,17 @@ namespace Bannerlord_Social_AI
 
         private void PlayerLosesSomeGold()
         {
-            Hero.MainHero.ChangeHeroGold(-5);
+            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+            Item item = customAgentConversation.GetItem();
+            customMainAgent.AddItem(item.itemName, item.quantity);
+            customAgentConversation.RemoveItem(item.itemName, item.quantity);
+
+            /*Hero.MainHero.ChangeHeroGold(-5);
             TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);
             GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
-            InformationManager.DisplayMessage(new InformationMessage(text.ToString()));
+            InformationManager.DisplayMessage(new InformationMessage(text.ToString()));*/
+
+            InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " receives " + item.itemName));
         }
 
         public List<CustomAgent> customAgents;
@@ -491,8 +500,9 @@ namespace Bannerlord_Social_AI
                 if (customAgentConversation != null)
                 {
                     Hero hero = Hero.OneToOneConversationHero;
+                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
 
-                    if (hero != null && hero.IsPlayerCompanion)
+                    if (hero != null && hero.IsPlayerCompanion && !customMainAgent.ItemList.IsEmpty())
                     {
                         return true;
                     }
@@ -505,6 +515,31 @@ namespace Bannerlord_Social_AI
             return false;
         }
 
+        private bool CheckIfCompanionCanOfferGiftToPlayer_condition()
+        {
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            {
+                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                string _currentLocation = CampaignMission.Current.Location.StringId;
+
+                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                if (customAgentConversation != null && customAgentConversation.customAgentTarget != null && customAgentConversation.customAgentTarget.selfAgent == Agent.Main)
+                {
+                    Hero hero = Hero.OneToOneConversationHero;
+
+                    if (hero != null && hero.IsPlayerCompanion)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
         private void Conversation_tavernmaid_test_on_condition()
         {
             //Teleport character near to NPC

@@ -164,13 +164,11 @@ namespace Bannerlord_Social_AI
 
         private void OnBattle()
         {
-            int teamOpponentCount = 0;
-            int teamPlayerCount = 0;
+            float teamOpponentPercentage = 0;
+            float teamPlayerPercentage = 0;
             int auxCountPlayerTeam = 0;
 
-            CheckDeadAgents(ref teamOpponentCount, ref teamPlayerCount, ref auxCountPlayerTeam);
-
-            int DifferencePlayerTroops =  teamPlayerCount - teamOpponentCount;
+            CheckDeadAgentsFromTeams(ref teamOpponentPercentage, ref teamPlayerPercentage, ref auxCountPlayerTeam);
 
             if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
             {
@@ -197,27 +195,27 @@ namespace Bannerlord_Social_AI
                     OtherTeamCurrentSpeakers++;
                 }
 
-                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, DifferencePlayerTroops, rnd);
+                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, teamPlayerPercentage, teamOpponentPercentage, rnd);
             }
         }
 
-        private void CheckDeadAgents(ref int teamOpponentCount, ref int teamPlayerCount, ref int auxCountOpponentTeam)
+        private void CheckDeadAgentsFromTeams(ref float teamOpponentCount, ref float teamPlayerCount, ref int auxCountOpponentTeam)
         {
             foreach (Team team in Mission.Current.Teams)
             {
                 if (!team.IsPlayerTeam)
                 {
-                    teamOpponentCount = CheckAgentWhoIsDead(team);
+                    teamOpponentCount = CheckDeadAgentFromThisTeam(team);
                     auxCountOpponentTeam = team.TeamAgents.Count;
                 }
                 else
                 {
-                    teamPlayerCount = CheckAgentWhoIsDead(team, auxCountOpponentTeam);
+                    teamPlayerCount = CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
                 }
             }
         }
         
-        private int CheckAgentWhoIsDead(Team team, int auxInt = 0)
+        private float CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
         {
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
@@ -227,12 +225,20 @@ namespace Bannerlord_Social_AI
                     customAgentsList[auxInt + i].IsDead = true;
                 }
             }
-            return team.ActiveAgents.Count;
+
+            if (team.TeamAgents.Count == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (team.ActiveAgents.Count / team.TeamAgents.Count);
+            }
         }
 
-        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, int differenceTroops, Random rnd)
+        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, float teamPlayerCount, float teamOpponentCount, Random rnd)
         {
-            if (differenceTroops < 0)
+            if (teamPlayerCount < teamOpponentCount)
             {
                 if (isPlayerTeam)
                 {
@@ -243,7 +249,7 @@ namespace Bannerlord_Social_AI
                     GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
                 }
             }
-            else if (differenceTroops > 0)
+            else if (teamPlayerCount > teamOpponentCount)
             {
                 if (isPlayerTeam)
                 {

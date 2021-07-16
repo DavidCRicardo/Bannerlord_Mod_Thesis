@@ -579,11 +579,11 @@ namespace Bannerlord_Social_AI
             if (status != null)
             {
                 status.intensity += _value;
-                if (status.intensity < 0)
+                if (status.intensity <= 0)
                 {
                     status.intensity = 0;
                 }
-                else if (status.intensity > 3)
+                else if (status.intensity >= 3)
                 {
                     status.intensity = 3;
                 }

@@ -73,8 +73,10 @@ namespace Bannerlord_Social_AI
              bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE, bool OfferGiftToPlayerBool)
         {
             int sum = 0;
-            sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
-            
+            //sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
+
+            sum += IsPositiveOrRomanticSE ? InitialValue : InitialValue * -1;
+
             if (!IsReacting)
             {
                 sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
@@ -119,15 +121,20 @@ namespace Bannerlord_Social_AI
             {
                 sum += CompanionsOfferGiftToPlayer(sum);
             }
-
             if (ItemBool)
             {
-                sum += CheckItem(sum, InitialValue);
+                sum += CheckItem(sum);
             }
+
             if (DecreaseIfDatingBool)
             {
                 sum += DecreaseIfDating(sum);
             }
+            else
+            {
+                sum += 2;
+            }
+
             if (DecreaseIfNotDatingBool)
             {
                 sum += DecreaseIfNotDating(sum);
@@ -238,7 +245,7 @@ namespace Bannerlord_Social_AI
                  ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 100;
+                sum -= 200;
             }
 
             return sum;
@@ -262,13 +269,13 @@ namespace Bannerlord_Social_AI
                         Initiator.thirdAgent = agent;
                         Initiator.thirdAgentId = index;
 
-                        sum += 4;
+                        sum += 10;
                     }
                 }
             }
             else
             {
-                sum -= 100;
+                sum -= 200;
             }
 
             return sum;
@@ -286,7 +293,7 @@ namespace Bannerlord_Social_AI
             return sum;
         }
         
-        private int CheckItem(int sum, int InitialValue)
+        private int CheckItem(int sum)
         {
             if (!Initiator.ItemList.IsEmpty())
             {
@@ -294,7 +301,7 @@ namespace Bannerlord_Social_AI
             }
             else 
             { 
-                sum -= 100; 
+                sum -= 200; 
             }
             return sum;
         }
@@ -319,16 +326,20 @@ namespace Bannerlord_Social_AI
 
             /* SocialTalk Status */
             status = CheckStatusIntensity(customAgent, "SocialTalk");
-            if (status.intensity > 0.5)
+            if (RelationType == SocialExchangeSE.IntentionEnum.Positive /*|| RelationType == SocialExchangeSE.IntentionEnum.Romantic*/)
             {
-                if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+                if (status.intensity > 0.5 && status.intensity < 1)
                 {
                     localSum += 2;
+                }
+                else if (status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum += 5;
                 }
             }
 
             status = CheckStatusIntensity(customAgent, "BullyNeed");
-            if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+            if (/*RelationType == SocialExchangeSE.IntentionEnum.Negative ||*/ RelationType == SocialExchangeSE.IntentionEnum.Hostile)
             {
                 if (status.intensity > 0.5 && status.intensity < 1)
                 {
@@ -337,6 +348,10 @@ namespace Bannerlord_Social_AI
                 else if (status.intensity >= 1 && status.intensity < 1.5)
                 {
                     localSum += 5;
+                }
+                else if (status.intensity >= 1.5 && status.intensity < 3)
+                {
+                    localSum += 10;
                 }
             }
 
@@ -518,33 +533,37 @@ namespace Bannerlord_Social_AI
             MemorySE memory = GetMemory("Break", c1, c2);
             if (memory != null && SEName == "AskOut")
             {
-                localSum -= 100;
+                localSum -= 10;
             }
-
+            else if (memory != null && (SocialExchangeSE.IntentionEnum.Negative == RelationType || SocialExchangeSE.IntentionEnum.Hostile == RelationType))
+            {
+                localSum += 2;
+            }
+            
             memory = GetMemory("GiveGift", c1, c2);
             if (memory != null && SEName == "GiveGift")
             {
-                localSum -= 100;
+                localSum -= 10;
             }
 
             int howMany = CountMemory(SEName, c1, c2);
-            if (howMany == 1)
+            if (howMany > 0)
             {
-                localSum -= 2;
+                localSum -= howMany * 2;
             }
-
+            
             howMany = CountMemory("RomanticSabotage", c1, c2);
-            if (howMany == 1 && SEName == "Bully")
+            if (howMany > 0 && SEName == "Bully")
             {
-                localSum += 100;
+                localSum += howMany * 2;
             }
-            if (howMany == 1 && SEName == "RomanticSabotage")
+            else if (howMany > 0 && SEName == "RomanticSabotage")
             {
-                localSum -= 100;
+                localSum -= howMany * 2;
             }
-            if (howMany == 1 && SEName == "Jealous")
+            else if (howMany > 0 && SEName == "Jealous")
             {
-                localSum += 100;
+                localSum += howMany * 2;
             }
             
             return localSum;
