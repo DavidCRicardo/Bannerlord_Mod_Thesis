@@ -132,7 +132,7 @@ namespace Bannerlord_Social_AI
             }
             else
             {
-                sum += 2;
+                sum += 2; // increase if dating
             }
 
             if (DecreaseIfNotDatingBool)
