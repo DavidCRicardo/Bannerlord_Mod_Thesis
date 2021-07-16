@@ -73,7 +73,10 @@ namespace Bannerlord_Social_AI
                         }
                     }
 
-                    DecreaseNPCsCountdown(dt);
+                    if (OnGoingSEs < MaximumSEs)
+                    {
+                        DecreaseNPCsCountdown(dt);
+                    }
                 }
 
                 UpdateTargetScreen();
@@ -360,6 +363,7 @@ namespace Bannerlord_Social_AI
                 }
             }
 
+
             DesireFormation();
         }
 
@@ -384,7 +388,7 @@ namespace Bannerlord_Social_AI
                 socialTalk = 0.1;
             }
 
-            if (customAgent.TraitList.Exists(t => t.traitName == "UnFriendly" || t.traitName == "Aggressive" || t.traitName == "Hostile"))
+            if (customAgent.TraitList.Exists(t => t.traitName == "UnFriendly"))
             {
                 bullyNeed = rnd.NextDouble();
             }
@@ -410,7 +414,7 @@ namespace Bannerlord_Social_AI
             /* Each NPC will check the environment */
             foreach (var c1 in customAgentsList)
             {
-                if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest)
+                if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs)
                 {
                     continue;
                 }
@@ -541,7 +545,7 @@ namespace Bannerlord_Social_AI
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
-            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "RomanticSabotage", "Bully", "Break" };
+            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "Bully", "RomanticSabotage", "Break" };
             foreach (string SE_Name in Temp_SEs)
             {
                 SocialExchangesList.Add(new SocialExchangeSE(SE_Name, null, null));
@@ -579,8 +583,10 @@ namespace Bannerlord_Social_AI
                     customAgent.EndingSocialExchange = false;
                     customAgent.FinalizeSocialExchange();
                     customAgent.customAgentTarget = null;
-
                 }
+
+                customAgent.EndFollowBehavior();
+                
             }
         }
 

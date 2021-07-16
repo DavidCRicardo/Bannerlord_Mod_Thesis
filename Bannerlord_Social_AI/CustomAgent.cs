@@ -483,7 +483,10 @@ namespace Bannerlord_Social_AI
         #region /* Add / Update Beliefs  / Get Beliefs */ 
         public void AddBelief(SocialNetworkBelief belief)
         {
-            SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.IDs, belief.value));
+            if (belief != null)
+            {
+                SocialNetworkBeliefs.Add(new SocialNetworkBelief(belief.relationship, belief.agents, belief.IDs, belief.value));
+            }
         }
 
         public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)

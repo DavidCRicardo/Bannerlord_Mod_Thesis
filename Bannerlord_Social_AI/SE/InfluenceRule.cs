@@ -26,39 +26,39 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Positive:
                     switch (RelationName)
                     {
-                        case "Compliment": return RunRules(Dictionary, false, true, false, false, false, false, true, false);
-                        case "GiveGift": return RunRules(Dictionary, true, true, false, false, false, false, true, true);
+                        case "Compliment": return RunRules(Dictionary, true, false, true, false, false, false, false,  false);
+                        case "GiveGift": return RunRules(Dictionary, true, true, true, false, false, false, false,  false);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Negative:
                     switch (RelationName)
                     {
-                        case "Jealous": return RunRules(Dictionary, false, true, false, false, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, true, false, false, false);
+                        case "Jealous": return RunRules(Dictionary, false, false, true, false, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, false, true, false, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, false, true, false, true, false, false, true, false);
-                        case "Flirt": return RunRules(Dictionary, false, false, true, false, false, false, true, false);
+                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, false, false, false);
+                        case "Flirt": return RunRules(Dictionary, true, false, false, true, true, false, false,  false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
                     switch (RelationName)
                     {
-                        case "Bully": return RunRules(Dictionary, false, false, true, false, false, false, false, false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, false);
+                        case "Bully": return RunRules(Dictionary, false, false, true, true, false, false, false,  false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, true);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
-                        case "Break": return RunRules(Dictionary, false, false, true, false, false, true, false, false);
+                        case "Break": return RunRules(Dictionary, false, false, false, true, false, false, true, false);
                         default: return 0;
                     }
 
@@ -68,9 +68,9 @@ namespace Bannerlord_Social_AI
         }
 
 
-        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool ItemBool,
-             bool DecreaseIfDatingBool, bool DecreaseIfNotDatingBool, bool MustHaveDifferentGenderBool,
-             bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool IsPositiveOrRomanticSE, bool OfferGiftToPlayerBool)
+        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool IsPositiveOrRomanticSE, bool NeedsItem,
+             bool NeedsToBeFriendsOrNull, bool NeedsToBeDating, bool MustHaveDifferentGenderBool,
+             bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool NeedsTriggerRule)
         {
             int sum = 0;
             //sum += (InitialValue > 0) ? InitialValue : InitialValue * -1;
@@ -117,27 +117,19 @@ namespace Bannerlord_Social_AI
 
             sum += CheckMemoryForPreviousSEs(RelationName, sum, Initiator, Receiver);
 
-            if (OfferGiftToPlayerBool)
+            if (NeedsItem)
             {
-                sum += CompanionsOfferGiftToPlayer(sum);
-            }
-            if (ItemBool)
-            {
-                sum += CheckItem(sum);
+                sum += CheckItemForGiveGiftSE(sum);
             }
 
-            if (DecreaseIfDatingBool)
+            if (NeedsToBeFriendsOrNull)
             {
-                sum += DecreaseIfDating(sum);
-            }
-            else
-            {
-                sum += 2; // increase if dating
+                sum += CheckNeedsToBeFriendsOrNull(sum);
             }
 
-            if (DecreaseIfNotDatingBool)
+            if (NeedsToBeDating)
             {
-                sum += DecreaseIfNotDating(sum);
+                sum += CheckNeedsToBeDating(sum);
             }
             if (MustHaveDifferentGenderBool)
             {
@@ -147,26 +139,123 @@ namespace Bannerlord_Social_AI
             {
                 sum += GetNPCToSabotage(sum);
             }
+
             if (BreakUpRuleBool)
             {
                 sum += BreakUpRule(sum);
             }
 
+            if (NeedsTriggerRule)
+            {
+                sum -= 100;
+            }
+
             return sum;
         }
 
-        private int CompanionsOfferGiftToPlayer(int sum)
+        //Needs Item or it will decrease 100
+        private int CheckItemForGiveGiftSE(int sum)
         {
-            if (Initiator.selfAgent.IsHero)
+            if (!Initiator.ItemList.IsEmpty())
             {
-                Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
-                if (hero != null && hero.IsPlayerCompanion && Receiver.selfAgent == Agent.Main && Initiator.ItemList.Count > 0)
+                if (Initiator.selfAgent.IsHero)
                 {
-                    sum += 2;
+                    Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
+                    if (hero != null && hero.IsPlayerCompanion && Receiver.selfAgent == Agent.Main && Initiator.ItemList.Count > 0)
+                    {
+                        sum += 2; // se for companion, só incrementar se o receiver for o player
+                    }
+                    else { sum -= 100; }
                 }
-                else { sum -= 100; }
+                else { sum += 2; } // se nao for companion pode incrementar pra qualquer 1
             }
-            
+            else { sum -= 100; }
+
+            return sum;
+        }
+
+        // -100 if Dating
+        private int CheckNeedsToBeFriendsOrNull(int sum)
+        {
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating")
+            {
+                sum -= 200;
+            }
+
+            return sum;
+        }
+
+        // it must be dating
+        private int CheckNeedsToBeDating(int sum)
+        {
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+            if (socialNetworkBelief == null || socialNetworkBelief.relationship == "Friends")
+            {
+                sum -= 200;
+            }
+
+            return sum;
+        }
+
+        // different genders
+        private int MustHaveDifferentGender(int sum)
+        {
+            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
+                 ||
+                (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
+            {
+                sum -= 200;
+            }
+
+            return sum;
+        }
+
+        // must have someone to sabotage
+        private int GetNPCToSabotage(int sum)
+        {
+            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
+            if (tempList != null && tempList.Count > 0)
+            {
+                Random rnd = new Random();
+                int index = rnd.Next(tempList.Count);
+
+                List<string> agentsOnRelation = tempList[index].agents;
+
+                if (agentsOnRelation.Contains(Initiator.Name))
+                {
+                    foreach (string agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
+                    {
+                        Initiator.thirdAgent = agent;
+                        Initiator.thirdAgentId = index;
+
+                        sum += 2;
+                    }
+                }
+            }
+
+            if (Initiator.thirdAgent != "" && Receiver.Name != Initiator.thirdAgent && Receiver.Id != Initiator.thirdAgentId)
+            {
+                return sum;
+            }
+            else
+            {
+                sum -= 300;
+                return sum;
+            }       
+        }
+
+        // must have belief = Dating && value < 1
+        private int BreakUpRule(int sum)
+        {
+            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= -1)
+            {
+                sum += 10;
+            }
+            else { sum -= 200; }
+
             return sum;
         }
 
@@ -206,104 +295,8 @@ namespace Bannerlord_Social_AI
                     }
                 }
             }
-            
+
             return localsum;
-        }
-
-        // -100 if Dating
-        private int DecreaseIfDating(int sum)
-        {
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship != "Friends")
-            {
-                sum -= 100;
-            }
-
-            return sum;
-        }
-
-        // it must be dating
-        private int DecreaseIfNotDating(int sum)
-        {
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief == null || socialNetworkBelief.relationship != "Dating")
-            {
-                sum -= 100;
-            }
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Friends" && socialNetworkBelief.value < -2)
-            {
-                sum += 101;
-            }
-            return sum;
-        }
-
-        // different genders
-        private int MustHaveDifferentGender(int sum)
-        {
-            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
-                 ||
-                (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
-            {
-                sum -= 200;
-            }
-
-            return sum;
-        }
-
-        // must have someone to sabotage
-        private int GetNPCToSabotage(int sum)
-        {
-            List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
-            if (tempList != null && tempList.Count > 0)
-            {
-                Random rnd = new Random();
-                int index = rnd.Next(tempList.Count);
-
-                List<string> agentsOnRelation = tempList[index].agents;
-
-                if (agentsOnRelation.Contains(Initiator.Name))
-                {
-                    foreach (string agent in agentsOnRelation.Where(agent => agent != Initiator.Name))
-                    {
-                        Initiator.thirdAgent = agent;
-                        Initiator.thirdAgentId = index;
-
-                        sum += 10;
-                    }
-                }
-            }
-            else
-            {
-                sum -= 200;
-            }
-
-            return sum;
-        }
-
-        // must have belief = Dating && value < 1
-        private int BreakUpRule(int sum)
-        {
-            SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
-            if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= -1)
-            {
-                sum += 100;
-            }
-
-            return sum;
-        }
-        
-        private int CheckItem(int sum)
-        {
-            if (!Initiator.ItemList.IsEmpty())
-            {
-                sum += 2;
-            }
-            else 
-            { 
-                sum -= 200; 
-            }
-            return sum;
         }
 
         private int CheckStatus(CustomAgent customAgent)
@@ -326,7 +319,7 @@ namespace Bannerlord_Social_AI
 
             /* SocialTalk Status */
             status = CheckStatusIntensity(customAgent, "SocialTalk");
-            if (RelationType == SocialExchangeSE.IntentionEnum.Positive /*|| RelationType == SocialExchangeSE.IntentionEnum.Romantic*/)
+            if (RelationType == SocialExchangeSE.IntentionEnum.Positive)
             {
                 if (status.intensity > 0.5 && status.intensity < 1)
                 {
@@ -334,27 +327,13 @@ namespace Bannerlord_Social_AI
                 }
                 else if (status.intensity >= 1 && status.intensity < 1.5)
                 {
-                    localSum += 5;
-                }
-            }
-
-            status = CheckStatusIntensity(customAgent, "BullyNeed");
-            if (/*RelationType == SocialExchangeSE.IntentionEnum.Negative ||*/ RelationType == SocialExchangeSE.IntentionEnum.Hostile)
-            {
-                if (status.intensity > 0.5 && status.intensity < 1)
-                {
-                    localSum = 2;
-                }
-                else if (status.intensity >= 1 && status.intensity < 1.5)
-                {
-                    localSum += 5;
+                    localSum += 4;
                 }
                 else if (status.intensity >= 1.5 && status.intensity < 3)
                 {
-                    localSum += 10;
+                    localSum += 6;
                 }
             }
-
 
             /* Anger Status */
             status = CheckStatusIntensity(customAgent, "Anger");
@@ -389,7 +368,37 @@ namespace Bannerlord_Social_AI
                 }
             }
 
-
+            status = CheckStatusIntensity(customAgent, "BullyNeed");
+            if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+            {
+                if (status.intensity > 0.5 && status.intensity < 1)
+                {
+                    localSum -= 2;
+                }
+                else if (status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum -= 5;
+                }
+                else if (status.intensity >= 1.5)
+                {
+                    localSum -= 10;
+                }
+            }
+            else if (RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+            {
+                if (status.intensity > 0.5 && status.intensity < 1)
+                {
+                    localSum += 2;
+                }
+                else if (status.intensity >= 1 && status.intensity < 1.5)
+                {
+                    localSum += 4;
+                }
+                else if (status.intensity >= 1.5)
+                {
+                    localSum += 6;
+                }
+            }
 
             return localSum;
         }
@@ -447,7 +456,7 @@ namespace Bannerlord_Social_AI
                 if (triggerRule != null)
                 {
                     agentWhoWillCheck.RemoveTriggerRule(triggerRule);
-                    return 100;
+                    return 200;
                 }
             }
 
@@ -533,39 +542,26 @@ namespace Bannerlord_Social_AI
             MemorySE memory = GetMemory("Break", c1, c2);
             if (memory != null && SEName == "AskOut")
             {
-                localSum -= 10;
+                localSum -= 2;
             }
-            else if (memory != null && (SocialExchangeSE.IntentionEnum.Negative == RelationType || SocialExchangeSE.IntentionEnum.Hostile == RelationType))
+            else if (memory != null && (SocialExchangeSE.IntentionEnum.Hostile == RelationType))
             {
                 localSum += 2;
             }
             
-            memory = GetMemory("GiveGift", c1, c2);
-            if (memory != null && SEName == "GiveGift")
-            {
-                localSum -= 10;
-            }
-
-            int howMany = CountMemory(SEName, c1, c2);
-            if (howMany > 0)
-            {
-                localSum -= howMany * 2;
-            }
-            
-            howMany = CountMemory("RomanticSabotage", c1, c2);
+            int howMany = CountMemory("RomanticSabotage", c1, c2);
             if (howMany > 0 && SEName == "Bully")
             {
                 localSum += howMany * 2;
             }
-            else if (howMany > 0 && SEName == "RomanticSabotage")
-            {
-                localSum -= howMany * 2;
-            }
-            else if (howMany > 0 && SEName == "Jealous")
+
+            howMany = CountMemory("Jealous", c1, c2);
+            if (howMany > 0 && SEName == "Bully")
             {
                 localSum += howMany * 2;
             }
-            
+
+
             return localSum;
         }
 

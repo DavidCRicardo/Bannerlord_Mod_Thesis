@@ -39,7 +39,7 @@ namespace Bannerlord_Social_AI
 
             CustomAgentReceiver.Busy = true;
             CustomAgentReceiver.SocialMove = SEName;
-            CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
+            
         }
 
         private void SetIntention(bool OnSocialExchange)
@@ -114,6 +114,9 @@ namespace Bannerlord_Social_AI
 
         public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
         {
+            CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
+            CustomAgentInitiator.selfAgent.SetLookAgent(AgentReceiver);
+
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
                 index++;
@@ -145,7 +148,7 @@ namespace Bannerlord_Social_AI
 
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); ReceptorIsPlayer = false; }
+                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
                 SocialExchangeDoneAndReacted = true;  
             }
         }
@@ -166,7 +169,8 @@ namespace Bannerlord_Social_AI
                 ResetCustomAgentVariables(CustomAgentReceiver);
             }
             ResetCustomAgentVariables(CustomAgentInitiator);
-
+            
+            ReceptorIsPlayer = false;
         }
 
         private void UpdateBeliefsAndStatus()
@@ -221,7 +225,7 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, 0.5, 0, 0);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                //UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
             NPCsNearFriendSocialMove();
         }
@@ -234,14 +238,16 @@ namespace Bannerlord_Social_AI
                 if (SEName == "Jealous")
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
                 }
                 else if (SEName == "FriendSabotage")
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
                 }
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                UpdateThirdNPCsBeliefs("Friends", belief, -1);
+                //UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
             else
             {
@@ -286,6 +292,7 @@ namespace Bannerlord_Social_AI
             }
             else
             {
+                CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentReceiver.Name, CustomAgentReceiver.Id));
                 CustomAgentInitiator.UpdateAllStatus(0, 0, 0, 1, 0, 0);
             }
 
@@ -317,10 +324,10 @@ namespace Bannerlord_Social_AI
             }
             else
             {
+                CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentReceiver.Name, CustomAgentReceiver.Id));
                 CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 1, 0);
             }
         }
-
 
         private void NPCsNearFriendSocialMove()
         {
@@ -329,12 +336,12 @@ namespace Bannerlord_Social_AI
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
-                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Friends" && beliefWithInitiator.value < 0)
+                    if (beliefWithInitiator != null && beliefWithInitiator.value < 0)
                     {
                         customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
                     }
 
-                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Friends" && beliefWithInitiator.value > 0)
+                    if (beliefWithInitiator != null && beliefWithInitiator.value > 0)
                     {
                         customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, 1);
                     } 
@@ -359,7 +366,7 @@ namespace Bannerlord_Social_AI
 
                     //se o receiver é o seu parceiro (dating) de que foi alvo de Romantic SE // vai ter ciumes do Initiator 
                     SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
-                    if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating")
+                    if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating" && beliefWithReceiver.value > 0)
                     {
                         //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
                         TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id);
@@ -481,6 +488,16 @@ namespace Bannerlord_Social_AI
                 memorySlot.agents.Contains(CustomAgentReceiver.Name) && 
                 memorySlot.IDs.Contains(CustomAgentInitiator.Id) && 
                 memorySlot.IDs.Contains(CustomAgentReceiver.Id)
+                );
+
+            if (howManyTimes > 0)
+            {
+                finalVolition -= howManyTimes * multiplyToDecrease;
+            }
+
+            int howManyTimesNPCDidThatSE = CustomAgentInitiator.MemorySEs.Count(
+                memorySlot =>
+                memorySlot.SE_Name == SEName
                 );
 
             if (howManyTimes > 0)
