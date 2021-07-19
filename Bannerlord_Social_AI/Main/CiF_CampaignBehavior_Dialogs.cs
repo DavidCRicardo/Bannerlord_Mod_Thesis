@@ -89,7 +89,7 @@ namespace Bannerlord_Social_AI
                 { "None" , null}, 
                 { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
                 { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) },
-                { "LoseGold" , new ConversationSentence.OnConsequenceDelegate(PlayerLosesSomeGold) },
+                { "PlayerGiveItem" , new ConversationSentence.OnConsequenceDelegate(PlayerGivesItem) },
                 { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) },
                 { "Decrease_Relation" , new ConversationSentence.OnConsequenceDelegate(Decrease_Relation) }
             };
@@ -285,12 +285,12 @@ namespace Bannerlord_Social_AI
             DecreaseRelationshipWithPlayer = true;
         }
 
-        private void PlayerLosesSomeGold()
+        private void PlayerGivesItem()
         {
             CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-            Item item = customAgentConversation.GetItem();
-            customMainAgent.AddItem(item.itemName, item.quantity);
-            customAgentConversation.RemoveItem(item.itemName, item.quantity);
+            Item item = customMainAgent.GetItem();
+            customAgentConversation.AddItem(item.itemName, item.quantity);
+            customMainAgent.RemoveItem(item.itemName, item.quantity);
 
             /*Hero.MainHero.ChangeHeroGold(-5);
             TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);

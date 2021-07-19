@@ -224,6 +224,8 @@ namespace Bannerlord_Social_AI
             CBB_ref.DoBreak = false;
             CBB_ref.IncreaseRelationshipWithPlayer = false;
             CBB_ref.DecreaseRelationshipWithPlayer = false;
+            _dataSource.intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
+            _dataSource.customCharacterReftoCampaignBehaviorBase = null;
         }
     }
 }

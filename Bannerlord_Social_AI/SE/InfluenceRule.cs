@@ -26,39 +26,39 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Positive:
                     switch (RelationName)
                     {
-                        case "Compliment": return RunRules(Dictionary, true, false, true, false, false, false, false,  false);
-                        case "GiveGift": return RunRules(Dictionary, true, true, true, false, false, false, false,  false);
+                        case "Compliment": return RunRules(Dictionary, true, false, true, false, false, false, false, false,  false);
+                        case "GiveGift": return RunRules(Dictionary, true, true, true, false, false, false, false, false,  false);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Negative:
                     switch (RelationName)
                     {
-                        case "Jealous": return RunRules(Dictionary, false, false, true, false, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, false, true, false, false);
+                        case "Jealous": return RunRules(Dictionary, false, false, true, false, false, false, false, false, false);
+                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, false, false, true, false, false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, false, false, false);
-                        case "Flirt": return RunRules(Dictionary, true, false, false, true, true, false, false,  false);
+                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
+                        case "Flirt": return RunRules(Dictionary, true, false, false, true, true, true, false, false,  false);
                         default: return 0;
                     }
 
                 case SocialExchangeSE.IntentionEnum.Hostile:
                     switch (RelationName)
                     {
-                        case "Bully": return RunRules(Dictionary, false, false, true, true, false, false, false,  false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, true);
+                        case "Bully": return RunRules(Dictionary, false, false, true, true, false, false, false, false, false);
+                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, false, true);
                         default: return 0;
                     }
                    
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
-                        case "Break": return RunRules(Dictionary, false, false, false, true, false, false, true, false);
+                        case "Break": return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
                         default: return 0;
                     }
 
@@ -69,7 +69,7 @@ namespace Bannerlord_Social_AI
 
 
         private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool IsPositiveOrRomanticSE, bool NeedsItem,
-             bool NeedsToBeFriendsOrNull, bool NeedsToBeDating, bool MustHaveDifferentGenderBool,
+             bool NeedsToBeFriendsOrNull, bool NeedsToBeDating, bool MustHaveDifferentGenderBool, bool NeedsToBeOlderThan18,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool NeedsTriggerRule)
         {
             int sum = 0;
@@ -117,16 +117,18 @@ namespace Bannerlord_Social_AI
 
             sum += CheckMemoryForPreviousSEs(RelationName, sum, Initiator, Receiver);
 
+            if (NeedsToBeOlderThan18)
+            {
+                sum += CheckInitiatorAge(sum);
+            }
             if (NeedsItem)
             {
                 sum += CheckItemForGiveGiftSE(sum);
             }
-
             if (NeedsToBeFriendsOrNull)
             {
                 sum += CheckNeedsToBeFriendsOrNull(sum);
             }
-
             if (NeedsToBeDating)
             {
                 sum += CheckNeedsToBeDating(sum);
@@ -463,6 +465,16 @@ namespace Bannerlord_Social_AI
             return 0;
         }
 
+        public int CheckInitiatorAge(int sum)
+        {
+            if (Initiator.selfAgent.Age < 18 || Receiver.selfAgent.Age > 18)
+            {
+                sum -= 100;
+            }
+
+            return sum;
+        }
+
         public CustomAgent Initiator { get; }
         public CustomAgent Receiver { get; }
         public bool IsReacting { get; set; }
@@ -561,6 +573,11 @@ namespace Bannerlord_Social_AI
                 localSum += howMany * 2;
             }
 
+            howMany = CountMemory("AskOut", c1, c2);
+            if (howMany > 0 && SEName == "Bully")
+            {
+                localSum += howMany * 2;
+            }
 
             return localSum;
         }

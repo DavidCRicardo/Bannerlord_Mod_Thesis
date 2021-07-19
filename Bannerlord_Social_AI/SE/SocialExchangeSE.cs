@@ -57,11 +57,19 @@ namespace Bannerlord_Social_AI
                     }
                     break;
                 case "FriendSabotage":
-                case "Jealous":
                     Intention = IntentionEnum.Negative;
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.PlayAnimation("act_gossip");
+                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
+                    }
+                    break;
+                case "Jealous":
+                    Intention = IntentionEnum.Negative;
+                    if (OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
@@ -86,7 +94,6 @@ namespace Bannerlord_Social_AI
                     }
                     break;
                 case "Bully":
-
                     Intention = IntentionEnum.Hostile;
                     if (OnSocialExchange)
                     {
@@ -148,7 +155,7 @@ namespace Bannerlord_Social_AI
 
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); }
+                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); ReceptorIsPlayer = false; }
                 SocialExchangeDoneAndReacted = true;  
             }
         }
@@ -227,7 +234,7 @@ namespace Bannerlord_Social_AI
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
                 //UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
-            NPCsNearFriendSocialMove();
+            UpdateNPCsNearSocialMove();
         }
 
         private void ConsequencesFromNegativeIntention()
@@ -272,7 +279,7 @@ namespace Bannerlord_Social_AI
                     }  
                 }
             }
-            NPCsNearFriendSocialMove();
+            UpdateNPCsNearSocialMove();
         }
 
         private void ConsequencesFromRomanticIntention()
@@ -287,7 +294,7 @@ namespace Bannerlord_Social_AI
                 else if (SEName == "Flirt")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                    UpdateThirdNPCsBeliefs("Dating", belief, 1);
+                    //UpdateThirdNPCsBeliefs("Dating", belief, 1);
                 }
             }
             else
@@ -306,14 +313,14 @@ namespace Bannerlord_Social_AI
                 if (SEName == "Compliment")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                    UpdateThirdNPCsBeliefs("Friends", belief, 1);
+                    //UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
                 }
                 else if (SEName == "GiveGift")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                    UpdateThirdNPCsBeliefs("Friends", belief, 1);
+                    //UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
 
@@ -327,9 +334,10 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentReceiver.Name, CustomAgentReceiver.Id));
                 CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 1, 0);
             }
+            UpdateNPCsNearSocialMove();
         }
 
-        private void NPCsNearFriendSocialMove()
+        private void UpdateNPCsNearSocialMove()
         {
             foreach (CustomAgent customAgent in CustomAgentList)
             {
@@ -539,7 +547,7 @@ namespace Bannerlord_Social_AI
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
             UpdateThirdNPCsBeliefs(relation, belief, value);
 
-            NPCsNearFriendSocialMove();
+            UpdateNPCsNearSocialMove();
 
             InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " is " + belief.value));
         }
