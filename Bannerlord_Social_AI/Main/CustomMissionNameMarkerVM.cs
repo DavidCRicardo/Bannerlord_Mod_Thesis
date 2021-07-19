@@ -32,7 +32,7 @@ namespace Bannerlord_Social_AI
         private List<string> StatusList { get; set; }
 
         private string CurrentSettlement { get; set; }
-        private string CurrentLocation { get; set; }
+        public string CurrentLocation { get; set; }
         private bool giveTraitsToNPCs { get; set; }
         private int OnGoingSEs { get; set; }
         private int MaximumSEs { get; set; }
@@ -66,7 +66,7 @@ namespace Bannerlord_Social_AI
                     {
                         CustomAgentsNearPlayer(customAgent);
 
-                        CustomAgentGoingToSE(dt, customAgent);
+                        CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
 
                         if (SecsDelay(dt, 1))
                         {
@@ -325,7 +325,7 @@ namespace Bannerlord_Social_AI
 
         #endregion
 
-        private void CustomAgentGoingToSE(float dt, CustomAgent customAgent)
+        private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
         {
             if (customAgent.Busy && customAgent.IsInitiator)
             {
@@ -335,7 +335,7 @@ namespace Bannerlord_Social_AI
                     intentionRefToCBB = GetIntentionToCBB(customAgent);
                 }
 
-                customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary);
+                customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary, _CurrentLocation);
                 if (customAgent.EndingSocialExchange)
                 {
                     OnGoingSEs--;
@@ -688,14 +688,48 @@ namespace Bannerlord_Social_AI
             RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(json);
 
             Dictionary<string, List<string>> fromIDGetListMessages = new Dictionary<string, List<string>>();
-            Dictionary<string, Dictionary<string, List<string>>> fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
-            Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
+            Dictionary<string, Dictionary<string, List<string>>> fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
+            Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
+            Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>> fromLocationGetSE = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>>();
+            
+            fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
 
-            fromIntentionGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
-
-            foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
+            foreach (DialogsRoot dialogsRoot in myDeserializedClassConversations.SocialExchangeListFromJson)
             {
-                fromCultureGetID = new Dictionary<string, Dictionary<string, List<string>>>();
+                if (dialogsRoot.Location == CurrentLocation) 
+                {
+                    foreach (GlobalDialog globalDialog in dialogsRoot.GlobalDialogs)
+                    {
+                        fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
+                        foreach (Culture culture in globalDialog.Culture)
+                            {
+                                fromIDGetListMessages = new Dictionary<string, List<string>>();
+                                foreach (NPCDialog _npcDialog in culture.NPCDialogs)
+                                {
+                                    if (_npcDialog.id == "start")
+                                    {
+                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
+                                    }
+                                    else if (_npcDialog.id == "accept")
+                                    {
+                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
+                                    }
+                                    else if (_npcDialog.id == "reject")
+                                    {
+                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
+                                    }
+                                }
+                                fromCultureCodeGetID.Add(culture.CultureCode, fromIDGetListMessages);
+                            }
+                        fromSEGetCulture.Add(globalDialog.SocialExchange, fromCultureCodeGetID);
+                    }
+                    break;
+                }
+            }
+
+            /*foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
+            {
+                fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
                 foreach (Culture _culture in _socialExchange.CultureList)
                 {
                     fromIDGetListMessages = new Dictionary<string, List<string>>();
@@ -715,13 +749,13 @@ namespace Bannerlord_Social_AI
                             fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
                         }
                     }
-                    fromCultureGetID.Add(_culture.CultureCode, fromIDGetListMessages);
+                    fromCultureCodeGetID.Add(_culture.CultureCode, fromIDGetListMessages);
 
                 }
-                fromIntentionGetCulture.Add(_socialExchange.SocialExchange, fromCultureGetID);
-            }
+                fromSEGetCulture.Add(_socialExchange.   , fromCultureCodeGetID);
+            }*/
 
-            DialogsDictionary = fromIntentionGetCulture;
+            DialogsDictionary = fromSEGetCulture;
         }
 
         private void CheckIfFileExists()

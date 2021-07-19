@@ -6,7 +6,7 @@ namespace Bannerlord_Social_AI
 {
     class CustomMessageNPC
     {
-        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, int receiverVolition = 0)
+        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation, int receiverVolition = 0)
         {
             SE = se;
             Rnd = rnd;
@@ -14,7 +14,7 @@ namespace Bannerlord_Social_AI
             CurrentCulture = culture;
             ReceiverVolition = receiverVolition;
             DialogsDictionary = _dialogsDictionary;
-            
+            CurrentLocation = _CurrentLocation;
         }
 
         public string[] MainSocialMove()
@@ -61,9 +61,11 @@ namespace Bannerlord_Social_AI
         private bool IsInitiator { get; }
         public int ReceiverVolition { get; }
         private Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; }
+
         public bool IsAccepted { get; private set; }
         public string[] sentences { get; private set; }
         private CultureCode CurrentCulture { get; set; }
+        private string CurrentLocation { get; set; }
 
         private string GetAMessage(SocialExchangeSE SE, CultureCode culture, string id, Random rnd)
         {

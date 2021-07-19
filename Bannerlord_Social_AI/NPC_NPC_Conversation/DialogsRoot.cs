@@ -5,9 +5,9 @@ namespace Bannerlord_Social_AI
 {
     class DialogsRoot 
     {
-        [JsonProperty("SocialExchange")]
-        public string SocialExchange { get; set; }
-        [JsonProperty("Culture")]
-        public List<Culture> CultureList { get; set; }
+        [JsonProperty("Location")]
+        public string Location { get; set; }
+        [JsonProperty("GlobalDialogs")]
+        public List<GlobalDialog> GlobalDialogs { get; set; }
     }
 }

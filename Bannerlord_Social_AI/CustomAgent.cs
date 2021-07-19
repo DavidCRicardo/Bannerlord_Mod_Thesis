@@ -175,7 +175,6 @@ namespace Bannerlord_Social_AI
         public void StartSE(string _SEName, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
-            //this.selfAgent.SetLookAgent(targetAgent);
 
             customAgentTarget.Busy = true;
 
@@ -184,11 +183,11 @@ namespace Bannerlord_Social_AI
 
             Busy = true;
         }
-        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
+        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (NearEnoughToStartConversation)
             {
-                ConversationBetweenCustomAgents(dt, _dialogsDictionary);
+                ConversationBetweenCustomAgents(dt, _dialogsDictionary, _CurrentLocation);
             }
             else
             {
@@ -211,13 +210,13 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
+        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             int seconds = socialExchangeSE.ReduceDelay ? 0 : 3;
 
             if (SecsDelay(dt, seconds) || socialExchangeSE.ReceptorIsPlayer)
             {
-                socialExchangeSE.OnGoingSocialExchange(_dialogsDictionary);
+                socialExchangeSE.OnGoingSocialExchange(_dialogsDictionary, _CurrentLocation);
 
                 if (socialExchangeSE.SocialExchangeDoneAndReacted)
                 {
@@ -247,13 +246,13 @@ namespace Bannerlord_Social_AI
 
         }
 
-        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary)
+        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (_isInitiator)
             {
                 if (FullMessage == null)
                 {
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary, _CurrentLocation);
 
                     FullMessage = messageNPC.MainSocialMove();
                 }
@@ -262,7 +261,7 @@ namespace Bannerlord_Social_AI
             {
                 if (FullMessage == null)
                 {
-                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary, customAgentReceptor.SEVolition);
+                    CustomMessageNPC messageNPC = new CustomMessageNPC(customAgentInitiator.socialExchangeSE, rnd, _isInitiator, this.cultureCode, _dialogsDictionary, _CurrentLocation, customAgentReceptor.SEVolition);
                     FullMessage = messageNPC.MainSocialMove();
 
                     SE_Accepted = messageNPC.IsAccepted;
