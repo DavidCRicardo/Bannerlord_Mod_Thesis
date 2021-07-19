@@ -33,6 +33,7 @@ namespace Bannerlord_Social_AI
         public List<CustomAgent> CustomAgentsList { get; set; } // reference to NPCs around 
 
         public SocialExchangeSE socialExchangeSE { get; set; }
+        public List<mostWantedSE> mostWantedSEList { get; set; }
 
         public List<Trait> TraitList { get; set; }
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }

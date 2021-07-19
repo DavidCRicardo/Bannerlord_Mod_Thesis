@@ -110,8 +110,7 @@ namespace Bannerlord_Social_AI
                         CustomAgentInitiator.PlayAnimation("act_argue_3");
                         CustomAgentReceiver.PlayAnimation("act_argue_4");
                     }
-                    break;
-                
+                    break;          
                 default:
                     Intention = IntentionEnum.Undefined;
                     CustomAgentInitiator.MarkerTyperRef = 0;

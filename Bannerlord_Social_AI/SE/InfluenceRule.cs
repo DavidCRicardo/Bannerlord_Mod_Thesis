@@ -77,9 +77,10 @@ namespace Bannerlord_Social_AI
 
             sum += IsPositiveOrRomanticSE ? InitialValue : InitialValue * -1;
 
+            
             if (!IsReacting)
             {
-                sum = Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
+                sum += Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
                     Func<CustomAgent, int> TraitFunc;
                     if (Dictionary.TryGetValue(t.traitName, out TraitFunc))
@@ -115,36 +116,36 @@ namespace Bannerlord_Social_AI
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
 
-            sum += CheckMemoryForPreviousSEs(RelationName, sum, Initiator, Receiver);
+            sum += CheckMemoryForPreviousSEs(RelationName, Initiator, Receiver);
 
             if (NeedsToBeOlderThan18)
             {
-                sum += CheckInitiatorAge(sum);
+                sum += CheckInitiatorAge();
             }
             if (NeedsItem)
             {
-                sum += CheckItemForGiveGiftSE(sum);
+                sum += CheckItemForGiveGiftSE();
             }
             if (NeedsToBeFriendsOrNull)
             {
-                sum += CheckNeedsToBeFriendsOrNull(sum);
+                sum += CheckNeedsToBeFriendsOrNull();
             }
             if (NeedsToBeDating)
             {
-                sum += CheckNeedsToBeDating(sum);
+                sum += CheckNeedsToBeDating();
             }
             if (MustHaveDifferentGenderBool)
             {
-                sum += MustHaveDifferentGender(sum);
+                sum += MustHaveDifferentGender();
             }
             if (GetNPCToSabotageBool)
             {
-                sum += GetNPCToSabotage(sum);
+                sum += GetNPCToSabotage();
             }
 
             if (BreakUpRuleBool)
             {
-                sum += BreakUpRule(sum);
+                sum += BreakUpRule();
             }
 
             if (NeedsTriggerRule)
@@ -156,8 +157,10 @@ namespace Bannerlord_Social_AI
         }
 
         //Needs Item or it will decrease 100
-        private int CheckItemForGiveGiftSE(int sum)
+        private int CheckItemForGiveGiftSE()
         {
+            int localSum = 0;
+
             if (!Initiator.ItemList.IsEmpty())
             {
                 if (Initiator.selfAgent.IsHero)
@@ -165,59 +168,62 @@ namespace Bannerlord_Social_AI
                     Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
                     if (hero != null && hero.IsPlayerCompanion && Receiver.selfAgent == Agent.Main && Initiator.ItemList.Count > 0)
                     {
-                        sum += 2; // se for companion, só incrementar se o receiver for o player
+                        localSum += 2; // se for companion, só incrementar se o receiver for o player
                     }
-                    else { sum -= 100; }
+                    else { localSum -= 100; }
                 }
-                else { sum += 2; } // se nao for companion pode incrementar pra qualquer 1
+                else { localSum += 2; } // se nao for companion pode incrementar pra qualquer 1
             }
-            else { sum -= 100; }
+            else { localSum -= 100; }
 
-            return sum;
+            return localSum;
         }
 
         // -100 if Dating
-        private int CheckNeedsToBeFriendsOrNull(int sum)
+        private int CheckNeedsToBeFriendsOrNull()
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
 
             if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating")
             {
-                sum -= 200;
+                return -100;
             }
 
-            return sum;
+            return 0;
         }
 
         // it must be dating
-        private int CheckNeedsToBeDating(int sum)
+        private int CheckNeedsToBeDating()
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+
             if (socialNetworkBelief == null || socialNetworkBelief.relationship == "Friends")
             {
-                sum -= 200;
+                return -100;
             }
 
-            return sum;
+            return 0;
         }
 
         // different genders
-        private int MustHaveDifferentGender(int sum)
+        private int MustHaveDifferentGender()
         {
             if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
                  ||
                 (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
             {
-                sum -= 200;
+                return -100;
             }
 
-            return sum;
+            return 0;
         }
 
         // must have someone to sabotage
-        private int GetNPCToSabotage(int sum)
+        private int GetNPCToSabotage()
         {
+            int localSum = 0;
             List<SocialNetworkBelief> tempList = Initiator.SelfGetNegativeRelations();
+
             if (tempList != null && tempList.Count > 0)
             {
                 Random rnd = new Random();
@@ -232,33 +238,35 @@ namespace Bannerlord_Social_AI
                         Initiator.thirdAgent = agent;
                         Initiator.thirdAgentId = index;
 
-                        sum += 2;
+                        localSum += 2;
                     }
                 }
             }
 
             if (Initiator.thirdAgent != "" && Receiver.Name != Initiator.thirdAgent && Receiver.Id != Initiator.thirdAgentId)
             {
-                return sum;
+                return localSum;
             }
             else
             {
-                sum -= 300;
-                return sum;
+                localSum -= 100;
+                return localSum;
             }       
         }
 
         // must have belief = Dating && value < 1
-        private int BreakUpRule(int sum)
+        private int BreakUpRule()
         {
             SocialNetworkBelief socialNetworkBelief = Initiator.SelfGetBeliefWithAgent(Receiver);
+
             if (socialNetworkBelief != null && socialNetworkBelief.relationship == "Dating" && socialNetworkBelief.value <= -1)
             {
-                sum += 10;
+                return 10;
             }
-            else { sum -= 200; }
-
-            return sum;
+            else 
+            { 
+                return -200; 
+            }
         }
 
         private int CheckCulturesRelationships(CustomAgent agent, CustomAgent otherAgent, bool IsPositiveOrRomanticSE)
@@ -465,14 +473,18 @@ namespace Bannerlord_Social_AI
             return 0;
         }
 
-        public int CheckInitiatorAge(int sum)
+        public int CheckInitiatorAge()
         {
-            if (Initiator.selfAgent.Age < 18 || Receiver.selfAgent.Age > 18)
+            if (
+                (Initiator.selfAgent.Age < 18 && Receiver.selfAgent.Age > 18)
+                ||
+                (Initiator.selfAgent.Age > 18 && Receiver.selfAgent.Age < 18)
+                )
             {
-                sum -= 100;
+                return -100;
             }
 
-            return sum;
+            return 0;
         }
 
         public CustomAgent Initiator { get; }
@@ -549,8 +561,9 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private int CheckMemoryForPreviousSEs(string SEName, int localSum, CustomAgent c1, CustomAgent c2)
+        private int CheckMemoryForPreviousSEs(string SEName, CustomAgent c1, CustomAgent c2)
         {
+            int localSum = 0;
             MemorySE memory = GetMemory("Break", c1, c2);
             if (memory != null && SEName == "AskOut")
             {

@@ -129,9 +129,6 @@
     <Reference Include="TaleWorlds.Diamond.AccessProvider.Test">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Diamond.AccessProvider.Test.dll</HintPath>
     </Reference>
-    <Reference Include="TaleWorlds.Diamond.ChatSystem">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Diamond.ChatSystem.dll</HintPath>
-    </Reference>
     <Reference Include="TaleWorlds.Diamond.ChatSystem.Library">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Diamond.ChatSystem.Library.dll</HintPath>
     </Reference>

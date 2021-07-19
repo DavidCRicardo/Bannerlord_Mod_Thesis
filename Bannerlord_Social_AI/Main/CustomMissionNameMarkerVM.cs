@@ -24,6 +24,7 @@ namespace Bannerlord_Social_AI
 
         private List<SocialExchangeSE> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
+        private List<NextSE> nextSEList { get; set; }
         private NextSE nextSE { get; set; }
 
         public List<CustomAgent> customAgentsList { get; set; }
@@ -412,7 +413,7 @@ namespace Bannerlord_Social_AI
             nextSE.ReceiverAgent = null;
 
             /* Each NPC will check the environment */
-            foreach (var c1 in customAgentsList)
+            foreach (CustomAgent c1 in customAgentsList)
             {
                 if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs)
                 {
@@ -424,8 +425,10 @@ namespace Bannerlord_Social_AI
                 auxInitiatorAgent = null;
                 auxReceiverAgent = null;
 
+                nextSEList.Clear();
+
                 /*Calculate Volitions for the NPCs around*/
-                foreach (var c2 in customAgentsList)
+                foreach (CustomAgent c2 in customAgentsList)
                 {
                     if (c1 == c2 || c2.Busy) { continue; } // Player Included because it can be the target for some NPC 
 
@@ -435,24 +438,44 @@ namespace Bannerlord_Social_AI
                         se.CustomAgentInitiator = c1;
                         se.CustomAgentReceiver = c2;
 
-                        if (se.InitiadorVolition() > auxVolition)
+                        int initiatorVolition = se.InitiadorVolition();
+                        if (initiatorVolition == auxVolition)
+                        {
+                            nextSEList.Add(new NextSE(se.SEName, c1, c2, initiatorVolition));
+                        }
+                        
+                        else if (initiatorVolition > auxVolition)
                         {
                             auxVolition = se.CustomAgentInitiator.SEVolition;
                             auxSEName = se.SEName;
                             auxInitiatorAgent = se.CustomAgentInitiator;
                             auxReceiverAgent = se.CustomAgentReceiver;
+
+                            nextSEList.Clear();
+                            nextSEList.Add(new NextSE(auxSEName, c1, c2, initiatorVolition));
                         }
                     }
                 }
 
                 mostWantedSE mostWanted = mostWantedSEList.Find(mostWantedSE => mostWantedSE.customAgent == c1);
-                if (auxVolition > mostWanted.nextSE.Volition)
+                if (nextSEList.Count > 0)
+                {
+                    int index = rnd.Next(nextSEList.Count);
+                    NextSE sE = nextSEList[index];
+
+                    mostWanted.nextSE.SEName = sE.SEName;
+                    mostWanted.nextSE.InitiatorAgent = sE.InitiatorAgent;
+                    mostWanted.nextSE.ReceiverAgent = sE.ReceiverAgent;
+                    mostWanted.nextSE.Volition = sE.Volition;
+                }
+                
+                /*if (auxVolition > mostWanted.nextSE.Volition)
                 {
                     mostWanted.nextSE.SEName = auxSEName;
                     mostWanted.nextSE.InitiatorAgent = auxInitiatorAgent;
                     mostWanted.nextSE.ReceiverAgent = auxReceiverAgent;
                     mostWanted.nextSE.Volition = auxVolition;
-                }
+                }*/
             }
 
             /* Calculate Next SE */
@@ -502,6 +525,7 @@ namespace Bannerlord_Social_AI
 
                     nextSE = new NextSE("", null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
+                    nextSEList = new List<NextSE>();
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {

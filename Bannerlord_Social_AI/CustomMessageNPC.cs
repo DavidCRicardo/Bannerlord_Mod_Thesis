@@ -14,6 +14,7 @@ namespace Bannerlord_Social_AI
             CurrentCulture = culture;
             ReceiverVolition = receiverVolition;
             DialogsDictionary = _dialogsDictionary;
+            
         }
 
         public string[] MainSocialMove()
@@ -78,20 +79,19 @@ namespace Bannerlord_Social_AI
 
                 if (containsCulture)
                 {
-                    bool containsMessageList = b.TryGetValue(id, out List<string> aa);
+                    bool containsMessageList = b.TryGetValue(id, out List<string> SentencesList);
 
                     if (containsMessageList)
                     {
-                        int i = rnd.Next(aa.Count);
-                        string RandomMessage = aa[i];
+                        int i = rnd.Next(SentencesList.Count);
+                        string RandomMessage = SentencesList[i];
                         return RandomMessage;
-                    }
+                    } 
                     else { return "Hi there"; }
-                }
+                } 
                 else { return "Hi there"; }
-            }
+            } 
             else { return "Hi there"; }
-
         }
     }
 }
