@@ -62,6 +62,11 @@ namespace Bannerlord_Social_AI
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
+                    if (OnGoingSEs < MaximumSEs)
+                    {
+                        DecreaseNPCsCountdown(dt);
+                    }
+
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         CustomAgentsNearPlayer(customAgent);
@@ -72,11 +77,6 @@ namespace Bannerlord_Social_AI
                         {
                             UpdateStatus(customAgent);
                         }
-                    }
-
-                    if (OnGoingSEs < MaximumSEs)
-                    {
-                        DecreaseNPCsCountdown(dt);
                     }
                 }
 
@@ -598,7 +598,7 @@ namespace Bannerlord_Social_AI
             CustomAgent customAgent = customAgentsList.Find(c => c.Name == custom.Name && c.Id == custom.Id);
             if (customAgent != null)
             {
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name)
+                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name && customAgent.IdTarget > 0)
                 {
                     intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
                     customCharacterReftoCampaignBehaviorBase = null;
@@ -608,10 +608,10 @@ namespace Bannerlord_Social_AI
                     customAgent.EndingSocialExchange = false;
                     customAgent.FinalizeSocialExchange();
                     customAgent.customAgentTarget = null;
+
                 }
 
                 customAgent.EndFollowBehavior();
-                
             }
         }
 
@@ -872,23 +872,10 @@ namespace Bannerlord_Social_AI
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
                     CustomAgent customMain = customAgentsList.Find(c => c.selfAgent == Agent.Main);
+
                     //Hero.MainHero.GetRelation(otherHero);
                     //Hero.MainHero.GetRelationWithPlayer();
                     //Hero.MainHero.SetPersonalRelation(hero, 1);
-
-                    //foreach (Hero hero in Hero.AllAliveHeroes)
-                    //{
-                    //    if (hero.CurrentSettlement != null && hero.CurrentSettlement.Name.ToString() == CurrentSettlement)
-                    //    {
-                    //        CustomAgent custom = customAgentsList.Find(c => c.Name == hero.Name.ToString());
-                    //        if (custom != null && custom.selfAgent.IsHero && custom.selfAgent != Agent.Main)
-                    //        {
-                    //            SocialNetworkBelief belief = custom.SelfGetBeliefWithAgent(customMain);
-                    //            float RelationWithPlayer = hero.GetRelationWithPlayer();
-                    //            custom.SetBeliefWithNewValue(belief, RelationWithPlayer);
-                    //        }
-                    //    }
-                    //}
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {

@@ -2,6 +2,7 @@
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Missions;
 
@@ -134,20 +135,44 @@ namespace Bannerlord_Social_AI
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
+                RelationInGameChanges(customAgentConversation, 1);
                 UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1);
+
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.DecreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
 
+                RelationInGameChanges(customAgentConversation, -1);
                 UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1);
+                
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.giveCourage)
             {
                 GiveCourageToCharacter(customAgentConversation);
                 CBB_ref.giveCourage = false;
+            }
+        }
+
+        private static void RelationInGameChanges(CustomAgent customAgentConversation, int value)
+        {
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.selfAgent.Character);
+            if (hero != null)
+            {
+                float relation = hero.GetRelationWithPlayer();
+                int newValue = (int)(relation + value);
+                if (value > 0)
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                }
+                else 
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                }
             }
         }
 
