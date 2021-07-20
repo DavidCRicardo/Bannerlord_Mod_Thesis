@@ -6,7 +6,7 @@ namespace Bannerlord_Social_AI
 {
     class CustomMessageNPC
     {
-        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation, int receiverVolition = 0)
+        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation, float receiverVolition = 0)
         {
             SE = se;
             Rnd = rnd;
@@ -59,7 +59,7 @@ namespace Bannerlord_Social_AI
         private string Message { get; set; }
         private Random Rnd { get; set; }
         private bool IsInitiator { get; }
-        public int ReceiverVolition { get; }
+        public float ReceiverVolition { get; }
         private Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; }
 
         public bool IsAccepted { get; private set; }

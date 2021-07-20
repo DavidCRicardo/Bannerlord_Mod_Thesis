@@ -450,7 +450,7 @@ namespace Bannerlord_Social_AI
             SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
             if (belief != null)
             {
-                return belief.value;
+                return (int)belief.value;
             }
 
             return 0;

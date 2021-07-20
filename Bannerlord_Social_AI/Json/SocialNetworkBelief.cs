@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class SocialNetworkBelief
 {
-    public SocialNetworkBelief(string _relationship, List<string> _agents, List<int> _ids, int _value)
+    public SocialNetworkBelief(string _relationship, List<string> _agents, List<int> _ids, float _value)
     {
         relationship = _relationship;
         agents = _agents;
@@ -17,5 +17,5 @@ public class SocialNetworkBelief
     [JsonProperty("ids")]
     public List<int> IDs { get; set; }
     [JsonProperty("value")]
-    public int value { get; set; }
+    public float value { get; set; }
 }

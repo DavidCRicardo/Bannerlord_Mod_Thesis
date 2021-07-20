@@ -477,7 +477,7 @@ namespace Bannerlord_Social_AI
 
                 DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
                 behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
-            } 
+            }
         }
 
         #region /* Add / Update Beliefs  / Get Beliefs */ 
@@ -489,32 +489,48 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, int _value)
+        public void UpdateBeliefWithNewValue(SocialNetworkBelief belief, float _value)
         {
-            SocialNetworkBelief _belief = belief;
+            int minRange = 0;
+            int maxRange = 0;
+
             if (belief != null)
             {
-                _belief = SocialNetworkBeliefs.Find(b => b.relationship == belief.relationship
-               && belief.agents.Contains(b.agents[0]) && belief.agents.Contains(b.agents[1])
-               && belief.IDs.Contains(b.IDs[0]) && belief.IDs.Contains(b.IDs[1]));
-            }
+                SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(b =>
+                b.relationship == belief.relationship &&
+                belief.agents.Contains(b.agents[0]) &&
+                belief.agents.Contains(b.agents[1]) &&
+                belief.IDs.Contains(b.IDs[0]) &&
+                belief.IDs.Contains(b.IDs[1]));
 
-            if (_belief == null)
-            {
-                AddBelief(belief);
-                _belief = belief;
-            }
-            else
-            {
-                _belief.value += _value;
 
-                if (_belief.value >= 5)
+                if (_belief == null)
                 {
-                    _belief.value = 5;
+                    AddBelief(belief);
                 }
-                if (_belief.value <= -5)
+                else
                 {
-                    _belief.value = -5;
+                    _belief.value += _value;
+
+                    if (this.selfAgent.IsHero)
+                    {
+                        minRange = -100;
+                        maxRange = 100;
+                    }
+                    else
+                    {
+                        minRange = -5;
+                        maxRange = 5;
+                    }
+
+                    if (_belief.value >= maxRange)
+                    {
+                        _belief.value = maxRange;
+                    }
+                    if (_belief.value <= minRange)
+                    {
+                        _belief.value = minRange;
+                    }
                 }
             }
         }
@@ -522,9 +538,9 @@ namespace Bannerlord_Social_AI
         public void UpdateBeliefWithNewRelation(string _newRelation, SocialNetworkBelief belief)
         {
             //It will check if have that belief
-            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(
-                b => belief.agents.Contains(b.agents[0])
-                && belief.agents.Contains(b.agents[1]));
+            SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(b =>
+            belief.agents.Contains(b.agents[0]) &&
+            belief.agents.Contains(b.agents[1]));
 
             // If belief not found so add it to prevent error
             if (_belief == null)
@@ -545,12 +561,22 @@ namespace Bannerlord_Social_AI
         //Get Belief from itself with other
         public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
         {
-            return this.SocialNetworkBeliefs.Find(belief
-                => belief.agents.Contains(Name)
-                && belief.agents.Contains(_otherCustomAgent.Name)
-                && belief.IDs.Contains(Id)
-                && belief.IDs.Contains(_otherCustomAgent.Id)
-                );
+            if (SocialNetworkBeliefs == null)
+            {
+                return null;
+            }
+            else
+            {
+
+                SocialNetworkBelief belief = SocialNetworkBeliefs.Find(b
+                    => b.agents.Contains(Name)
+                    && b.agents.Contains(_otherCustomAgent.Name)
+                    && b.IDs.Contains(Id)
+                    && b.IDs.Contains(_otherCustomAgent.Id)
+                    );
+
+                return belief;
+            }
         }
 
         //Get Belief between 2 other NPCs
@@ -573,6 +599,34 @@ namespace Bannerlord_Social_AI
                 );
         }
 
+        public void SetBeliefWithNewValue(SocialNetworkBelief belief, float _value)
+        {
+            if (belief != null)
+            {
+                if (SocialNetworkBeliefs == null)
+                {
+                    AddBelief(belief);
+                }
+                else
+                {
+                    SocialNetworkBelief _belief = SocialNetworkBeliefs.Find(b =>
+                b.relationship == belief.relationship &&
+                belief.agents.Contains(b.agents[0]) &&
+                belief.agents.Contains(b.agents[1]) &&
+                belief.IDs.Contains(b.IDs[0]) &&
+                belief.IDs.Contains(b.IDs[1]));
+
+                    if (_belief == null)
+                    {
+                        AddBelief(belief);
+                    }
+                    else
+                    {
+                        _belief.value = _value;
+                    }
+                }
+            }
+        }
         #endregion
 
         #region /* Update Status */
@@ -627,7 +681,7 @@ namespace Bannerlord_Social_AI
         {
             Item item = ItemList.Find(i => i.itemName == _itemName);
 
-            item.quantity += _quantity;   
+            item.quantity += _quantity;
 
             if (item.quantity <= 0)
             {

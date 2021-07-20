@@ -56,7 +56,7 @@ namespace Bannerlord_Social_AI
                     PreInitializeOnSettlement();
 
                     InitializeOnSettlement(giveTraitsToNPCs);
-
+                    
                     this._firstTick = false;
                 }
 
@@ -542,6 +542,7 @@ namespace Bannerlord_Social_AI
                     }
 
                     LoadAllInfoFromJSON();
+                    SaveAllInfoToJSON();
 
                     InitializeCountdownToAgents(); // Set CustomAgent countdown depending of traits
 
@@ -870,6 +871,25 @@ namespace Bannerlord_Social_AI
             {
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
+                    CustomAgent customMain = customAgentsList.Find(c => c.selfAgent == Agent.Main);
+                    //Hero.MainHero.GetRelation(otherHero);
+                    //Hero.MainHero.GetRelationWithPlayer();
+                    //Hero.MainHero.SetPersonalRelation(hero, 1);
+
+                    //foreach (Hero hero in Hero.AllAliveHeroes)
+                    //{
+                    //    if (hero.CurrentSettlement != null && hero.CurrentSettlement.Name.ToString() == CurrentSettlement)
+                    //    {
+                    //        CustomAgent custom = customAgentsList.Find(c => c.Name == hero.Name.ToString());
+                    //        if (custom != null && custom.selfAgent.IsHero && custom.selfAgent != Agent.Main)
+                    //        {
+                    //            SocialNetworkBelief belief = custom.SelfGetBeliefWithAgent(customMain);
+                    //            float RelationWithPlayer = hero.GetRelationWithPlayer();
+                    //            custom.SetBeliefWithNewValue(belief, RelationWithPlayer);
+                    //        }
+                    //    }
+                    //}
+
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
@@ -879,16 +899,22 @@ namespace Bannerlord_Social_AI
                             customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                             customAgent.ItemList = _customAgentJson.ItemsList;
                             customAgent.MemorySEs = _customAgentJson.MemoriesList;
+
+                            // Set Custom Agent Belief with Relation Value
+                            CheckInGameRelationBetweenHeroes(customMain, customAgent);
                         }
                         else
                         {
                             //Checking if there is any NPC new on the town who hasn't on the 1st time when the file was generated
                             GenerateRandomTraitsForThisNPC(customAgent);
                             RandomItem(customAgent);
-                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList));
+
+                            CheckInGameRelationBetweenHeroes(customMain, customAgent);
+                            _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList, customAgent.SocialNetworkBeliefs));
 
                             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
+                        File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
 
                         foreach (Trait trait in customAgent.TraitList)
                         {
@@ -898,6 +924,38 @@ namespace Bannerlord_Social_AI
                     break;
                 }
             }
+        }
+
+        private static void CheckInGameRelationBetweenHeroes(CustomAgent customMain, CustomAgent customAgent)
+        {
+            int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.selfAgent.Character);
+            if (indexHero >= 0)
+            {
+                Hero hero = Hero.AllAliveHeroes[indexHero];
+                if (hero != null && hero != Hero.MainHero)
+                {
+                    SocialNetworkBelief belief = customAgent.SelfGetBeliefWithAgent(customMain);
+                    belief = IfBeliefIsNullCreateANewOne(customMain, customAgent, belief);
+
+                    float RelationWithPlayer = hero.GetRelationWithPlayer();
+
+                    customAgent.SetBeliefWithNewValue(belief, RelationWithPlayer);
+                    customMain.SetBeliefWithNewValue(belief, RelationWithPlayer);
+                }
+            }    
+        }
+
+        private static SocialNetworkBelief IfBeliefIsNullCreateANewOne(CustomAgent customMain, CustomAgent customAgent, SocialNetworkBelief belief)
+        {
+            if (belief == null)
+            {
+                List<string> agents = new List<string>() { customAgent.Name, customMain.Name };
+                List<int> ids = new List<int>() { customAgent.Id, customMain.Id };
+
+                belief = new SocialNetworkBelief("Friends", agents, ids, 0);
+            }
+
+            return belief;
         }
 
         private void SaveAllInfoToJSON()
