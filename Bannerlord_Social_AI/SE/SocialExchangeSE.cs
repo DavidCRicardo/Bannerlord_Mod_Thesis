@@ -52,8 +52,8 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
-                        CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
+                        CustomAgentInitiator.PlayAnimation("act_argue_soft_1");
+                        CustomAgentReceiver.PlayAnimation("act_argue_soft_2");
                     }
                     break;
                 case "FriendSabotage":
@@ -80,8 +80,9 @@ namespace Bannerlord_Social_AI
                     if (OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_argue_soft_1");
-                        CustomAgentReceiver.PlayAnimation("act_argue_soft_2");
+                        CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
+                        CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
+
                     }
                     break;
                 case "RomanticSabotage":

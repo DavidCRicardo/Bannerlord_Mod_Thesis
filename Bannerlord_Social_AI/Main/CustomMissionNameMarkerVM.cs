@@ -691,71 +691,53 @@ namespace Bannerlord_Social_AI
             Dictionary<string, Dictionary<string, List<string>>> fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
             Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
             Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>> fromLocationGetSE = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>>();
-            
-            fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
 
+            fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
+            
+            ReadAndGetDialogsFrom(myDeserializedClassConversations, ref fromIDGetListMessages, ref fromCultureCodeGetID, fromSEGetCulture, CurrentLocation);
+
+            if (fromSEGetCulture.IsEmpty())
+            {
+                ReadAndGetDialogsFrom(myDeserializedClassConversations, ref fromIDGetListMessages, ref fromCultureCodeGetID, fromSEGetCulture, "tavern");
+            }
+
+            DialogsDictionary = fromSEGetCulture;
+        }
+
+        private void ReadAndGetDialogsFrom(RootMessageJson myDeserializedClassConversations, ref Dictionary<string, List<string>> fromIDGetListMessages, ref Dictionary<string, Dictionary<string, List<string>>> fromCultureCodeGetID, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromSEGetCulture, string _currentLocation)
+        {
             foreach (DialogsRoot dialogsRoot in myDeserializedClassConversations.SocialExchangeListFromJson)
             {
-                if (dialogsRoot.Location == CurrentLocation) 
+                if (dialogsRoot.Location == _currentLocation)
                 {
                     foreach (GlobalDialog globalDialog in dialogsRoot.GlobalDialogs)
                     {
                         fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
                         foreach (Culture culture in globalDialog.Culture)
+                        {
+                            fromIDGetListMessages = new Dictionary<string, List<string>>();
+                            foreach (NPCDialog _npcDialog in culture.NPCDialogs)
                             {
-                                fromIDGetListMessages = new Dictionary<string, List<string>>();
-                                foreach (NPCDialog _npcDialog in culture.NPCDialogs)
+                                if (_npcDialog.id == "start")
                                 {
-                                    if (_npcDialog.id == "start")
-                                    {
-                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                                    }
-                                    else if (_npcDialog.id == "accept")
-                                    {
-                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                                    }
-                                    else if (_npcDialog.id == "reject")
-                                    {
-                                        fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                                    }
+                                    fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
                                 }
-                                fromCultureCodeGetID.Add(culture.CultureCode, fromIDGetListMessages);
+                                else if (_npcDialog.id == "accept")
+                                {
+                                    fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
+                                }
+                                else if (_npcDialog.id == "reject")
+                                {
+                                    fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
+                                }
                             }
+                            fromCultureCodeGetID.Add(culture.CultureCode, fromIDGetListMessages);
+                        }
                         fromSEGetCulture.Add(globalDialog.SocialExchange, fromCultureCodeGetID);
                     }
                     break;
                 }
             }
-
-            /*foreach (DialogsRoot _socialExchange in myDeserializedClassConversations.SocialExchangeListFromJson)
-            {
-                fromCultureCodeGetID = new Dictionary<string, Dictionary<string, List<string>>>();
-                foreach (Culture _culture in _socialExchange.CultureList)
-                {
-                    fromIDGetListMessages = new Dictionary<string, List<string>>();
-
-                    foreach (NPCDialog _npcDialog in _culture.NPCDialogs)
-                    {
-                        if (_npcDialog.id == "start")
-                        {
-                            fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                        }
-                        else if (_npcDialog.id == "accept")
-                        {
-                            fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                        }
-                        else if (_npcDialog.id == "reject")
-                        {
-                            fromIDGetListMessages.Add(_npcDialog.id, _npcDialog.messages);
-                        }
-                    }
-                    fromCultureCodeGetID.Add(_culture.CultureCode, fromIDGetListMessages);
-
-                }
-                fromSEGetCulture.Add(_socialExchange.   , fromCultureCodeGetID);
-            }*/
-
-            DialogsDictionary = fromSEGetCulture;
         }
 
         private void CheckIfFileExists()
