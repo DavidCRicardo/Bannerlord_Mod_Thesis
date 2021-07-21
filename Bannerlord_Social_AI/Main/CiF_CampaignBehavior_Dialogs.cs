@@ -17,6 +17,13 @@ namespace Bannerlord_Social_AI
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnGameLoaded));
+
+            //CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, new Action<Hero>(this.DailyTick));
+            //CampaignEvents.DailyTickPartyEvent.AddNonSerializedListener(this, new Action<MobileParty>(this.DailyTick2));
+            //CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(this.DailyTick3));
+
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(this.DailyTick5));
+            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(this.DailyTick4));
         }
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -27,6 +34,29 @@ namespace Bannerlord_Social_AI
         {
         }
 
+        private void DailyTick(Hero hero)
+        {
+            
+            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick"));
+        }
+
+        private void DailyTick2(MobileParty mobileParty)
+        {
+            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick2"));
+        }
+
+        private void DailyTick3(float value)
+        {
+            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick3"));
+        }
+        private void DailyTick4()
+        {
+            InformationManager.DisplayMessage(new InformationMessage("Hourly Tick"));
+        }
+        private void DailyTick5()
+        {
+            InformationManager.DisplayMessage(new InformationMessage("Daily Tick"));
+        }
         private String inputToken;
         private String outputToken;
         private String text;

@@ -512,16 +512,16 @@ namespace Bannerlord_Social_AI
                 {
                     _belief.value += _value;
 
-                    if (this.selfAgent.IsHero)
-                    {
+                    //if (this.selfAgent.IsHero)
+                    //{
                         minRange = -100;
                         maxRange = 100;
-                    }
-                    else
-                    {
-                        minRange = -5;
-                        maxRange = 5;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    minRange = -5;
+                    //    maxRange = 5;
+                    //}
 
                     if (_belief.value >= maxRange)
                     {
