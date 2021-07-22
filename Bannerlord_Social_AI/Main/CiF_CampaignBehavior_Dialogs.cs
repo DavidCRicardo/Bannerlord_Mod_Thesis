@@ -17,13 +17,7 @@ namespace Bannerlord_Social_AI
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(this.OnGameLoaded));
-
-            //CampaignEvents.DailyTickHeroEvent.AddNonSerializedListener(this, new Action<Hero>(this.DailyTick));
-            //CampaignEvents.DailyTickPartyEvent.AddNonSerializedListener(this, new Action<MobileParty>(this.DailyTick2));
-            //CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(this.DailyTick3));
-
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(this.DailyTick5));
-            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(this.DailyTick4));
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(this.DailyTick));
         }
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
@@ -34,29 +28,14 @@ namespace Bannerlord_Social_AI
         {
         }
 
-        private void DailyTick(Hero hero)
+        private void DailyTick()
         {
-            
             //InformationManager.DisplayMessage(new InformationMessage("Daily Tick"));
+            ResetSocialExchanges = true;
         }
 
-        private void DailyTick2(MobileParty mobileParty)
-        {
-            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick2"));
-        }
+        public bool ResetSocialExchanges = false;
 
-        private void DailyTick3(float value)
-        {
-            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick3"));
-        }
-        private void DailyTick4()
-        {
-            InformationManager.DisplayMessage(new InformationMessage("Hourly Tick"));
-        }
-        private void DailyTick5()
-        {
-            InformationManager.DisplayMessage(new InformationMessage("Daily Tick"));
-        }
         private String inputToken;
         private String outputToken;
         private String text;
@@ -96,9 +75,11 @@ namespace Bannerlord_Social_AI
         {
             dictionaryConditions = new Dictionary<string, ConversationSentence.OnConditionDelegate>() {
                 { "None" , null },
-                { "NotRelationOrFriend" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationWithNPC_condition) },
+                { "NotRelationOrFriendForFriendly" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition) }, // daily countdown
+                { "NotRelationOrFriendForUnFriendly" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition) }, // daily countdown
                 { "CanAskOut" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition) },
-                { "Dating" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingWithNPC_condition) },
+                { "DatingForRomantic" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForRomanticSEWithNPC_condition) },
+                { "DatingForHostile" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForHostileSEWithNPC_condition) },
                 { "CanBreak" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
                 { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition) },
                 { "NPCReactsToAskOut" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
@@ -239,7 +220,7 @@ namespace Bannerlord_Social_AI
 
         public bool SpecialBool { get; set; }
 
-        private bool FriendlyNPC()
+        private bool FriendlyNPC() 
         {
             if (FriendlyBool && ThisAgentWillInteractWithPlayer())
             {
@@ -332,28 +313,72 @@ namespace Bannerlord_Social_AI
 
         public List<CustomAgent> customAgents;
 
-        private bool CheckIfPlayerHasFriendOrNullRelationWithNPC_condition()
+        private bool CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition()
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                if (customAgentConversation != null)
+                if (_currentLocation != "arena")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief == null || belief.relationship == "Friends")
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                    if (customAgentConversation != null)
                     {
-                        return true;
+                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
+                        if (!value)
+                        {
+                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                            if (belief == null || belief.relationship == "Friends")
+                            {
+                                return true;
+                            }
+                        }
                     }
                 }
             }
          
             return false;
+        }
+
+        private bool CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition()
+        {
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            {
+                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                string _currentLocation = CampaignMission.Current.Location.StringId;
+
+                if (_currentLocation != "arena")
+                {
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                    if (customAgentConversation != null)
+                    {
+                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
+                        if (!value)
+                        {
+                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                            if (belief == null || belief.relationship == "Friends")
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool CheckIfIsAvailable(CustomAgent.Intentions intention)
+        {
+            customAgentConversation.keyValuePairsSEs.TryGetValue(intention, out bool value);
+            return value;
         }
 
         private bool CheckIfPlayerCanAskOutWithNPC_condition()
@@ -363,46 +388,86 @@ namespace Bannerlord_Social_AI
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                if (customAgentConversation != null && customAgentConversation.selfAgent.Age > 18)
+                if (_currentLocation != "arena")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (belief != null && belief.relationship == "Dating")
+                    if (customAgentConversation != null && customAgentConversation.selfAgent.Age > 18)
                     {
-                        return false;
-                    }
-                    if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
-                    {
-                        return true;
+                        customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+
+                        if (belief != null && belief.relationship == "Dating")
+                        {
+                            return false;
+                        }
+                        if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
             return false;
         }
 
-        private bool CheckIfPlayerIsDatingWithNPC_condition()
+        private bool CheckIfPlayerIsDatingForRomanticSEWithNPC_condition()
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                if (customAgentConversation != null)
+                if (_currentLocation != "arena")
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Dating")
-                    {
-                        return true;
-                    }
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
+                    if (customAgentConversation != null)
+                    {
+                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
+                        if (!value)
+                        {
+                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                            if (belief != null && belief.relationship == "Dating")
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool CheckIfPlayerIsDatingForHostileSEWithNPC_condition()
+        {
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            {
+                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                string _currentLocation = CampaignMission.Current.Location.StringId;
+
+                if (_currentLocation != "arena")
+                {
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                    if (customAgentConversation != null)
+                    {
+                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
+                        if (!value)
+                        {
+                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                            if (belief != null && belief.relationship == "Dating")
+                            {
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -525,22 +590,25 @@ namespace Bannerlord_Social_AI
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                if (customAgentConversation != null)
+                if (_currentLocation != "arena")
                 {
-                    Hero hero = Hero.OneToOneConversationHero;
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (hero != null && hero.IsPlayerCompanion && !customMainAgent.ItemList.IsEmpty())
+                    if (customAgentConversation != null)
                     {
-                        return true;
+                        Hero hero = Hero.OneToOneConversationHero;
+                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+
+                        if (hero != null && hero.IsPlayerCompanion && !customMainAgent.ItemList.IsEmpty())
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
-                    else 
-                    { 
-                        return false; 
-                    }
-                }
+                }         
             }
             return false;
         }
@@ -552,24 +620,28 @@ namespace Bannerlord_Social_AI
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                if (customAgentConversation != null && customAgentConversation.customAgentTarget != null && customAgentConversation.customAgentTarget.selfAgent == Agent.Main)
+                if (_currentLocation != "arena")
                 {
-                    Hero hero = Hero.OneToOneConversationHero;
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (hero != null && hero.IsPlayerCompanion)
+                    if (customAgentConversation != null && customAgentConversation.customAgentTarget != null && customAgentConversation.customAgentTarget.selfAgent == Agent.Main)
                     {
-                        return true;
+                        Hero hero = Hero.OneToOneConversationHero;
+
+                        if (hero != null && hero.IsPlayerCompanion)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
-                    else
-                    {
-                        return false;
-                    }
-                }
+                }  
             }
             return false;
         }
+        
         private void Conversation_tavernmaid_test_on_condition()
         {
             //Teleport character near to NPC

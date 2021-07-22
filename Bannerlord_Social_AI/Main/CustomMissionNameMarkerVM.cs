@@ -47,7 +47,7 @@ namespace Bannerlord_Social_AI
         public void Tick(float dt)
         {
             MissionMode missionMode = CampaignMission.Current.Mode;
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena" /*missionMode != MissionMode.StartUp*/ && missionMode != MissionMode.Battle)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && CampaignMission.Current.Location.StringId != "arena" && missionMode != MissionMode.Battle)
             {
                 if (this._firstTick)
                 {
@@ -110,6 +110,24 @@ namespace Bannerlord_Social_AI
                 }
             }
 
+        }
+
+        internal void ResetSocialExchangesAllNPCsOptions()
+        {
+            if (customAgentsList == null)
+            {
+                return;
+            }
+            else
+            {
+                foreach (CustomAgent customAgent in customAgentsList)
+                {
+                    if (customAgent.selfAgent.IsHero && customAgent.selfAgent != Agent.Main)
+                    {
+                        customAgent.ResetSocialExchangesOptions();
+                    }
+                }
+            }
         }
 
         #region On Battle
@@ -544,7 +562,8 @@ namespace Bannerlord_Social_AI
                     LoadAllInfoFromJSON();
                     SaveAllInfoToJSON();
 
-                    InitializeCountdownToAgents(); // Set CustomAgent countdown depending of traits
+                    int increaseCountdown = IncreaseCountdownDependingOnHowManyNPCs();
+                    InitializeCountdownToAgents(increaseCountdown); // Set CustomAgent countdown depending of traits
 
                     customAgentsList.ForEach(c => c.CustomAgentsList = customAgentsList);
 
@@ -555,10 +574,21 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void InitializeCountdownToAgents()
+        private int IncreaseCountdownDependingOnHowManyNPCs()
+        {
+            int increaseCountdown = 0;
+            if (customAgentsList.Count < 21) { increaseCountdown = 5; }
+            else if (customAgentsList.Count >= 21 && customAgentsList.Count <= 51) { increaseCountdown = 3; }
+            else { increaseCountdown = 2; }
+
+            return increaseCountdown;
+        }
+
+        private void InitializeCountdownToAgents(int _increaseCountdown)
         {
             foreach (CustomAgent customAgent in customAgentsList)
             {
+                customAgent.Countdown += _increaseCountdown;
                 customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
             }
         }
@@ -872,10 +902,6 @@ namespace Bannerlord_Social_AI
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
                     CustomAgent customMain = customAgentsList.Find(c => c.selfAgent == Agent.Main);
-
-                    //Hero.MainHero.GetRelation(otherHero);
-                    //Hero.MainHero.GetRelationWithPlayer();
-                    //Hero.MainHero.SetPersonalRelation(hero, 1);
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {

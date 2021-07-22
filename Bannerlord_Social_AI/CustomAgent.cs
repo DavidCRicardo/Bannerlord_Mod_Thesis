@@ -59,6 +59,9 @@ namespace Bannerlord_Social_AI
         public bool IsPlayerTeam { get; set; }
         public bool IsDead { get; set; }
 
+        public enum Intentions { Friendly, Unfriendly, Romantic, Hostile }
+        public Dictionary<Intentions, bool> keyValuePairsSEs{ get; set; }
+
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
             this.selfAgent = _agent;
@@ -90,6 +93,26 @@ namespace Bannerlord_Social_AI
 
             this.Busy = false;
             this.EnoughRest = false;
+
+            InitializeSEsOptionsAvailability();
+            ResetSocialExchangesOptions();
+        }
+
+        internal void ResetSocialExchangesOptions()
+        {
+            foreach (Intentions item in Enum.GetValues(typeof(Intentions)))
+            {
+                keyValuePairsSEs[item] = false;
+            }
+        }
+
+        private void InitializeSEsOptionsAvailability()
+        {
+            keyValuePairsSEs = new Dictionary<Intentions, bool>();
+            keyValuePairsSEs.Add(Intentions.Friendly, false);
+            keyValuePairsSEs.Add(Intentions.Unfriendly, false);
+            keyValuePairsSEs.Add(Intentions.Romantic, false);
+            keyValuePairsSEs.Add(Intentions.Hostile, false);
         }
 
         private void SetCultureCodeInfo(Agent _agent)
@@ -183,6 +206,7 @@ namespace Bannerlord_Social_AI
 
             Busy = true;
         }
+        
         public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (NearEnoughToStartConversation)
@@ -512,16 +536,8 @@ namespace Bannerlord_Social_AI
                 {
                     _belief.value += _value;
 
-                    //if (this.selfAgent.IsHero)
-                    //{
-                        minRange = -100;
-                        maxRange = 100;
-                    //}
-                    //else
-                    //{
-                    //    minRange = -5;
-                    //    maxRange = 5;
-                    //}
+                    minRange = -100;
+                    maxRange = 100;
 
                     if (_belief.value >= maxRange)
                     {

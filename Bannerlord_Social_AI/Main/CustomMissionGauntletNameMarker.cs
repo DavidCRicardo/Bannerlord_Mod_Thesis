@@ -58,6 +58,12 @@ namespace Bannerlord_Social_AI
                     ResetCBB_refVariables();
                     _dataSource.SetCanResetCBB_refVariables(false);
                 }
+
+                if (CBB_ref.ResetSocialExchanges)
+                {
+                    _dataSource.ResetSocialExchangesAllNPCsOptions();
+                    CBB_ref.ResetSocialExchanges = false;
+                }
             }
         }
 
@@ -134,19 +140,24 @@ namespace Bannerlord_Social_AI
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
+                int value = 1;
 
-                RelationInGameChanges(customAgentConversation, 1);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, 1);
+                RelationInGameChanges(customAgentConversation, value);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value);
+
+                CheckOptionToLock(customAgentConversation, localRelation, value);
 
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.DecreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
+                int value = -1;
+                RelationInGameChanges(customAgentConversation, value);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value);
 
-                RelationInGameChanges(customAgentConversation, -1);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, -1);
-                
+                CheckOptionToLock(customAgentConversation, localRelation, value);
+
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
             else if (CBB_ref.giveCourage)
@@ -156,6 +167,36 @@ namespace Bannerlord_Social_AI
             }
         }
 
+        private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value)
+        {
+            if (localRelation == "Friends")
+            {
+                if (value > 0)
+                {
+                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
+                }
+                else
+                {
+                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
+                }
+            }
+            else
+            {
+                if (value > 0)
+                {
+                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
+                }
+                else
+                {
+                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
+                }
+            }
+        }
+
+        private void SetOptionAsUnavailable(CustomAgent customAgent, CustomAgent.Intentions intention, bool value)
+        {
+            customAgent.keyValuePairsSEs[intention] = value;
+        }
         private static void RelationInGameChanges(CustomAgent customAgentConversation, int value)
         {
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.selfAgent.Character);

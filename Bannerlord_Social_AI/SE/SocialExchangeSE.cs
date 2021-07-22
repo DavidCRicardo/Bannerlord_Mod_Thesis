@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
 namespace Bannerlord_Social_AI
@@ -339,6 +341,7 @@ namespace Bannerlord_Social_AI
 
         private void UpdateNPCsNearSocialMove()
         {
+            int value = 0;
             foreach (CustomAgent customAgent in CustomAgentList)
             {
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
@@ -346,13 +349,45 @@ namespace Bannerlord_Social_AI
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
                     if (beliefWithInitiator != null && beliefWithInitiator.value < 0)
                     {
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
+                        value = -1;
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                        if (customAgent.selfAgent.IsHero)
+                        {
+                            ChangeHeroRelationInGame(value, customAgent);
+                        }
                     }
 
                     if (beliefWithInitiator != null && beliefWithInitiator.value > 0)
                     {
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, 1);
+                        value = 1;
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                        if (customAgent.selfAgent.IsHero)
+                        {
+                            ChangeHeroRelationInGame(value, customAgent);
+                        }
                     } 
+                }
+            }
+        }
+
+        private static void ChangeHeroRelationInGame(int value, CustomAgent customAgent)
+        {
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.selfAgent.Character);
+            if (hero != null)
+            {
+                float relation = hero.GetRelationWithPlayer();
+                int newValue = (int)(relation + value);
+                if (value > 0)
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                }
+                else
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
             }
         }
