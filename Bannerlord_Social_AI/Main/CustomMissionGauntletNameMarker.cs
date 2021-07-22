@@ -169,15 +169,18 @@ namespace Bannerlord_Social_AI
 
         private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value)
         {
+            string socialExchange = "";
             if (localRelation == "Friends")
             {
                 if (value > 0)
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
+                    socialExchange = "Friendly";
                 }
                 else
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
+                    socialExchange = "UnFriendly";
                 }
             }
             else
@@ -185,12 +188,15 @@ namespace Bannerlord_Social_AI
                 if (value > 0)
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
+                    socialExchange = "Romantic";
                 }
                 else
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
+                    socialExchange = "Hostile";
                 }
             }
+            _dataSource.SaveSavedSEs(customAgentConversation, socialExchange);
         }
 
         private void SetOptionAsUnavailable(CustomAgent customAgent, CustomAgent.Intentions intention, bool value)

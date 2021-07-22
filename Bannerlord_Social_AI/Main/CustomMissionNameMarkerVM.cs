@@ -127,6 +127,9 @@ namespace Bannerlord_Social_AI
                         customAgent.ResetSocialExchangesOptions();
                     }
                 }
+
+                ResetSavedSEs();
+
             }
         }
 
@@ -519,6 +522,7 @@ namespace Bannerlord_Social_AI
         private void PreInitializeOnSettlement()
         {
             CheckIfFileExists();
+            CheckIfSavedSEsFileExists();
 
             CurrentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             CurrentLocation = CampaignMission.Current.Location.StringId;
@@ -773,11 +777,9 @@ namespace Bannerlord_Social_AI
 
         private void CheckIfFileExists()
         {
-            try
-            {
-                File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
-            }
-            catch
+            bool fileExists =  File.Exists(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
+
+            if (!fileExists)
             {
                 FileStream file = File.Create(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
                 file.Close();
@@ -802,6 +804,11 @@ namespace Bannerlord_Social_AI
                 }
             }
 
+            if (customAgentTemp.selfAgent.IsHero)
+            {
+                LoadSavedSEs(customAgentTemp);
+            }
+            
             customAgentsList.Add(customAgentTemp);
             AddAgentTarget(agent, customAgentTemp.Id);
 
@@ -815,6 +822,81 @@ namespace Bannerlord_Social_AI
             else
             {
                 customAgentTemp.Countdown = rnd.Next(1, 3);
+            }
+
+
+        }
+
+        private void ResetSavedSEs()
+        {
+            File.Delete(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
+            CheckIfSavedSEsFileExists();
+        }
+
+        private static void LoadSavedSEs(CustomAgent customAgent)
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
+            SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
+
+            if (myDeserializedClass != null)
+            {
+                if (myDeserializedClass.SEsPerformedList != null)
+                {
+                    List<SEsPerformed> SESavedList = myDeserializedClass.SEsPerformedList.FindAll(c => c.Hero_Name == customAgent.Name);
+                    if (SESavedList != null)
+                    {
+
+                        foreach (SEsPerformed item in SESavedList)
+                        {
+                            var key = CustomAgent.Intentions.Hostile;
+                            switch (item.SocialExchange)
+                            {
+                                case "Friendly":
+                                    key = CustomAgent.Intentions.Friendly;
+                                    break;
+                                case "UnFriendly":
+                                    key = CustomAgent.Intentions.Unfriendly;
+                                    break;
+                                case "Romantic":
+                                    key = CustomAgent.Intentions.Romantic;
+                                    break;
+                                case "Hostile":
+                                    key = CustomAgent.Intentions.Hostile;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            customAgent.keyValuePairsSEs[key] = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        public void SaveSavedSEs(CustomAgent customAgent, string socialExchange)
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
+            SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
+
+            myDeserializedClass.SEsPerformedList.Add(new SEsPerformed(customAgent.Name, socialExchange));
+
+            File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
+        }
+
+        private static void CheckIfSavedSEsFileExists()
+        {
+            bool fileExists = File.Exists(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
+
+            if (!fileExists)
+            {
+                FileStream file = File.Create(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
+                file.Close();
+
+                string text = "{ " + "SEsPerformedList" + ": [] }";
+                SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(text);
+
+                File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
 
@@ -837,15 +919,17 @@ namespace Bannerlord_Social_AI
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
-            if (myDeserializedClass == null)
+            if (myDeserializedClass != null)
             {
-                return false;
+                if (myDeserializedClass.SettlementJson != null)
+                {
+                    if (myDeserializedClass.SettlementJson.Any(s => s.Name == _currentSettlementName && s.LocationWithId == _currentLocationName))
+                    {
+                        return true;
+                    }
+                }
             }
-            if (myDeserializedClass.SettlementJson.Any(s => s.Name == _currentSettlementName && s.LocationWithId == _currentLocationName)) { return true; }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)

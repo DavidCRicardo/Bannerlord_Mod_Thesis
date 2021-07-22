@@ -261,6 +261,8 @@
     <Compile Include="NPC_NPC_Conversation\Culture.cs" />
     <Compile Include="CustomMessageNPC.cs" />
     <Compile Include="Player_NPC_Conversation\PlayerNPCDialog.cs" />
+    <Compile Include="SEsPerformed.cs" />
+    <Compile Include="SEsPerformedToday.cs" />
     <Compile Include="SE\InfluenceRule.cs" />
     <Compile Include="Json\SocialNetworkBelief.cs" />
     <Compile Include="Json\CustomAgentJson.cs" />

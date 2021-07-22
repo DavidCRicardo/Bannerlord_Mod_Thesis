@@ -234,7 +234,6 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, 0.5, 0, 0);
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                //UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
             UpdateNPCsNearSocialMove();
         }
@@ -256,7 +255,6 @@ namespace Bannerlord_Social_AI
                 }
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
-                //UpdateThirdNPCsBeliefs("Friends", belief, -1);
             }
             else
             {
@@ -296,7 +294,6 @@ namespace Bannerlord_Social_AI
                 else if (SEName == "Flirt")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                    //UpdateThirdNPCsBeliefs("Dating", belief, 1);
                 }
             }
             else
@@ -315,14 +312,12 @@ namespace Bannerlord_Social_AI
                 if (SEName == "Compliment")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                    //UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
                 }
                 else if (SEName == "GiveGift")
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-                    //UpdateThirdNPCsBeliefs("Friends", belief, 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
 
