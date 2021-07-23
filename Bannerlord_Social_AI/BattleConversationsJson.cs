@@ -5,6 +5,9 @@ namespace Bannerlord_Social_AI
 {
     class BattleConversationsJson
     {
+        [JsonProperty("RangeConversations")]
+        public int RangeConversations    { get; set; }
+
         [JsonProperty("PlayerTeamLimitSpeakers")]
         public int PlayerTeamLimitSpeakers { get; set; }
 

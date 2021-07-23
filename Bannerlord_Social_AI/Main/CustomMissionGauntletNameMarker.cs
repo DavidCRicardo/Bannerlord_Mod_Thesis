@@ -114,8 +114,17 @@ namespace Bannerlord_Social_AI
         
         private void OnConversationEnd(CharacterObject characterObject)
         {
-            if (_dataSource != null)
+            if (_dataSource != null && _dataSource.customAgentsList != null)
             {
+                foreach (CustomAgent custom in _dataSource.customAgentsList)
+                {
+                    if (custom.selfAgent.Character == characterObject)
+                    {
+                        CBB_ref.customAgentConversation = custom;
+                        break;
+                    }
+                }
+
                 CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
                 _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
             }
@@ -206,7 +215,7 @@ namespace Bannerlord_Social_AI
         private static void RelationInGameChanges(CustomAgent customAgentConversation, int value)
         {
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.selfAgent.Character);
-            if (hero != null)
+            if (hero != null && hero != Hero.MainHero)
             {
                 float relation = hero.GetRelationWithPlayer();
                 int newValue = (int)(relation + value);

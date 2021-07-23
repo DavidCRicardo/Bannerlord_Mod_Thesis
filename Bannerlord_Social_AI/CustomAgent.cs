@@ -61,6 +61,7 @@ namespace Bannerlord_Social_AI
 
         public enum Intentions { Friendly, Unfriendly, Romantic, Hostile }
         public Dictionary<Intentions, bool> keyValuePairsSEs{ get; set; }
+        public bool RunAI { get; internal set; }
 
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
         {
@@ -93,6 +94,15 @@ namespace Bannerlord_Social_AI
 
             this.Busy = false;
             this.EnoughRest = false;
+            
+            if (_agent == Agent.Main)
+            {
+                this.RunAI = true;
+            }
+            else
+            {
+                this.RunAI = false;
+            }
 
             InitializeSEsOptionsAvailability();
             ResetSocialExchangesOptions();
@@ -470,6 +480,7 @@ namespace Bannerlord_Social_AI
             Busy = true;
 
             customAgentTarget = GetCustomAgentByName(_targetName, _id);
+            IdTarget = _id;
 
             StartFollowBehavior(selfAgent, customAgentTarget.selfAgent);
         }
@@ -622,6 +633,7 @@ namespace Bannerlord_Social_AI
                 if (SocialNetworkBeliefs == null)
                 {
                     AddBelief(belief);
+
                 }
                 else
                 {
@@ -635,6 +647,7 @@ namespace Bannerlord_Social_AI
                     if (_belief == null)
                     {
                         AddBelief(belief);
+                        belief.value = _value;
                     }
                     else
                     {

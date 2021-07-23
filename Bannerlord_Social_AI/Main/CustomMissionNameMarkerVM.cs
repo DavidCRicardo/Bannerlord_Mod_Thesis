@@ -42,6 +42,7 @@ namespace Bannerlord_Social_AI
         private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
+        private int CIF_Range = 0;
         private Random rnd { get; set; }
 
         public void Tick(float dt)
@@ -62,20 +63,21 @@ namespace Bannerlord_Social_AI
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
-                    if (OnGoingSEs < MaximumSEs)
-                    {
-                        DecreaseNPCsCountdown(dt);
-                    }
+
+                    DecreaseNPCsCountdown(dt);
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
-                        CustomAgentsNearPlayer(customAgent);
-
-                        CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
-
-                        if (SecsDelay(dt, 1))
+                        if (CustomAgentInsideRangeFromPlayer(customAgent) || customAgent.Busy)
                         {
-                            UpdateStatus(customAgent);
+                            CustomAgentsNearPlayer(customAgent);
+
+                            CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
+
+                            if (SecsDelay(dt, 1))
+                            {
+                                UpdateStatus(customAgent);
+                            }
                         }
                     }
                 }
@@ -203,6 +205,12 @@ namespace Bannerlord_Social_AI
             int index = rnd.Next(customAgentsList.Count);
             CustomAgent customAgent = customAgentsList[index];
 
+
+            if (!CustomAgentInsideRangeFromPlayer(customAgent))
+            {
+                return;
+            }
+                    
             if (customAgent.IsDead)
             {
                 customAgent.Message = "";
@@ -334,6 +342,7 @@ namespace Bannerlord_Social_AI
                 battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
                 OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
                 PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
+                CIF_Range = deserializedBattleClass.RangeConversations;
             }
         }
 
@@ -350,12 +359,6 @@ namespace Bannerlord_Social_AI
         {
             if (customAgent.Busy && customAgent.IsInitiator)
             {
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent == Agent.Main)
-                {
-                    customCharacterReftoCampaignBehaviorBase = customAgent;
-                    intentionRefToCBB = GetIntentionToCBB(customAgent);
-                }
-
                 customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary, _CurrentLocation);
                 if (customAgent.EndingSocialExchange)
                 {
@@ -363,6 +366,12 @@ namespace Bannerlord_Social_AI
                     customAgent.EndingSocialExchange = false;
 
                     SaveAllInfoToJSON();
+                }
+
+                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent == Agent.Main)
+                {
+                    customCharacterReftoCampaignBehaviorBase = customAgent;
+                    intentionRefToCBB = GetIntentionToCBB(customAgent);
                 }
             }
         }
@@ -376,11 +385,14 @@ namespace Bannerlord_Social_AI
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (CustomAgentHasEnoughRest(customAgent))
+                if (customAgent.RunAI)
                 {
-                    if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                    if (CustomAgentHasEnoughRest(customAgent))
                     {
-                        customAgent.EnoughRest = true;
+                        if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                        {
+                            customAgent.EnoughRest = true;
+                        }
                     }
                 }
             }
@@ -436,7 +448,7 @@ namespace Bannerlord_Social_AI
             /* Each NPC will check the environment */
             foreach (CustomAgent c1 in customAgentsList)
             {
-                if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs)
+                if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs || !c1.RunAI)
                 {
                     continue;
                 }
@@ -451,7 +463,7 @@ namespace Bannerlord_Social_AI
                 /*Calculate Volitions for the NPCs around*/
                 foreach (CustomAgent c2 in customAgentsList)
                 {
-                    if (c1 == c2 || c2.Busy) { continue; } // Player Included because it can be the target for some NPC 
+                    if (c1 == c2 || c2.Busy || !c2.RunAI) { continue; } // Player Included because it can be the target for some NPC 
 
                     /* For each Social Exchange */
                     foreach (SocialExchangeSE se in SocialExchangesList)
@@ -489,14 +501,6 @@ namespace Bannerlord_Social_AI
                     mostWanted.nextSE.ReceiverAgent = sE.ReceiverAgent;
                     mostWanted.nextSE.Volition = sE.Volition;
                 }
-                
-                /*if (auxVolition > mostWanted.nextSE.Volition)
-                {
-                    mostWanted.nextSE.SEName = auxSEName;
-                    mostWanted.nextSE.InitiatorAgent = auxInitiatorAgent;
-                    mostWanted.nextSE.ReceiverAgent = auxReceiverAgent;
-                    mostWanted.nextSE.Volition = auxVolition;
-                }*/
             }
 
             /* Calculate Next SE */
@@ -539,6 +543,8 @@ namespace Bannerlord_Social_AI
 
             InitializeStatusList();
 
+            OpenBattleConfigFileToSetCIFRange();
+
             if (Mission.Current.MainAgent != null)
             {
                 if (customAgentsList == null)
@@ -575,6 +581,16 @@ namespace Bannerlord_Social_AI
 
                     LoadDialogsFromJSON();
                 }
+            }
+        }
+
+        private void OpenBattleConfigFileToSetCIFRange()
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/battle_conversations.json");
+            BattleConversationsJson deserializedBattleClass = JsonConvert.DeserializeObject<BattleConversationsJson>(json);
+            if (deserializedBattleClass != null)
+            {
+                CIF_Range = deserializedBattleClass.RangeConversations;
             }
         }
 
@@ -632,7 +648,7 @@ namespace Bannerlord_Social_AI
             CustomAgent customAgent = customAgentsList.Find(c => c.Name == custom.Name && c.Id == custom.Id);
             if (customAgent != null)
             {
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name && customAgent.IdTarget > 0)
+                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name)
                 {
                     intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
                     customCharacterReftoCampaignBehaviorBase = null;
@@ -644,6 +660,7 @@ namespace Bannerlord_Social_AI
                     customAgent.customAgentTarget = null;
 
                 }
+
 
                 customAgent.EndFollowBehavior();
             }
@@ -1156,6 +1173,27 @@ namespace Bannerlord_Social_AI
             {
                 customAgent.NearPlayer = false;
             }
+        }
+
+        private bool CustomAgentInsideRangeFromPlayer(CustomAgent customAgent)
+        {
+            if (Agent.Main != null)
+            {
+                if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) <= CIF_Range)
+                {
+                    customAgent.RunAI = true;
+                    return true;
+                }
+                else
+                {
+                    customAgent.RunAI = false;
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }      
         }
 
         private void AddAgentTarget(Agent agent, int id)
