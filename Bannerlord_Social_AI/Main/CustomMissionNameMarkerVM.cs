@@ -62,8 +62,7 @@ namespace Bannerlord_Social_AI
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
-                {
-
+                { 
                     DecreaseNPCsCountdown(dt);
 
                     foreach (CustomAgent customAgent in customAgentsList)

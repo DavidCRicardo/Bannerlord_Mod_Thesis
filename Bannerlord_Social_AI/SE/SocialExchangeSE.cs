@@ -342,6 +342,11 @@ namespace Bannerlord_Social_AI
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
                 {
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
+                    
+                    //***
+                    SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
+                    //***
+
                     if (beliefWithInitiator != null && beliefWithInitiator.value < 0)
                     {
                         value = -1;
@@ -362,7 +367,35 @@ namespace Bannerlord_Social_AI
                         {
                             ChangeHeroRelationInGame(value, customAgent);
                         }
-                    } 
+                    }
+
+                    //***
+                    if (beliefWithReceiver != null && beliefWithReceiver.value < 0)
+                    {
+                        bool RelationIncreased = false;
+                        value = RelationIncreased ? -1 : 1;
+
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                        if (customAgent.selfAgent.IsHero)
+                        {
+                            ChangeHeroRelationInGame(value, customAgent);
+                        }
+                    }
+
+                    if (beliefWithReceiver != null && beliefWithReceiver.value > 0)
+                    {
+                        bool RelationIncreased = false;
+                        value = RelationIncreased ? 1 : -1;
+
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                        if (customAgent.selfAgent.IsHero)
+                        {
+                            ChangeHeroRelationInGame(value, customAgent);
+                        }
+                    }
+                    //****
                 }
             }
         }
@@ -372,16 +405,16 @@ namespace Bannerlord_Social_AI
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.selfAgent.Character);
             if (hero != null)
             {
-                float relation = hero.GetRelationWithPlayer();
-                int newValue = (int)(relation + value);
+                float relationWithPlayer = hero.GetRelationWithPlayer();
+                int newValue = (int)(relationWithPlayer + value);
                 if (value > 0)
                 {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relationWithPlayer.ToString() + " to " + (relationWithPlayer + 1).ToString()), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
                 else
                 {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relationWithPlayer.ToString() + " to " + (relationWithPlayer - 1).ToString()), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
             }
@@ -417,7 +450,9 @@ namespace Bannerlord_Social_AI
         public void BreakUpMethod()
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
-            UpdateThirdNPCsBeliefs("Dating", _belief, -1);
+            //UpdateThirdNPCsBeliefs("Dating", _belief, -1);
+
+            UpdateNPCsNearSocialMove();
 
             foreach (CustomAgent customAgent in CustomAgentList)
             {
@@ -428,13 +463,14 @@ namespace Bannerlord_Social_AI
         public void AskOutMethod()
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
-            UpdateThirdNPCsBeliefs("Friends", _belief, 1);
+            //UpdateThirdNPCsBeliefs("Friends", _belief, 1);
 
             foreach (CustomAgent customAgent in CustomAgentList)
             {
                 customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
             }
 
+            UpdateNPCsNearSocialMove();
             NPCsNearRomanticSocialMove();
         }
 
@@ -575,7 +611,7 @@ namespace Bannerlord_Social_AI
         public void PlayerConversationWithNPC(string relation, int value)
         {
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
-            UpdateThirdNPCsBeliefs(relation, belief, value);
+            //UpdateThirdNPCsBeliefs(relation, belief, value);
 
             UpdateNPCsNearSocialMove();
 

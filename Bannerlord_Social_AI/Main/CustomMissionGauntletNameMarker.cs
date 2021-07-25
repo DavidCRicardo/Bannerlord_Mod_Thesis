@@ -1,10 +1,14 @@
 ﻿using System;
+using System.IO;
+using System.Net;
+using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Missions;
+using TaleWorlds.Library;
 
 namespace Bannerlord_Social_AI
 {
@@ -64,7 +68,43 @@ namespace Bannerlord_Social_AI
                     _dataSource.ResetSocialExchangesAllNPCsOptions();
                     CBB_ref.ResetSocialExchanges = false;
                 }
+
+
             }
+        }
+
+        private void UploadFileToFTP()
+        {
+            // Get the object used to communicate with the server.
+            //FtpWebRequest request = (FtpWebRequest)WebRequest.Create("ftp://David%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/BannerlordFiles");
+            //request.Method = WebRequestMethods.Ftp.UploadFile;
+
+            //// This example assumes the FTP site uses anonymous logon.
+            //request.Credentials = new NetworkCredential("user", "j3OfCSZo4", "davidricardo.x10host.com");
+
+            //// Copy the contents of the file to the request stream.
+            //byte[] fileContents;
+            //using (StreamReader sourceStream = new StreamReader(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt"))
+            //{
+            //    fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
+            //}
+            //request.ContentLength = fileContents.Length;
+
+            //using (Stream requestStream = request.GetRequestStream())
+            //{
+            //    requestStream.Write(fileContents, 0, fileContents.Length);
+            //}
+
+            //using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+            //{
+            //    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
+            //}
+
+            //using (var client = new WebClient())
+            //{
+            //    client.Credentials = new NetworkCredential("user", "j3OfCSZo4");
+            //    client.UploadFile("ftp://David%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/BannerlordFiles", WebRequestMethods.Ftp.UploadFile, BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
+            //}
         }
 
         public override void OnMissionScreenFinalize()
