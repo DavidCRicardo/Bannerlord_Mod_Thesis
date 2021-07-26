@@ -275,6 +275,11 @@ namespace Bannerlord_Social_AI
                     {
                         SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
                         CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
+
+                        if (CAtoDecrease.selfAgent.IsHero && CAtoDecrease.selfAgent == Agent.Main)
+                        {
+                            RelationInGameChanges();
+                        }
                     }  
                 }
             }
@@ -353,7 +358,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private bool InteractionSawByThirdNPC(CustomAgent customAgent)
+        private bool InteractionSawByThisNPC(CustomAgent customAgent)
         {
             if (Agent.Main != null)
             {
@@ -376,7 +381,7 @@ namespace Bannerlord_Social_AI
         {
             foreach (CustomAgent customAgent in CustomAgentList)
             {
-                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThirdNPC(customAgent)) // ele viu?
+                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThisNPC(customAgent)) // ele viu?
                 {
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
                     SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
@@ -579,6 +584,27 @@ namespace Bannerlord_Social_AI
             customAgent.MarkerTyperRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
+        }
+
+        private void RelationInGameChanges()
+        {
+            int value = -1;
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == CustomAgentReceiver.selfAgent.Character);
+            if (hero != null && hero != Hero.MainHero)
+            {
+                float relation = hero.GetRelationWithPlayer();
+                int newValue = (int)(relation + value);
+                if (value > 0)
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                }
+                else
+                {
+                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
+                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                }
+            }
         }
 
         public IntentionEnum Intention { get; private set; }

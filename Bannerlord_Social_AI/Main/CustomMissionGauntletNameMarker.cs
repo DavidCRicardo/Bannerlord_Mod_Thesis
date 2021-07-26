@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
@@ -9,8 +8,9 @@ using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Missions;
 using TaleWorlds.Library;
+using System.Linq;
+using System.Collections.Generic;
 using static System.Net.WebRequestMethods;
-using Newtonsoft.Json.Linq;
 
 namespace Bannerlord_Social_AI
 {
@@ -23,6 +23,9 @@ namespace Bannerlord_Social_AI
         private GauntletLayer _gauntletLayer;
         private Mission mission;
         private bool _firstTick = true;
+        private string fileName = "";
+        private string filePath = "";
+        private List<string> list;
 
         public override void OnMissionScreenInitialize()
         {
@@ -33,7 +36,9 @@ namespace Bannerlord_Social_AI
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
 
-            UploadFileToFTP();
+            CheckIfUserFileExists();
+
+            ListFiles();
 
             try
             {
@@ -57,6 +62,8 @@ namespace Bannerlord_Social_AI
                     _dataSource.IsEnabled = true;
                     CBB_ref.customAgents = _dataSource.customAgentsList;
                     _firstTick = false;
+
+                    UploadFileToFTP();
                 }
 
                 CheckIntentionFromNPCToPlayer();
@@ -72,77 +79,6 @@ namespace Bannerlord_Social_AI
                     _dataSource.ResetSocialExchangesAllNPCsOptions();
                     CBB_ref.ResetSocialExchanges = false;
                 }
-
-
-            }
-        }
-
-        private void UploadFileToFTP()
-        {
-            /**
-            FileInfo toUpload = new FileInfo(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
-            FtpWebRequest request =
-                (FtpWebRequest)WebRequest.Create("ftp://user%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/user");
-        
-            request.Method = WebRequestMethods.Ftp.UploadFile;
-            request.Credentials = new NetworkCredential("user@davidricardo.x10host.com", "P2NVL60v");
-            **/
-
-
-            string filename = (BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
-            string ftpServerIP = "ftp.davidricardo.x10host.com/";
-            string ftpUserName = "user@davidricardo.x10host.com";
-            string ftpPassword = "P2NVL60v";
-
-            FileInfo objFile = new FileInfo(filename);
-            FtpWebRequest objFTPRequest;
-
-            // Create FtpWebRequest object 
-            objFTPRequest = (FtpWebRequest)FtpWebRequest.Create(new Uri("ftp://" + ftpServerIP + "/" + objFile.Name));
-
-            // Set Credintials
-            objFTPRequest.Credentials = new NetworkCredential(ftpUserName, ftpPassword);
-
-            // By default KeepAlive is true, where the control connection is 
-            // not closed after a command is executed.
-            objFTPRequest.KeepAlive = false;
-
-            // Set the data transfer type.
-            objFTPRequest.UseBinary = true;
-
-            // Set content length
-            objFTPRequest.ContentLength = objFile.Length;
-
-            // Set request method
-            objFTPRequest.Method = WebRequestMethods.Ftp.UploadFile;
-
-            // Set buffer size
-            int intBufferLength = 16 * 1024;
-            byte[] objBuffer = new byte[intBufferLength];
-
-            // Opens a file to read
-            FileStream objFileStream = objFile.OpenRead();
-
-            try
-            {
-                // Get Stream of the file
-                Stream objStream = objFTPRequest.GetRequestStream();
-
-                int len = 0;
-
-                while ((len = objFileStream.Read(objBuffer, 0, intBufferLength)) != 0)
-                {
-                    // Write file Content 
-                    objStream.Write(objBuffer, 0, len);
-
-                }
-
-                objStream.Close();
-                objFileStream.Close();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
             }
         }
 
@@ -203,6 +139,8 @@ namespace Bannerlord_Social_AI
                         break;
                     }
                 }
+
+                CBB_ref.FriendlyOptionExists = false;
 
                 CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
                 _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
@@ -291,6 +229,7 @@ namespace Bannerlord_Social_AI
         {
             customAgent.keyValuePairsSEs[intention] = value;
         }
+
         private static void RelationInGameChanges(CustomAgent customAgentConversation, int value)
         {
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.selfAgent.Character);
@@ -348,7 +287,7 @@ namespace Bannerlord_Social_AI
         private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value)
         {
             SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
-            se.PlayerConversationWithNPC(relation, value);
+            se.PlayerConversationWithNPC(relation, value, true);
 
             _dataSource.SaveToJson();
         }
@@ -386,6 +325,141 @@ namespace Bannerlord_Social_AI
             CBB_ref.DecreaseRelationshipWithPlayer = false;
             _dataSource.intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
             _dataSource.customCharacterReftoCampaignBehaviorBase = null;
+        }
+
+        private void UploadFileToFTP()
+        {
+            string ftpServerIP = "ftp.davidricardo.x10host.com/";
+            string ftpUserName = "user@davidricardo.x10host.com";
+            string ftpPassword = "P2NVL60v";
+
+            FileInfo objFile = new FileInfo(filePath + fileName);
+            FtpWebRequest objFTPRequest;
+
+            // Create FtpWebRequest object 
+            objFTPRequest = (FtpWebRequest)FtpWebRequest.Create(new Uri("ftp://" + ftpServerIP + "/" + objFile.Name));
+
+            // Set Credintials
+            objFTPRequest.Credentials = new NetworkCredential(ftpUserName, ftpPassword);
+
+            // By default KeepAlive is true, where the control connection is 
+            // not closed after a command is executed.
+            objFTPRequest.KeepAlive = false;
+
+            // Set the data transfer type.
+            objFTPRequest.UseBinary = true;
+
+            // Set content length
+            objFTPRequest.ContentLength = objFile.Length;
+
+            // Set request method
+            objFTPRequest.Method = WebRequestMethods.Ftp.UploadFile;
+
+            // Set buffer size
+            int intBufferLength = 16 * 1024;
+            byte[] objBuffer = new byte[intBufferLength];
+
+            // Opens a file to read
+            FileStream objFileStream = objFile.OpenRead();
+
+            try
+            {
+                // Get Stream of the file
+                Stream objStream = objFTPRequest.GetRequestStream();
+
+                int len = 0;
+
+                while ((len = objFileStream.Read(objBuffer, 0, intBufferLength)) != 0)
+                {
+                    // Write file Content 
+                    objStream.Write(objBuffer, 0, len);
+
+                }
+
+                objStream.Close();
+                objFileStream.Close();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void CheckIfUserFileExists()
+        {
+            filePath = BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/";
+
+            string[] files = Directory.GetFiles(filePath);
+            if (files.Length != 0)
+            {
+                foreach (string file in files)
+                {
+                    if (file.Contains("user"))
+                    {
+                        fileName = file.Remove(0, filePath.Length);
+                        break;
+                    }
+                } 
+            }
+
+            if (fileName == "")
+            {
+                //Create a new file
+                Random rnd = new Random();
+                int randomInt = rnd.Next(10000000);
+
+                fileName = "user_" + randomInt;
+                System.IO.File.Create(filePath + fileName);
+            }
+        }
+
+        private void ListFiles()
+        {
+            list = new List<string>();
+
+            try
+            {
+                string ftpServerIP = "ftp.davidricardo.x10host.com/";
+                string ftpUserName = "user@davidricardo.x10host.com";
+                string ftpPassword = "P2NVL60v";
+
+                FileInfo objFile = new FileInfo(filePath);
+                FtpWebRequest request;
+
+                // Create FtpWebRequest object 
+                request = (FtpWebRequest)FtpWebRequest.Create(new Uri("ftp://" + ftpServerIP + "/" + objFile.Name));
+                request.Method = WebRequestMethods.Ftp.ListDirectory;
+
+                request.Credentials = new NetworkCredential(ftpUserName, ftpPassword);
+                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                Stream responseStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(responseStream);
+                string names = reader.ReadToEnd();
+
+                reader.Close();
+                response.Close();
+
+                list = names.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                /**/
+                foreach (string file in list)
+                {
+                    if (file.Contains("user"))
+                    {
+                        string number = file.Remove(0, 5);
+                        int id = Int32.Parse(number) + 1;
+
+                        string aaa = "user_" + id.ToString();
+
+                        break;
+                    }
+                }
+                /**/
+
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 }

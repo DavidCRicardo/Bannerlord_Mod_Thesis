@@ -39,6 +39,9 @@ namespace Bannerlord_Social_AI
         private String inputToken;
         private String outputToken;
         private String text;
+        private Random rnd;
+        private int value;
+        public bool FriendlyOptionExists;
 
         private Dictionary<string, ConversationSentence.OnConditionDelegate> dictionaryConditions;
         private Dictionary<string, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
@@ -128,6 +131,16 @@ namespace Bannerlord_Social_AI
             InitializeDictionaries();
 
             ReadJsonFile(campaignGameStarter);
+
+            rnd = new Random();
+            NewRandom();
+            FriendlyOptionExists = false;
+
+        }
+
+        private void NewRandom()
+        {
+            value = rnd.Next(1, 3);
         }
 
         #region old
@@ -315,32 +328,46 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (FriendlyOptionExists)
             {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
+                return false;
+            }
 
-                if (_currentLocation != "arena")
+            if (value <= 0)
+            {
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                    string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (customAgentConversation != null)
+                    if (_currentLocation != "arena")
                     {
-                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
-                        if (!value)
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                        if (customAgentConversation != null)
                         {
-                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                            if (belief == null || belief.relationship == "Friends")
+                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
+                            if (!value)
                             {
-                                return true;
+                                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                                if (belief == null || belief.relationship == "Friends")
+                                {
+                                    NewRandom();
+                                    FriendlyOptionExists = true;
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
             }
-         
+            else 
+            { 
+                value--; 
+            }
+
             return false;
         }
 

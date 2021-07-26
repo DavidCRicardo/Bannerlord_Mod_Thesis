@@ -573,6 +573,7 @@ namespace Bannerlord_Social_AI
             if (_belief == null)
             {
                 AddBelief(belief);
+                _belief = belief;
             }
 
             _belief.relationship = _newRelation;
