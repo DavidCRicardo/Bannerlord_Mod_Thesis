@@ -274,7 +274,6 @@ namespace Bannerlord_Social_AI
                     if (CAtoDecrease != null)
                     {
                         SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
-
                         CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
                     }  
                 }
@@ -289,7 +288,7 @@ namespace Bannerlord_Social_AI
                 //Increases Relationship for both
                 if (SEName == "AskOut")
                 { 
-                    AskOutMethod();
+                    AskOutMethod(false);
                 }
                 else if (SEName == "Flirt")
                 {
@@ -301,8 +300,7 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentReceiver.Name, CustomAgentReceiver.Id));
                 CustomAgentInitiator.UpdateAllStatus(0, 0, 0, 1, 0, 0);
             }
-
-            NPCsNearRomanticSocialMove();
+            UpdateNPCsNearSocialMove();
         }
 
         private void ConsequencesFromPositiveIntention()
@@ -331,79 +329,14 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentReceiver.Name, CustomAgentReceiver.Id));
                 CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 1, 0);
             }
+            
             UpdateNPCsNearSocialMove();
-        }
-
-        private void UpdateNPCsNearSocialMove()
-        {
-            int value = 0;
-            foreach (CustomAgent customAgent in CustomAgentList)
-            {
-                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
-                {
-                    SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
-                    
-                    //***
-                    SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
-                    //***
-
-                    if (beliefWithInitiator != null && beliefWithInitiator.value < 0)
-                    {
-                        value = -1;
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
-
-                        if (customAgent.selfAgent.IsHero)
-                        {
-                            ChangeHeroRelationInGame(value, customAgent);
-                        }
-                    }
-
-                    if (beliefWithInitiator != null && beliefWithInitiator.value > 0)
-                    {
-                        value = 1;
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
-
-                        if (customAgent.selfAgent.IsHero)
-                        {
-                            ChangeHeroRelationInGame(value, customAgent);
-                        }
-                    }
-
-                    //***
-                    if (beliefWithReceiver != null && beliefWithReceiver.value < 0)
-                    {
-                        bool RelationIncreased = false;
-                        value = RelationIncreased ? -1 : 1;
-
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
-
-                        if (customAgent.selfAgent.IsHero)
-                        {
-                            ChangeHeroRelationInGame(value, customAgent);
-                        }
-                    }
-
-                    if (beliefWithReceiver != null && beliefWithReceiver.value > 0)
-                    {
-                        bool RelationIncreased = false;
-                        value = RelationIncreased ? 1 : -1;
-
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
-
-                        if (customAgent.selfAgent.IsHero)
-                        {
-                            ChangeHeroRelationInGame(value, customAgent);
-                        }
-                    }
-                    //****
-                }
-            }
         }
 
         private static void ChangeHeroRelationInGame(int value, CustomAgent customAgent)
         {
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.selfAgent.Character);
-            if (hero != null)
+            if (hero != null && hero != Hero.MainHero)
             {
                 float relationWithPlayer = hero.GetRelationWithPlayer();
                 int newValue = (int)(relationWithPlayer + value);
@@ -420,28 +353,76 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void NPCsNearRomanticSocialMove()
+        private bool InteractionSawByThirdNPC(CustomAgent customAgent)
         {
-            //Independentemente se aceitou ou nao.. 
+            if (Agent.Main != null)
+            {
+                if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) <= 5)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private void UpdateNPCsNearSocialMove() // Independentemente se aceitou ou não
+        {
             foreach (CustomAgent customAgent in CustomAgentList)
             {
-                // verificar para todos menos para aqueles que estavam envolvidos na SE
-                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
+                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThirdNPC(customAgent)) // ele viu?
                 {
-                    //se o initiator é o seu parceiro (dating) que começou a Romantic SE // nao vai gostar da SE e vai decrementar 1 ponto
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
-                    if (beliefWithInitiator != null && beliefWithInitiator.relationship == "Dating")
+                    SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
+
+                    int value;
+                    //tem relaçao dating com o initiator e vê o initiator a começar interação romantic? Vai perder 1 pt na relaçao
+                    if (beliefWithInitiator != null && beliefWithInitiator.value < 0 && beliefWithInitiator.relationship == "Dating")
                     {
-                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, -1);
+                        value = -1;
+                        customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
                     }
 
-                    //se o receiver é o seu parceiro (dating) de que foi alvo de Romantic SE // vai ter ciumes do Initiator 
-                    SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
-                    if (beliefWithReceiver != null && beliefWithReceiver.relationship == "Dating" && beliefWithReceiver.value > 0)
+                    if (beliefWithReceiver != null)
                     {
-                        //tem relaçao com o receiver e essa relação é dating? então ganha o goal de ciumes para a SE
-                        TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id);
-                        customAgent.AddToTriggerRulesList(triggerRule);
+                        if (beliefWithReceiver.relationship == "Dating") //tem relaçao com o receiver e essa relação é dating? Vai garrear com o Initiator
+                        {
+                            TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id);
+                            customAgent.AddToTriggerRulesList(triggerRule);
+                        }
+                        else // tem relaçao Friends
+                        {
+                            if (beliefWithReceiver.value < 0) //***  NPC A nao se dá bem com NPC B, então relaçao com initiator cai 1 pt se tiver interações positivas com B ou viceversa
+                            {
+                                bool RelationIncreased = false;
+                                value = RelationIncreased ? -1 : 1;
+
+                                customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                                if (customAgent.selfAgent.IsHero)
+                                {
+                                    ChangeHeroRelationInGame(value, customAgent);
+                                }
+                            }
+                            else if (beliefWithReceiver.value > 0) // NPC A dá-se bem com NPC B, então relaçao com initiator sobe 1 pt se tiver interações positivas com B ou viceversa
+                            {
+                                bool RelationIncreased = false;
+                                value = RelationIncreased ? 1 : -1;
+
+                                customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
+
+                                if (customAgent.selfAgent.IsHero)
+                                {
+                                    ChangeHeroRelationInGame(value, customAgent);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -450,7 +431,6 @@ namespace Bannerlord_Social_AI
         public void BreakUpMethod()
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Dating", -1);
-            //UpdateThirdNPCsBeliefs("Dating", _belief, -1);
 
             UpdateNPCsNearSocialMove();
 
@@ -460,18 +440,19 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        public void AskOutMethod()
+        public void AskOutMethod(bool PlayerIsInitiator)
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
-            //UpdateThirdNPCsBeliefs("Friends", _belief, 1);
 
             foreach (CustomAgent customAgent in CustomAgentList)
             {
                 customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
             }
 
-            UpdateNPCsNearSocialMove();
-            NPCsNearRomanticSocialMove();
+            if (PlayerIsInitiator)
+            {
+                UpdateNPCsNearSocialMove();
+            }
         }
 
         private SocialNetworkBelief UpdateParticipantNPCBeliefs(string _relationName = "", int _value = 0)
@@ -496,42 +477,6 @@ namespace Bannerlord_Social_AI
             }
 
             return belief;
-        }
-        
-        private void UpdateThirdNPCsBeliefs(string _relationName, SocialNetworkBelief _belief, int _value)
-        {
-            foreach (CustomAgent customAgent in CustomAgentList)
-            {
-                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver)
-                {
-                    SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => 
-                    b.agents.Contains(CustomAgentInitiator.selfAgent.Name) && b.agents.Contains(CustomAgentReceiver.selfAgent.Name));
-
-                    if (belief == null)
-                    {
-                        customAgent.AddBelief(_belief);
-                        belief = _belief;
-                    }
-                    else
-                    {
-                        customAgent.UpdateBeliefWithNewValue(_belief, _value);
-                    }
-
-                    //Decrease Dating relationship if my partner accepted romantic intentions from other
-                    //Otherwise it will increase
-                    if (_relationName == "Dating")
-                    {
-                        int datingHowMany = customAgent.CheckHowManyTheAgentIsDating(customAgent);
-                        if (datingHowMany > 0)
-                        {
-                            if (belief.agents.Contains(CustomAgentInitiator.selfAgent.Name) || belief.agents.Contains(CustomAgentReceiver.selfAgent.Name))
-                            {
-                                customAgent.UpdateBeliefWithNewValue(belief, _value * -1);
-                            }
-                        }
-                    }
-                }
-            }
         }
         
         public int InitiadorVolition()
@@ -608,14 +553,16 @@ namespace Bannerlord_Social_AI
             return IR.InitialValue;
         }
 
-        public void PlayerConversationWithNPC(string relation, int value)
+        public void PlayerConversationWithNPC(string relation, int value, bool PlayerInteractingWithHero)
         {
             SocialNetworkBelief belief = UpdateParticipantNPCBeliefs(relation, value);
-            //UpdateThirdNPCsBeliefs(relation, belief, value);
 
             UpdateNPCsNearSocialMove();
 
-            InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " is " + belief.value));
+            if (!PlayerInteractingWithHero)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " is " + belief.value));
+            }
         }
 
         private void ResetCustomAgentVariables(CustomAgent customAgent)

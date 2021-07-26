@@ -9,6 +9,8 @@ using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Missions;
 using TaleWorlds.Library;
+using static System.Net.WebRequestMethods;
+using Newtonsoft.Json.Linq;
 
 namespace Bannerlord_Social_AI
 {
@@ -30,7 +32,9 @@ namespace Bannerlord_Social_AI
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
-            
+
+            UploadFileToFTP();
+
             try
             {
                 CampaignEvents.ConversationEnded.AddNonSerializedListener(this, new Action<CharacterObject>(this.OnConversationEnd));
@@ -75,36 +79,71 @@ namespace Bannerlord_Social_AI
 
         private void UploadFileToFTP()
         {
-            // Get the object used to communicate with the server.
-            //FtpWebRequest request = (FtpWebRequest)WebRequest.Create("ftp://David%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/BannerlordFiles");
-            //request.Method = WebRequestMethods.Ftp.UploadFile;
+            /**
+            FileInfo toUpload = new FileInfo(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
+            FtpWebRequest request =
+                (FtpWebRequest)WebRequest.Create("ftp://user%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/user");
+        
+            request.Method = WebRequestMethods.Ftp.UploadFile;
+            request.Credentials = new NetworkCredential("user@davidricardo.x10host.com", "P2NVL60v");
+            **/
 
-            //// This example assumes the FTP site uses anonymous logon.
-            //request.Credentials = new NetworkCredential("user", "j3OfCSZo4", "davidricardo.x10host.com");
 
-            //// Copy the contents of the file to the request stream.
-            //byte[] fileContents;
-            //using (StreamReader sourceStream = new StreamReader(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt"))
-            //{
-            //    fileContents = Encoding.UTF8.GetBytes(sourceStream.ReadToEnd());
-            //}
-            //request.ContentLength = fileContents.Length;
+            string filename = (BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
+            string ftpServerIP = "ftp.davidricardo.x10host.com/";
+            string ftpUserName = "user@davidricardo.x10host.com";
+            string ftpPassword = "P2NVL60v";
 
-            //using (Stream requestStream = request.GetRequestStream())
-            //{
-            //    requestStream.Write(fileContents, 0, fileContents.Length);
-            //}
+            FileInfo objFile = new FileInfo(filename);
+            FtpWebRequest objFTPRequest;
 
-            //using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
-            //{
-            //    Console.WriteLine($"Upload File Complete, status {response.StatusDescription}");
-            //}
+            // Create FtpWebRequest object 
+            objFTPRequest = (FtpWebRequest)FtpWebRequest.Create(new Uri("ftp://" + ftpServerIP + "/" + objFile.Name));
 
-            //using (var client = new WebClient())
-            //{
-            //    client.Credentials = new NetworkCredential("user", "j3OfCSZo4");
-            //    client.UploadFile("ftp://David%2540davidricardo.x10host.com@ftp.davidricardo.x10host.com/public_html/BannerlordFiles", WebRequestMethods.Ftp.UploadFile, BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/test.txt");
-            //}
+            // Set Credintials
+            objFTPRequest.Credentials = new NetworkCredential(ftpUserName, ftpPassword);
+
+            // By default KeepAlive is true, where the control connection is 
+            // not closed after a command is executed.
+            objFTPRequest.KeepAlive = false;
+
+            // Set the data transfer type.
+            objFTPRequest.UseBinary = true;
+
+            // Set content length
+            objFTPRequest.ContentLength = objFile.Length;
+
+            // Set request method
+            objFTPRequest.Method = WebRequestMethods.Ftp.UploadFile;
+
+            // Set buffer size
+            int intBufferLength = 16 * 1024;
+            byte[] objBuffer = new byte[intBufferLength];
+
+            // Opens a file to read
+            FileStream objFileStream = objFile.OpenRead();
+
+            try
+            {
+                // Get Stream of the file
+                Stream objStream = objFTPRequest.GetRequestStream();
+
+                int len = 0;
+
+                while ((len = objFileStream.Read(objBuffer, 0, intBufferLength)) != 0)
+                {
+                    // Write file Content 
+                    objStream.Write(objBuffer, 0, len);
+
+                }
+
+                objStream.Close();
+                objFileStream.Close();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public override void OnMissionScreenFinalize()
@@ -301,7 +340,7 @@ namespace Bannerlord_Social_AI
         private void Start_Dating(CustomAgent customAgentConversation)
         {
             SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
-            se.AskOutMethod();
+            se.AskOutMethod(true);
 
             _dataSource.SaveToJson();
         }
