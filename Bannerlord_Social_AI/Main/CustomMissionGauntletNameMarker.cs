@@ -10,7 +10,7 @@ using TaleWorlds.MountAndBlade.View.Missions;
 using TaleWorlds.Library;
 using System.Linq;
 using System.Collections.Generic;
-using static System.Net.WebRequestMethods;
+using Newtonsoft.Json;
 
 namespace Bannerlord_Social_AI
 {
@@ -22,10 +22,49 @@ namespace Bannerlord_Social_AI
         private CiF_CampaignBehavior_Dialogs CBB_ref;
         private GauntletLayer _gauntletLayer;
         private Mission mission;
+
         private bool _firstTick = true;
         private string fileName = "";
         private string filePath = "";
+
+        private int TotalSEs;
+        private int NPCsInteractedWithPlayer;
+        private int PlayerInteractedWithNPCs;
+        private int NPCsInteractedWithNPCs;
         private List<string> list;
+
+        private enum dictionaryEnumWithSEs { Undefined, FriendlySEs, UnfriendlySEs, RomanticSEs, HostileSEs, SpecialSEs }
+        //private Dictionary<Enum, int> howManyTimesSEwasPerformed =
+        //    new Dictionary<Enum, int>
+        //    {
+        //        { dictionaryEnumWithSEs.Undefined    , 0 },
+        //        { dictionaryEnumWithSEs.FriendlySEs  , 0 },
+        //        { dictionaryEnumWithSEs.UnfriendlySEs, 0 },
+        //        { dictionaryEnumWithSEs.RomanticSEs  , 0 },
+        //        { dictionaryEnumWithSEs.HostileSEs   , 0 },
+        //        { dictionaryEnumWithSEs.SpecialSEs   , 0 },
+        //    };
+
+        private Dictionary<bool, Dictionary<Enum, int>> PlayerOrNPC_Dictionary =
+            new Dictionary<bool, Dictionary<Enum, int>>
+            {
+                { false , new Dictionary<Enum, int> { 
+                    { dictionaryEnumWithSEs.Undefined    , 0 },
+                    { dictionaryEnumWithSEs.FriendlySEs  , 0 },
+                    { dictionaryEnumWithSEs.UnfriendlySEs, 0 },
+                    { dictionaryEnumWithSEs.RomanticSEs  , 0 },
+                    { dictionaryEnumWithSEs.HostileSEs   , 0 },
+                    { dictionaryEnumWithSEs.SpecialSEs   , 0 }, 
+                } },
+                { true , new Dictionary<Enum, int> {
+                    { dictionaryEnumWithSEs.Undefined    , 0 },
+                    { dictionaryEnumWithSEs.FriendlySEs  , 0 },
+                    { dictionaryEnumWithSEs.UnfriendlySEs, 0 },
+                    { dictionaryEnumWithSEs.RomanticSEs  , 0 },
+                    { dictionaryEnumWithSEs.HostileSEs   , 0 },
+                    { dictionaryEnumWithSEs.SpecialSEs   , 0 },
+                } },
+            };
 
         public override void OnMissionScreenInitialize()
         {
@@ -38,7 +77,8 @@ namespace Bannerlord_Social_AI
 
             CheckIfUserFileExists();
 
-            ListFiles();
+            //Load from file to Dictionary and variables 
+            LoadUserInfoFromFile();
 
             try
             {
@@ -57,13 +97,20 @@ namespace Bannerlord_Social_AI
 
                 _dataSource.EnableDataSource();
 
+                if (_dataSource.letsUpdate)
+                {
+                    _dataSource.letsUpdate = false;
+
+                    var result = ConvertCustomAgentIntentionToDictionaryEnum(_dataSource.SE_identifier);
+                    UpdateUserInfo(result, _dataSource.BooleanNumber);
+                }
+
                 if (_firstTick || CBB_ref.customAgents == null)
                 {
                     _dataSource.IsEnabled = true;
                     CBB_ref.customAgents = _dataSource.customAgentsList;
                     _firstTick = false;
 
-                    UploadFileToFTP();
                 }
 
                 CheckIntentionFromNPCToPlayer();
@@ -84,6 +131,8 @@ namespace Bannerlord_Social_AI
 
         public override void OnMissionScreenFinalize()
         {
+            UploadFileToFTP();
+
             base.OnMissionScreenFinalize();
             base.MissionScreen.RemoveLayer(_gauntletLayer);
             _gauntletLayer = null;
@@ -126,7 +175,7 @@ namespace Bannerlord_Social_AI
                 }
             }
         }
-        
+
         private void OnConversationEnd(CharacterObject characterObject)
         {
             if (_dataSource != null && _dataSource.customAgentsList != null)
@@ -141,12 +190,15 @@ namespace Bannerlord_Social_AI
                 }
 
                 CBB_ref.FriendlyOptionExists = false;
+                CBB_ref.UnFriendlyOptionExists = false;
+                CBB_ref.RomanticOptionExists = false;
+                CBB_ref.HostileOptionExists = false;
 
                 CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
                 _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
             }
         }
-        
+
         private void CheckIfThereIsAnyChange(CustomAgent customAgentConversation)
         {
             if (CBB_ref.StartDating)
@@ -162,6 +214,8 @@ namespace Bannerlord_Social_AI
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
+                dictionaryEnumWithSEs b = ConvertCustomAgentIntentionToDictionaryEnum(CustomAgent.Intentions.Special);
+                UpdateUserInfo(b, 1);
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
@@ -196,17 +250,20 @@ namespace Bannerlord_Social_AI
         private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value)
         {
             string socialExchange = "";
+            CustomAgent.Intentions customAgentIntention = CustomAgent.Intentions.Undefined;
             if (localRelation == "Friends")
             {
                 if (value > 0)
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
                     socialExchange = "Friendly";
+                    customAgentIntention = CustomAgent.Intentions.Friendly;
                 }
                 else
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
                     socialExchange = "UnFriendly";
+                    customAgentIntention = CustomAgent.Intentions.Unfriendly;
                 }
             }
             else
@@ -215,6 +272,7 @@ namespace Bannerlord_Social_AI
                 {
                     SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
                     socialExchange = "Romantic";
+                    customAgentIntention = CustomAgent.Intentions.Romantic;
                 }
                 else
                 {
@@ -222,7 +280,159 @@ namespace Bannerlord_Social_AI
                     socialExchange = "Hostile";
                 }
             }
+
+            //Player fez uma SE com um NPC e vai guardar a info 
+            dictionaryEnumWithSEs SE_Enum = ConvertCustomAgentIntentionToDictionaryEnum(customAgentIntention);
+            // Save information from dictionary and variables to File
+            UpdateUserInfo(SE_Enum, 1);
+
             _dataSource.SaveSavedSEs(customAgentConversation, socialExchange);
+        }
+
+        private static dictionaryEnumWithSEs ConvertCustomAgentIntentionToDictionaryEnum(CustomAgent.Intentions a)
+        {
+            var b = dictionaryEnumWithSEs.Undefined;
+            switch (a)
+            {
+                case CustomAgent.Intentions.Friendly:
+                    b = dictionaryEnumWithSEs.FriendlySEs;
+                    break;
+                case CustomAgent.Intentions.Unfriendly:
+                    b = dictionaryEnumWithSEs.UnfriendlySEs;
+                    break;
+                case CustomAgent.Intentions.Romantic:
+                    b = dictionaryEnumWithSEs.RomanticSEs;
+                    break;
+                case CustomAgent.Intentions.Hostile:
+                    b = dictionaryEnumWithSEs.HostileSEs;
+                    break;
+                case CustomAgent.Intentions.Special:
+                    b = dictionaryEnumWithSEs.SpecialSEs;
+                    break;
+                default:
+                    break;
+            }
+
+            return b;
+        }
+
+        private void LoadUserInfoFromFile()
+        {
+            string json = File.ReadAllText(filePath + fileName);
+            Dictionary<Enum, int> result;
+
+            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+            if (deserializedUserInfoClass != null)
+            {
+                TotalSEs = deserializedUserInfoClass.TotalSocialExchanges;
+                NPCsInteractedWithPlayer = deserializedUserInfoClass.NPCInteractedWithPlayer;
+                PlayerInteractedWithNPCs = deserializedUserInfoClass.PlayerInteractedWithNPC;
+                NPCsInteractedWithNPCs = deserializedUserInfoClass.NPCsInteractedWithNPC;
+
+                PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+                result[dictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.NFriendly;
+                result[dictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.NFriendly;
+                result[dictionaryEnumWithSEs.UnfriendlySEs] = deserializedUserInfoClass.NUnFriendly;
+                result[dictionaryEnumWithSEs.RomanticSEs] = deserializedUserInfoClass.NRomantic;
+                result[dictionaryEnumWithSEs.HostileSEs] = deserializedUserInfoClass.NHostile;
+                result[dictionaryEnumWithSEs.SpecialSEs] = deserializedUserInfoClass.NSpecial;
+
+                PlayerOrNPC_Dictionary[false] = result;
+
+                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                result[dictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.PFriendly;
+                result[dictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.PFriendly;
+                result[dictionaryEnumWithSEs.UnfriendlySEs] = deserializedUserInfoClass.PUnFriendly;
+                result[dictionaryEnumWithSEs.RomanticSEs] = deserializedUserInfoClass.PRomantic;
+                result[dictionaryEnumWithSEs.HostileSEs] = deserializedUserInfoClass.PHostile;
+                result[dictionaryEnumWithSEs.SpecialSEs] = deserializedUserInfoClass.PSpecial;
+
+                PlayerOrNPC_Dictionary[true] = result;
+            }
+        }
+
+        private void UpdateUserInfo(dictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
+        {
+            //howManyTimesSEwasPerformed.TryGetValue(dictionaryKey, out int value);
+            //howManyTimesSEwasPerformed[dictionaryKey] = value + 1;
+            Dictionary<Enum, int> result;
+            int value; 
+
+            switch (WhoWasTheInitiator)
+            {
+                case -1:
+                    NPCsInteractedWithPlayer++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                case 0:
+                    NPCsInteractedWithNPCs++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                case 1:
+                    PlayerInteractedWithNPCs++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                default:
+                    break;
+            }
+
+            TotalSEs = NPCsInteractedWithNPCs + NPCsInteractedWithPlayer + PlayerInteractedWithNPCs;
+
+            SaveUserInfoToFile();
+        }
+
+        private void SaveUserInfoToFile()
+        {
+            string json = File.ReadAllText(filePath + fileName);
+            Dictionary<Enum, int> result;
+
+            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+            if (deserializedUserInfoClass != null)
+            {
+                deserializedUserInfoClass.NPCInteractedWithPlayer = NPCsInteractedWithPlayer;
+                deserializedUserInfoClass.PlayerInteractedWithNPC = PlayerInteractedWithNPCs;
+                deserializedUserInfoClass.NPCsInteractedWithNPC = NPCsInteractedWithNPCs;
+                deserializedUserInfoClass.TotalSocialExchanges = TotalSEs;
+
+                int value;
+
+                PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+
+                result.TryGetValue(dictionaryEnumWithSEs.FriendlySEs, out value);
+                deserializedUserInfoClass.NFriendly = value;
+                result.TryGetValue(dictionaryEnumWithSEs.UnfriendlySEs, out value);
+                deserializedUserInfoClass.NUnFriendly = value;
+                result.TryGetValue(dictionaryEnumWithSEs.RomanticSEs, out value);
+                deserializedUserInfoClass.NRomantic = value;
+                result.TryGetValue(dictionaryEnumWithSEs.HostileSEs, out value);
+                deserializedUserInfoClass.NHostile = value;
+                result.TryGetValue(dictionaryEnumWithSEs.SpecialSEs, out value);
+                deserializedUserInfoClass.NSpecial = value;
+
+                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+
+                result.TryGetValue(dictionaryEnumWithSEs.FriendlySEs, out value);
+                deserializedUserInfoClass.PFriendly = value;
+                result.TryGetValue(dictionaryEnumWithSEs.UnfriendlySEs, out value);
+                deserializedUserInfoClass.PUnFriendly = value;
+                result.TryGetValue(dictionaryEnumWithSEs.RomanticSEs, out value);
+                deserializedUserInfoClass.PRomantic = value;
+                result.TryGetValue(dictionaryEnumWithSEs.HostileSEs, out value);
+                deserializedUserInfoClass.PHostile = value;
+                result.TryGetValue(dictionaryEnumWithSEs.SpecialSEs, out value);
+                deserializedUserInfoClass.PSpecial = value;
+            }
+
+            File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
         }
 
         private void SetOptionAsUnavailable(CustomAgent customAgent, CustomAgent.Intentions intention, bool value)
@@ -242,7 +452,7 @@ namespace Bannerlord_Social_AI
                     InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
-                else 
+                else
                 {
                     InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
@@ -396,24 +606,30 @@ namespace Bannerlord_Social_AI
                 {
                     if (file.Contains("user"))
                     {
-                        fileName = file.Remove(0, filePath.Length);
+                        fileName = file.Remove(0, filePath.Length) + ".json";
                         break;
                     }
-                } 
+                }
             }
 
             if (fileName == "")
             {
                 //Create a new file
-                Random rnd = new Random();
-                int randomInt = rnd.Next(10000000);
+                fileName = GetListFiles();
 
-                fileName = "user_" + randomInt;
-                System.IO.File.Create(filePath + fileName);
+                if (fileName != "")
+                {
+                    System.IO.File.Create(filePath + fileName).Close();
+
+                    //?
+                    UserInfoJson myDeserializedClass = JsonConvert.DeserializeObject<UserInfoJson>("");
+                    File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(myDeserializedClass));
+
+                }
             }
         }
 
-        private void ListFiles()
+        private string GetListFiles()
         {
             list = new List<string>();
 
@@ -438,28 +654,31 @@ namespace Bannerlord_Social_AI
 
                 reader.Close();
                 response.Close();
+                responseStream.Close();
 
                 list = names.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
-                /**/
+
                 foreach (string file in list)
                 {
                     if (file.Contains("user"))
                     {
                         string number = file.Remove(0, 5);
-                        int id = Int32.Parse(number) + 1;
+                        number = number.Replace(".json", "");
 
-                        string aaa = "user_" + id.ToString();
+                        int id = int.Parse(number) + 1;
 
-                        break;
+                        string newName = "user_" + id.ToString() + ".json";
+                        return newName;
                     }
                 }
-                /**/
 
+                return "";
             }
             catch (Exception)
             {
-
+                return "";
             }
         }
+
     }
 }

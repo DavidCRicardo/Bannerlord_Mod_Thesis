@@ -59,7 +59,7 @@ namespace Bannerlord_Social_AI
         public bool IsPlayerTeam { get; set; }
         public bool IsDead { get; set; }
 
-        public enum Intentions { Friendly, Unfriendly, Romantic, Hostile }
+        public enum Intentions { Undefined, Friendly, Unfriendly, Romantic, Hostile, Special }
         public Dictionary<Intentions, bool> keyValuePairsSEs{ get; set; }
         public bool RunAI { get; internal set; }
 
@@ -239,6 +239,15 @@ namespace Bannerlord_Social_AI
                     socialExchangeSE = new SocialExchangeSE(SocialMove, this, CustomAgentsList);
                     socialExchangeSE.OnInitialize(rnd);
 
+                    if (socialExchangeSE.ReceptorIsPlayer)
+                    {
+                        SetBooleanNumber(false, true, false);
+                    }
+                    else
+                    {
+                        SetBooleanNumber(false, false, true);
+                    }
+
                     NearEnoughToStartConversation = true;
                 }
             }
@@ -259,6 +268,26 @@ namespace Bannerlord_Social_AI
                         FinalizeSocialExchange();
                     }
                 }
+            }
+        }
+        public int booleanNumber;
+        public void SetBooleanNumber(bool PlayerToNPC, bool NPCToPlayer, bool NPCToNPC)
+        {
+            SE_Intention = socialExchangeSE.Intention;
+            StartingASocialExchange = true;
+
+            booleanNumber = 0;
+            if (NPCToPlayer)
+            {
+                booleanNumber = -1;
+            }
+            else if (NPCToNPC)
+            {
+                booleanNumber = 0;
+            }
+            else if (PlayerToNPC)
+            {
+                booleanNumber = 1;
             }
         }
 
@@ -452,6 +481,9 @@ namespace Bannerlord_Social_AI
             return false;
         }
         private float dtControl;
+
+        public SocialExchangeSE.IntentionEnum SE_Intention;
+        public bool StartingASocialExchange;
 
         public CustomAgent GetCustomAgentByName(string _name, int _id)
         {

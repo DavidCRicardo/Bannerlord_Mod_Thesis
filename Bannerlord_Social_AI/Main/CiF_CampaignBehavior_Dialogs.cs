@@ -42,6 +42,9 @@ namespace Bannerlord_Social_AI
         private Random rnd;
         private int value;
         public bool FriendlyOptionExists;
+        public bool UnFriendlyOptionExists;
+        public bool RomanticOptionExists;
+        public bool HostileOptionExists;
 
         private Dictionary<string, ConversationSentence.OnConditionDelegate> dictionaryConditions;
         private Dictionary<string, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
@@ -135,7 +138,9 @@ namespace Bannerlord_Social_AI
             rnd = new Random();
             NewRandom();
             FriendlyOptionExists = false;
-
+            UnFriendlyOptionExists = false;
+            RomanticOptionExists = false;
+            HostileOptionExists = false;
         }
 
         private void NewRandom()
@@ -373,30 +378,44 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (UnFriendlyOptionExists)
             {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
+                return false;
+            }
 
-                if (_currentLocation != "arena")
+            if (value <= 0)
+            {
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                    string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (customAgentConversation != null)
+                    if (_currentLocation != "arena")
                     {
-                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
-                        if (!value)
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                        if (customAgentConversation != null)
                         {
-                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                            if (belief == null || belief.relationship == "Friends")
+                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
+                            if (!value)
                             {
-                                return true;
+                                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                                if (belief == null || belief.relationship == "Friends")
+                                {
+                                    NewRandom();
+                                    UnFriendlyOptionExists = true;
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                value--;
             }
 
             return false;
@@ -441,30 +460,44 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerIsDatingForRomanticSEWithNPC_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (RomanticOptionExists)
             {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
+                return false;
+            }
 
-                if (_currentLocation != "arena")
+            if (value <= 0)
+            {
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                    string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (customAgentConversation != null)
+                    if (_currentLocation != "arena")
                     {
-                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
-                        if (!value)
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                        if (customAgentConversation != null)
                         {
-                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                            if (belief != null && belief.relationship == "Dating")
+                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
+                            if (!value)
                             {
-                                return true;
+                                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                                if (belief != null && belief.relationship == "Dating")
+                                {
+                                    NewRandom();
+                                    RomanticOptionExists = true;
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                value--;
             }
 
             return false;
@@ -472,30 +505,44 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerIsDatingForHostileSEWithNPC_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (HostileOptionExists)
             {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
+                return false;
+            }
 
-                if (_currentLocation != "arena")
+            if (value <= 0)
+            {
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                    string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (customAgentConversation != null)
+                    if (_currentLocation != "arena")
                     {
-                        bool value = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
-                        if (!value)
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                        if (customAgentConversation != null)
                         {
-                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                            if (belief != null && belief.relationship == "Dating")
+                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
+                            if (!value)
                             {
-                                return true;
+                                customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                                if (belief != null && belief.relationship == "Dating")
+                                {
+                                    NewRandom();
+                                    HostileOptionExists = true;
+                                    return true;
+                                }
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                value--;
             }
 
             return false;

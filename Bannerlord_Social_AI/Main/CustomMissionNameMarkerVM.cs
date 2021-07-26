@@ -57,12 +57,12 @@ namespace Bannerlord_Social_AI
                     PreInitializeOnSettlement();
 
                     InitializeOnSettlement(giveTraitsToNPCs);
-                    
+
                     this._firstTick = false;
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
-                { 
+                {
                     DecreaseNPCsCountdown(dt);
 
                     foreach (CustomAgent customAgent in customAgentsList)
@@ -153,8 +153,8 @@ namespace Bannerlord_Social_AI
                     {
                         return true; // raid village
                     }
-                    else 
-                    { 
+                    else
+                    {
                         return false; // arena - tournament
                     }
                 }
@@ -209,7 +209,7 @@ namespace Bannerlord_Social_AI
             {
                 return;
             }
-                    
+
             if (customAgent.IsDead)
             {
                 customAgent.Message = "";
@@ -246,7 +246,7 @@ namespace Bannerlord_Social_AI
                 }
             }
         }
-        
+
         private float CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
         {
             for (int i = 0; i < team.TeamAgents.Count; i++)
@@ -352,8 +352,17 @@ namespace Bannerlord_Social_AI
         private int OtherTeamCurrentSpeakers { get; set; }
         private int PlayerTeamCurrentSpeakers { get; set; }
 
-        #endregion
+        public Dictionary<Enum, CustomAgent.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CustomAgent.Intentions>()
+        {
+            { SocialExchangeSE.IntentionEnum.Undefined, CustomAgent.Intentions.Undefined  },
+            { SocialExchangeSE.IntentionEnum.Positive , CustomAgent.Intentions.Friendly   },
+            { SocialExchangeSE.IntentionEnum.Negative , CustomAgent.Intentions.Unfriendly },
+            { SocialExchangeSE.IntentionEnum.Romantic , CustomAgent.Intentions.Romantic   },
+            { SocialExchangeSE.IntentionEnum.Hostile  , CustomAgent.Intentions.Hostile    },
+            { SocialExchangeSE.IntentionEnum.Special  , CustomAgent.Intentions.Special    }
+        };
 
+        #endregion
         private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
         {
             if (customAgent.Busy && customAgent.IsInitiator)
@@ -372,8 +381,21 @@ namespace Bannerlord_Social_AI
                     customCharacterReftoCampaignBehaviorBase = customAgent;
                     intentionRefToCBB = GetIntentionToCBB(customAgent);
                 }
+
+                if (customAgent.StartingASocialExchange)
+                {
+                    dictionaryWithSEsToGauntlet.TryGetValue(customAgent.SE_Intention, out CustomAgent.Intentions value);
+                    SE_identifier = value;
+
+                    BooleanNumber = customAgent.booleanNumber;
+                    letsUpdate = true;
+                    customAgent.StartingASocialExchange = false;
+                }
             }
         }
+        public bool letsUpdate;
+        public int BooleanNumber;
+        public CustomAgent.Intentions SE_identifier;
 
         private void DecreaseNPCsCountdown(float dt)
         {
@@ -475,7 +497,7 @@ namespace Bannerlord_Social_AI
                         {
                             nextSEList.Add(new NextSE(se.SEName, c1, c2, initiatorVolition));
                         }
-                        
+
                         else if (initiatorVolition > auxVolition)
                         {
                             auxVolition = se.CustomAgentInitiator.SEVolition;
@@ -744,7 +766,7 @@ namespace Bannerlord_Social_AI
             Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>> fromLocationGetSE = new Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>>();
 
             fromSEGetCulture = new Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>>();
-            
+
             ReadAndGetDialogsFrom(myDeserializedClassConversations, ref fromIDGetListMessages, ref fromCultureCodeGetID, fromSEGetCulture, CurrentLocation);
 
             if (fromSEGetCulture.IsEmpty())
@@ -793,7 +815,7 @@ namespace Bannerlord_Social_AI
 
         private void CheckIfFileExists()
         {
-            bool fileExists =  File.Exists(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
+            bool fileExists = File.Exists(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
 
             if (!fileExists)
             {
@@ -824,7 +846,7 @@ namespace Bannerlord_Social_AI
             {
                 LoadSavedSEs(customAgentTemp);
             }
-            
+
             customAgentsList.Add(customAgentTemp);
             AddAgentTarget(agent, customAgentTemp.Id);
 
@@ -889,7 +911,7 @@ namespace Bannerlord_Social_AI
                 }
             }
         }
-        
+
         public void SaveSavedSEs(CustomAgent customAgent, string socialExchange)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
@@ -1055,7 +1077,7 @@ namespace Bannerlord_Social_AI
                     customAgent.SetBeliefWithNewValue(belief, RelationWithPlayer);
                     customMain.SetBeliefWithNewValue(belief, RelationWithPlayer);
                 }
-            }    
+            }
         }
 
         private static SocialNetworkBelief IfBeliefIsNullCreateANewOne(CustomAgent customMain, CustomAgent customAgent, SocialNetworkBelief belief)
@@ -1192,7 +1214,7 @@ namespace Bannerlord_Social_AI
             else
             {
                 return true;
-            }      
+            }
         }
 
         private void AddAgentTarget(Agent agent, int id)
