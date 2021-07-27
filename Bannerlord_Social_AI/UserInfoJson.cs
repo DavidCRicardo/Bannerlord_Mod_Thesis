@@ -4,6 +4,9 @@ namespace Bannerlord_Social_AI
 {
     class UserInfoJson
     {
+        [JsonProperty("DaysPassedInGame")]
+        public int DaysPassedInGame { get; set; }
+
         [JsonProperty("P_Friendly")]
         public int PFriendly { get; set; }
         [JsonProperty("P_UnFriendly")]

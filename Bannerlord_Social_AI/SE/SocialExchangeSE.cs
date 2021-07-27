@@ -278,7 +278,7 @@ namespace Bannerlord_Social_AI
 
                         if (CAtoDecrease.selfAgent.IsHero && CAtoDecrease.selfAgent == Agent.Main)
                         {
-                            RelationInGameChanges();
+                            ChangeHeroRelationInGame(-1, CAtoDecrease);
                         }
                     }  
                 }
@@ -347,22 +347,22 @@ namespace Bannerlord_Social_AI
                 int newValue = (int)(relationWithPlayer + value);
                 if (value > 0)
                 {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relationWithPlayer.ToString() + " to " + (relationWithPlayer + 1).ToString()), 0, hero.CharacterObject);
+                    InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
                 else
                 {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relationWithPlayer.ToString() + " to " + (relationWithPlayer - 1).ToString()), 0, hero.CharacterObject);
+                    InformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
             }
         }
 
-        private bool InteractionSawByThisNPC(CustomAgent customAgent)
+        private bool InteractionSawByThisNPC(CustomAgent customAgentInitiator, CustomAgent customAgent)
         {
             if (Agent.Main != null)
             {
-                if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) <= 5)
+                if (customAgentInitiator != customAgent && customAgent.selfAgent != Agent.Main && customAgentInitiator.selfAgent.Position.Distance(customAgent.selfAgent.Position) <= 5)
                 {
                     return true;
                 }
@@ -381,7 +381,7 @@ namespace Bannerlord_Social_AI
         {
             foreach (CustomAgent customAgent in CustomAgentList)
             {
-                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThisNPC(customAgent)) // ele viu?
+                if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThisNPC(CustomAgentInitiator, customAgent)) // ele viu?
                 {
                     SocialNetworkBelief beliefWithInitiator = customAgent.SelfGetBeliefWithAgent(CustomAgentInitiator);
                     SocialNetworkBelief beliefWithReceiver = customAgent.SelfGetBeliefWithAgent(CustomAgentReceiver);
@@ -410,7 +410,7 @@ namespace Bannerlord_Social_AI
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (customAgent.selfAgent.IsHero)
+                                if (CustomAgentInitiator.selfAgent == Agent.Main && customAgent.selfAgent.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -422,7 +422,7 @@ namespace Bannerlord_Social_AI
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (customAgent.selfAgent.IsHero)
+                                if (CustomAgentInitiator.selfAgent == Agent.Main && customAgent.selfAgent.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -584,27 +584,6 @@ namespace Bannerlord_Social_AI
             customAgent.MarkerTyperRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
-        }
-
-        private void RelationInGameChanges()
-        {
-            int value = -1;
-            Hero hero = Hero.FindFirst(h => h.CharacterObject == CustomAgentReceiver.selfAgent.Character);
-            if (hero != null && hero != Hero.MainHero)
-            {
-                float relation = hero.GetRelationWithPlayer();
-                int newValue = (int)(relation + value);
-                if (value > 0)
-                {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " increased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation + 1).ToString()), 0, hero.CharacterObject);
-                    Hero.MainHero.SetPersonalRelation(hero, newValue);
-                }
-                else
-                {
-                    InformationManager.AddQuickInformation(new TextObject(Agent.Main.Name + " decreased relation with " + hero.Name + " from " + relation.ToString() + " to " + (relation - 1).ToString()), 0, hero.CharacterObject);
-                    Hero.MainHero.SetPersonalRelation(hero, newValue);
-                }
-            }
         }
 
         public IntentionEnum Intention { get; private set; }

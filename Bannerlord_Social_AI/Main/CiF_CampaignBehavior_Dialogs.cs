@@ -2,12 +2,10 @@
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using TaleWorlds.Core;
-using TaleWorlds.Localization;
 
 namespace Bannerlord_Social_AI
 {
@@ -41,6 +39,7 @@ namespace Bannerlord_Social_AI
         private String text;
         private Random rnd;
         private int value;
+
         public bool FriendlyOptionExists;
         public bool UnFriendlyOptionExists;
         public bool RomanticOptionExists;
@@ -136,82 +135,31 @@ namespace Bannerlord_Social_AI
             ReadJsonFile(campaignGameStarter);
 
             rnd = new Random();
-            NewRandom();
+            value = NewRandom();
+
             FriendlyOptionExists = false;
             UnFriendlyOptionExists = false;
             RomanticOptionExists = false;
             HostileOptionExists = false;
         }
 
-        private void NewRandom()
+        private int NewRandom()
         {
-            value = rnd.Next(1, 3);
+            return rnd.Next(1, 3);
         }
-
-        #region old
-        public bool giveCourage { get; set; }
-        private void Increase_Courage()
-        {
-            giveCourage = true;
-        }
-
-        private bool talking_with_NotNegativeTraits()
-        {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
-            {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
-                //
-                CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (agentConversation != null)
-                {
-                    CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
-                    customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    bool trait = customAgent.TraitList.Exists(t => t.traitName == "Calm" || t.traitName == "Shy" || t.traitName == "Friendly");
-                    if (trait)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-        private bool talking_with_Charming()
-        {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
-            {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-                string _currentLocation = CampaignMission.Current.Location.StringId;
-
-                CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-                if (agentConversation != null)
-                {
-                    CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
-                    customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
-                    if (trait != null)
-                    {
-                        return true;
-                    }
-                    else { return false; }
-                }
-            }
-
-            return false;
-        }
-        #endregion 
 
         public CustomAgent customAgentConversation { get; set; }
         public CustomAgent characterRef { get; set; }
+        public int characterIdRef { get; set; }
 
         private bool ThisAgentWillInteractWithPlayer()
         {
-            customAgentConversation = customAgents.Find( c => c == characterRef);
+            customAgentConversation = customAgents.Find(c => c == characterRef && c.Id == characterIdRef);
 
             if (customAgentConversation != null)
             {
                 characterRef = null;
+                characterIdRef = -1;
                 return true;
             }
             else { return false; }
@@ -242,10 +190,11 @@ namespace Bannerlord_Social_AI
         {
             if (FriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                FriendlyBool = false;
-                return true;
+                    FriendlyBool = false;
+                    return true;
             }
-            else { return false; }
+
+            return false;
         }
 
         private bool RomanticNPC()
@@ -262,10 +211,11 @@ namespace Bannerlord_Social_AI
         {
             if (UnFriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                UnFriendlyBool = false;
-                return true;
+                    UnFriendlyBool = false;
+                    return true;
             }
-            else { return false; }
+                    
+            return false;
         }
 
         private bool HostileNPC()
@@ -351,15 +301,15 @@ namespace Bannerlord_Social_AI
 
                         if (customAgentConversation != null)
                         {
-                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
-                            if (!value)
+                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
+                            if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                                 CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
-                                    NewRandom();
+                                    value = NewRandom();
                                     FriendlyOptionExists = true;
                                     return true;
                                 }
@@ -396,15 +346,15 @@ namespace Bannerlord_Social_AI
 
                         if (customAgentConversation != null)
                         {
-                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
-                            if (!value)
+                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
+                            if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                                 CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
-                                    NewRandom();
+                                    value = NewRandom();
                                     UnFriendlyOptionExists = true;
                                     return true;
                                 }
@@ -478,15 +428,15 @@ namespace Bannerlord_Social_AI
 
                         if (customAgentConversation != null)
                         {
-                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
-                            if (!value)
+                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
+                            if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                                 CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
-                                    NewRandom();
+                                    value = NewRandom();
                                     RomanticOptionExists = true;
                                     return true;
                                 }
@@ -523,15 +473,15 @@ namespace Bannerlord_Social_AI
 
                         if (customAgentConversation != null)
                         {
-                            bool value = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
-                            if (!value)
+                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
+                            if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
                                 CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
-                                    NewRandom();
+                                    value = NewRandom();
                                     HostileOptionExists = true;
                                     return true;
                                 }
@@ -714,21 +664,75 @@ namespace Bannerlord_Social_AI
                 }  
             }
             return false;
-        }
-        
-        private void Conversation_tavernmaid_test_on_condition()
-        {
-            //Teleport character near to NPC
-            CharacterObject characterObject = CharacterObject.All.FirstOrDefault((CharacterObject k) => k.Occupation == Occupation.Merchant && Settlement.CurrentSettlement == Hero.MainHero.CurrentSettlement && k.Name.ToString() == "Caribos the Mercer");
-            Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
-            CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
-            PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
-        }
+        }  
         
         public void SetPersonalRelation(Hero otherHero, int value)
         {
             value = MBMath.ClampInt(value, -100, 100);
             CharacterRelationManager.SetHeroRelation(Hero.MainHero, otherHero, value);
         }
+
+        //private void Conversation_tavernmaid_test_on_condition()
+        //{
+        //    //Teleport character near to NPC
+        //    CharacterObject characterObject = CharacterObject.All.FirstOrDefault((CharacterObject k) => k.Occupation == Occupation.Merchant && Settlement.CurrentSettlement == Hero.MainHero.CurrentSettlement && k.Name.ToString() == "Caribos the Mercer");
+        //    Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
+        //    CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
+        //    PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
+        //}
     }
 }
+
+//#region old
+//public bool giveCourage { get; set; }
+//private void Increase_Courage()
+//{
+//    giveCourage = true;
+//}
+
+//private bool talking_with_NotNegativeTraits()
+//{
+//    if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+//    {
+//        string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+//        string _currentLocation = CampaignMission.Current.Location.StringId;
+////
+//        CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+//        if (agentConversation != null)
+//        {
+//            CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
+//            customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+//            bool trait = customAgent.TraitList.Exists(t => t.traitName == "Calm" || t.traitName == "Shy" || t.traitName == "Friendly");
+//            if (trait)
+//            {
+//                return true;
+//            }
+//        }
+//    }
+
+//    return false;
+//}
+//private bool talking_with_Charming()
+//{
+//    if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+//    {
+//        string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+//        string _currentLocation = CampaignMission.Current.Location.StringId;
+
+//        CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
+//        if (agentConversation != null)
+//        {
+//            CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
+//            customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+//            Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
+//            if (trait != null)
+//            {
+//                return true;
+//            }
+//            else { return false; }
+//        }
+//    }
+
+//    return false;
+//}
+//#endregion
