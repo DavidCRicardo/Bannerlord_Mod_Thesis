@@ -43,6 +43,7 @@ namespace Bannerlord_Social_AI
         private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
+        public CustomAgent customAgentInteractingWithPlayer;
         private bool playerStartedASE;
         private int CIF_Range = 0;
         private Random rnd { get; set; }
@@ -59,21 +60,25 @@ namespace Bannerlord_Social_AI
                     PreInitializeOnSettlement();
 
                     InitializeOnSettlement(giveTraitsToNPCs);
-
+                    CIF_Range = 5;
                     this._firstTick = false;
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
+                    InformationManager.DisplayMessage(new InformationMessage("OnGoingSEs: " + OnGoingSEs.ToString()));
                     DecreaseNPCsCountdown(dt);
                     
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         if (CustomAgentInsideRangeFromPlayer(customAgent) || customAgent.Busy)
                         {
-                            CustomAgentsNearPlayer(customAgent);
-
-                            CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
+                            customAgent.NearPlayer = CustomAgentIsNearToPlayer(customAgent);
+                            
+                            if (customAgent.Busy && customAgent.IsInitiator)
+                            {
+                                CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
+                            }
 
                             if (SecsDelay(dt, 1))
                             {
@@ -84,10 +89,32 @@ namespace Bannerlord_Social_AI
                 }
                 else 
                 {
-                    if (!playerStartedASE)
+                    if (!playerStartedASE && customAgentInteractingWithPlayer == null)
                     {
-                        playerStartedASE = true;
-                        OnGoingSEs++;
+                        customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
+
+                        if (customAgentInteractingWithPlayer != null)
+                        {
+                            if (customAgentInteractingWithPlayer.customAgentTarget == null)
+                            {
+                                playerStartedASE = true;
+                                OnGoingSEs++;
+                            }
+                            else
+                            {
+                                if (customAgentInteractingWithPlayer.customAgentTarget.selfAgent != Agent.Main)
+                                {
+                                    playerStartedASE = true;
+                                    OnGoingSEs++;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                            playerStartedASE = true; OnGoingSEs++;
+                        }
+                        
                     }
                 }
 
@@ -373,42 +400,40 @@ namespace Bannerlord_Social_AI
         };
 
         #endregion
+
         private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
         {
-            if (customAgent.Busy && customAgent.IsInitiator)
+            customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary, _CurrentLocation);
+            if (customAgent.EndingSocialExchange)
             {
-                customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary, _CurrentLocation);
-                if (customAgent.EndingSocialExchange)
-                {
-                    OnGoingSEs--;
-                    customAgent.EndingSocialExchange = false;
+                OnGoingSEs--;
+                customAgent.EndingSocialExchange = false;
 
-                    SaveAllInfoToJSON();
-                }
+                SaveAllInfoToJSON();
+            }
 
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent == Agent.Main)
-                {
-                    customCharacterReftoCampaignBehaviorBase = customAgent;
-                    customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
+            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent == Agent.Main)
+            {
+                customCharacterReftoCampaignBehaviorBase = customAgent;
+                customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
 
-                    intentionRefToCBB = GetIntentionToCBB(customAgent);
-                }
+                intentionRefToCBB = GetIntentionToCBB(customAgent);
+            }
 
-                if (customAgent.StartingASocialExchange)
-                {
-                    dictionaryWithSEsToGauntlet.TryGetValue(customAgent.SE_Intention, out CustomAgent.Intentions value);
-                    SE_identifier = value;
+            if (customAgent.StartingASocialExchange)
+            {
+                dictionaryWithSEsToGauntlet.TryGetValue(customAgent.SE_Intention, out CustomAgent.Intentions value);
+                SE_identifier = value;
 
-                    BooleanNumber = customAgent.booleanNumber;
-                    letsUpdate = true;
-                    customAgent.StartingASocialExchange = false;
-                }
+                BooleanNumber = customAgent.booleanNumber;
+                letsUpdate = true;
+                customAgent.StartingASocialExchange = false;
             }
         }
+
         public bool letsUpdate;
         public int BooleanNumber;
         public CustomAgent.Intentions SE_identifier;
-
 
         private void DecreaseNPCsCountdown(float dt)
         {
@@ -419,22 +444,11 @@ namespace Bannerlord_Social_AI
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (customAgent.selfAgent == Agent.Main)
+                if (customAgent.RunAI && CustomAgentHasEnoughRest(customAgent) && !customAgent.EnoughRest)
                 {
-                    if (SecsDelay(dt, 10) && customAgent.Busy)
+                    if (customAgent.SecsDelay(dt, customAgent.Countdown))
                     {
-                        customAgent.Busy = false;
-                    }
-                }
-
-                if (customAgent.RunAI)
-                {
-                    if (CustomAgentHasEnoughRest(customAgent))
-                    {
-                        if (customAgent.SecsDelay(dt, customAgent.Countdown))
-                        {
-                            customAgent.EnoughRest = true;
-                        }
+                        customAgent.EnoughRest = true;
                     }
                 }
             }
@@ -460,12 +474,12 @@ namespace Bannerlord_Social_AI
             if (customAgent.TraitList.Exists(t => t.traitName == "Friendly"))
             {
 
-                socialTalk = 0.1;
+                socialTalk += 0.1;
             }
 
             if (customAgent.TraitList.Exists(t => t.traitName == "UnFriendly"))
             {
-                bullyNeed = rnd.NextDouble();
+                bullyNeed += rnd.NextDouble();
             }
 
             customAgent.UpdateAllStatus(socialTalk, bullyNeed, -0.1, -0.1, -0.1, getTired);
@@ -688,24 +702,26 @@ namespace Bannerlord_Social_AI
 
             OnGoingSEs--;
             playerStartedASE = false;
+            customAgentInteractingWithPlayer = null;
 
-            CustomAgent customAgent = customAgentsList.Find(c => c.Name == custom.Name && c.Id == custom.Id);
-            if (customAgent != null)
+            if (custom.customAgentTarget != null && custom.customAgentTarget.Name == Agent.Main.Name)
             {
-                if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name)
-                {
-                    intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
-                    customCharacterReftoCampaignBehaviorBase = null;
-                    SetCanResetCBB_refVariables(true);
-                    
-                    customAgent.EndingSocialExchange = false;
-                    customAgent.FinalizeSocialExchange();
-                    customAgent.customAgentTarget = null;
+                intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
+                customCharacterReftoCampaignBehaviorBase = null;
+                customCharacterIdRefCampaignBehaviorBase = -1;
+                SetCanResetCBB_refVariables(true);
 
-                }
-
-                customAgent.EndFollowBehavior();
+                custom.Busy = false;
+                custom.IsInitiator = false;
+                custom.EndingSocialExchange = false;
+                custom.TalkingWithPlayer = false;
+                custom.EnoughRest = false;
+                custom.UpdateAllStatus(0, 0, 0, 0, 0, 1);
+                
+                custom.FinalizeSocialExchange();
             }
+
+            custom.EndFollowBehavior();
         }
 
         private void InitializeEnergyToAgents()
@@ -1206,16 +1222,9 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private void CustomAgentsNearPlayer(CustomAgent customAgent)
+        private bool CustomAgentIsNearToPlayer(CustomAgent customAgent)
         {
-            if (customAgent.selfAgent != Agent.Main && Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0))
-            {
-                customAgent.NearPlayer = true;
-            }
-            else
-            {
-                customAgent.NearPlayer = false;
-            }
+            return Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0);
         }
 
         private bool CustomAgentInsideRangeFromPlayer(CustomAgent customAgent)

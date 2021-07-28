@@ -331,15 +331,15 @@ namespace Bannerlord_Social_AI
             status = CheckStatusIntensity(customAgent, "SocialTalk");
             if (RelationType == SocialExchangeSE.IntentionEnum.Positive)
             {
-                if (status.intensity > 0.5 && status.intensity < 1)
+                if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
                     localSum += 2;
                 }
-                else if (status.intensity >= 1 && status.intensity < 1.5)
+                else if (status.intensity >= 1.5 && status.intensity < 3)
                 {
                     localSum += 4;
                 }
-                else if (status.intensity >= 1.5 && status.intensity < 3)
+                else if (status.intensity >= 3)
                 {
                     localSum += 6;
                 }
@@ -349,30 +349,30 @@ namespace Bannerlord_Social_AI
             status = CheckStatusIntensity(customAgent, "Anger");
             if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
             {
-                if (status.intensity > 0.5 && status.intensity < 1)
+                if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
                     localSum -= 2;
                 }
-                else if (status.intensity >= 1 && status.intensity < 1.5)
+                else if (status.intensity >= 1.5 && status.intensity < 3)
                 {
                     localSum -= 4;
                 }
-                else if (status.intensity >= 1.5)
+                else if (status.intensity >= 3)
                 {
                     localSum -= 6;
                 }
             }
             else if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
             {
-                if (status.intensity > 0.5 && status.intensity < 1)
+                if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
                     localSum += 2;
                 }
-                else if(status.intensity >= 1 && status.intensity < 1.5)
+                else if(status.intensity >= 1.5 && status.intensity < 3)
                 {
                     localSum += 4;
                 }
-                else if(status.intensity >= 1.5)
+                else if(status.intensity >= 3)
                 {
                     localSum += 6;
                 }
@@ -381,30 +381,30 @@ namespace Bannerlord_Social_AI
             status = CheckStatusIntensity(customAgent, "BullyNeed");
             if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
             {
-                if (status.intensity > 0.5 && status.intensity < 1)
+                if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
                     localSum -= 2;
                 }
-                else if (status.intensity >= 1 && status.intensity < 1.5)
+                else if (status.intensity >= 1.5 && status.intensity < 3)
                 {
                     localSum -= 5;
                 }
-                else if (status.intensity >= 1.5)
+                else if (status.intensity >= 3)
                 {
                     localSum -= 10;
                 }
             }
             else if (RelationType == SocialExchangeSE.IntentionEnum.Hostile)
             {
-                if (status.intensity > 0.5 && status.intensity < 1)
+                if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
                     localSum += 2;
                 }
-                else if (status.intensity >= 1 && status.intensity < 1.5)
+                else if (status.intensity >= 1.5 && status.intensity < 3)
                 {
                     localSum += 4;
                 }
-                else if (status.intensity >= 1.5)
+                else if (status.intensity >= 3)
                 {
                     localSum += 6;
                 }

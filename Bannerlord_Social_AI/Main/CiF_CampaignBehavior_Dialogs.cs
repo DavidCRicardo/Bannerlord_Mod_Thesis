@@ -21,7 +21,7 @@ namespace Bannerlord_Social_AI
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter)
         {
         }
-        
+
         public override void SyncData(IDataStore dataStore)
         {
         }
@@ -102,7 +102,7 @@ namespace Bannerlord_Social_AI
 
             dictionaryConsequences = new Dictionary<string, ConversationSentence.OnConsequenceDelegate>()
             {
-                { "None" , null}, 
+                { "None" , null},
                 { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
                 { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) },
                 { "PlayerGiveItem" , new ConversationSentence.OnConsequenceDelegate(PlayerGivesItem) },
@@ -118,7 +118,7 @@ namespace Bannerlord_Social_AI
             //campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant? {GOLD_ICON} ", null, null, 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
             //campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
-            
+
             //campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
             //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
             //campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
@@ -158,8 +158,8 @@ namespace Bannerlord_Social_AI
 
             if (customAgentConversation != null)
             {
-                characterRef = null;
-                characterIdRef = -1;
+                //characterRef = null;
+                //characterIdRef = -1;
                 return true;
             }
             else { return false; }
@@ -186,12 +186,12 @@ namespace Bannerlord_Social_AI
 
         public bool SpecialBool { get; set; }
 
-        private bool FriendlyNPC() 
+        private bool FriendlyNPC()
         {
             if (FriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                    FriendlyBool = false;
-                    return true;
+                FriendlyBool = false;
+                return true;
             }
 
             return false;
@@ -211,10 +211,10 @@ namespace Bannerlord_Social_AI
         {
             if (UnFriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                    UnFriendlyBool = false;
-                    return true;
+                UnFriendlyBool = false;
+                return true;
             }
-                    
+
             return false;
         }
 
@@ -318,9 +318,9 @@ namespace Bannerlord_Social_AI
                     }
                 }
             }
-            else 
-            { 
-                value--; 
+            else
+            {
+                value--;
             }
 
             return false;
@@ -518,10 +518,10 @@ namespace Bannerlord_Social_AI
                     }
                 }
             }
-            
+
             return false;
         }
-    
+
         private bool CheckIfPlayerSleepWithNPC_condition()
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
@@ -607,7 +607,7 @@ namespace Bannerlord_Social_AI
             }
         }
 
-        private bool CheckIfPlayerCanOfferGiftToCompanion_condition() 
+        private bool CheckIfPlayerCanOfferGiftToCompanion_condition()
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
@@ -632,7 +632,7 @@ namespace Bannerlord_Social_AI
                             return false;
                         }
                     }
-                }         
+                }
             }
             return false;
         }
@@ -661,11 +661,11 @@ namespace Bannerlord_Social_AI
                             return false;
                         }
                     }
-                }  
+                }
             }
             return false;
-        }  
-        
+        }
+
         public void SetPersonalRelation(Hero otherHero, int value)
         {
             value = MBMath.ClampInt(value, -100, 100);

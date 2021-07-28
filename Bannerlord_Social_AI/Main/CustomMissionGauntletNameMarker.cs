@@ -177,13 +177,13 @@ namespace Bannerlord_Social_AI
             {
                 foreach (CustomAgent custom in _dataSource.customAgentsList)
                 {
-                    if (custom.selfAgent.Character == characterObject)
+                    if (custom.selfAgent.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
                     {
                         CBB_ref.customAgentConversation = custom;
                         break;
                     }
                 }
-
+     
                 CBB_ref.FriendlyOptionExists = false;
                 CBB_ref.UnFriendlyOptionExists = false;
                 CBB_ref.RomanticOptionExists = false;

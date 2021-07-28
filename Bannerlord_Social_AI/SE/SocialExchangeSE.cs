@@ -25,8 +25,20 @@ namespace Bannerlord_Social_AI
                 this.CustomAgentList = customAgents;
                 this.index = -1;
 
-                SetIntention(true);
+                if (AgentReceiver == Agent.Main)
+                {
+                    SetIntention(false, true);
+                }
+                else 
+                {
+                    SetIntention(true, true);
+                }
+                
 
+                if (AgentInitiator != Agent.Main && AgentReceiver != Agent.Main)
+                {
+                    CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
+                }
                 CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
             }
         }
@@ -44,23 +56,23 @@ namespace Bannerlord_Social_AI
             
         }
 
-        private void SetIntention(bool OnSocialExchange)
+        private void SetIntention(bool setMarkerAndAnimation, bool OnSocialExchange)
         {
             switch (SEName)
             {
                 case "Compliment":
                 case "GiveGift":
                     Intention = IntentionEnum.Positive;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
-                        CustomAgentInitiator.PlayAnimation("act_argue_soft_1");
-                        CustomAgentReceiver.PlayAnimation("act_argue_soft_2");
+                        CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
+                        CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
                 case "FriendSabotage":
                     Intention = IntentionEnum.Negative;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 1;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
@@ -69,7 +81,7 @@ namespace Bannerlord_Social_AI
                     break;
                 case "Jealous":
                     Intention = IntentionEnum.Negative;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
@@ -79,26 +91,25 @@ namespace Bannerlord_Social_AI
                 case "AskOut":
                 case "Flirt":
                     Intention = IntentionEnum.Romantic;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
                         CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
-
                     }
                     break;
                 case "RomanticSabotage":
                     Intention = IntentionEnum.Hostile;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 1;
-                        CustomAgentInitiator.PlayAnimation("act_argue_1");
-                        CustomAgentReceiver.PlayAnimation("act_argue_2");
+                        CustomAgentInitiator.PlayAnimation("act_gossip");
+                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
                 case "Bully":
                     Intention = IntentionEnum.Hostile;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_bully");
@@ -107,7 +118,7 @@ namespace Bannerlord_Social_AI
                     break;
                 case "Break":
                     Intention = IntentionEnum.Special;
-                    if (OnSocialExchange)
+                    if (setMarkerAndAnimation && OnSocialExchange)
                     {
                         CustomAgentInitiator.MarkerTyperRef = 0;
                         CustomAgentInitiator.PlayAnimation("act_argue_3");
@@ -116,14 +127,17 @@ namespace Bannerlord_Social_AI
                     break;          
                 default:
                     Intention = IntentionEnum.Undefined;
-                    CustomAgentInitiator.MarkerTyperRef = 0;
+                    if (setMarkerAndAnimation)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 0;
+                    }
                     break;
             }
         }
 
         public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
-            CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
+            //CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
             CustomAgentInitiator.selfAgent.SetLookAgent(AgentReceiver);
 
             if (auxToCheckWhoIsSpeaking % 2 == 0)
@@ -157,15 +171,13 @@ namespace Bannerlord_Social_AI
 
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { AgentInitiator.OnUse(AgentReceiver); ReceptorIsPlayer = false; }
+                if (ReceptorIsPlayer) { CustomAgentInitiator.TalkingWithPlayer = true; AgentInitiator.OnUse(AgentReceiver); }
                 SocialExchangeDoneAndReacted = true;  
             }
         }
 
         public void OnFinalize()
         {
-            AgentInitiator.OnUseStopped(AgentReceiver, true, 0);
-
             List<string> tempListNames = new List<string>() { CustomAgentInitiator.Name , CustomAgentReceiver.Name };
             List<int> tempListIds = new List<int>() { CustomAgentInitiator.Id , CustomAgentReceiver.Id };
             MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SEName);
@@ -173,13 +185,15 @@ namespace Bannerlord_Social_AI
             CustomAgentReceiver.AddToMemory(newMemory);
 
             if (!ReceptorIsPlayer)
-            {
+            { 
                 UpdateBeliefsAndStatus();
-                ResetCustomAgentVariables(CustomAgentReceiver);
             }
+
+            ResetCustomAgentVariables(CustomAgentReceiver);
             ResetCustomAgentVariables(CustomAgentInitiator);
             
             ReceptorIsPlayer = false;
+            
         }
 
         private void UpdateBeliefsAndStatus()
@@ -486,7 +500,7 @@ namespace Bannerlord_Social_AI
         
         public int InitiadorVolition()
         {
-            SetIntention(false);
+            SetIntention(false, false);
 
             int initialValue = 0;
 

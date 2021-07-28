@@ -55,6 +55,7 @@ namespace Bannerlord_Social_AI
         private readonly int memorySize = 5;
         public string thirdAgent;
         public int thirdAgentId;
+        public bool TalkingWithPlayer { get; set; }
 
         public bool IsPlayerTeam { get; set; }
         public bool IsDead { get; set; }
@@ -98,6 +99,7 @@ namespace Bannerlord_Social_AI
             if (_agent == Agent.Main)
             {
                 this.RunAI = true;
+                Countdown += 10;
             }
             else
             {
@@ -211,6 +213,7 @@ namespace Bannerlord_Social_AI
 
             customAgentTarget.Busy = true;
 
+            this.EndingSocialExchange = false;
             IsInitiator = true;
             SocialMove = _SEName;
 
@@ -266,6 +269,8 @@ namespace Bannerlord_Social_AI
                     if (!socialExchangeSE.ReceptorIsPlayer)
                     {
                         FinalizeSocialExchange();
+                        
+                        EndingSocialExchange = true;
                     }
                 }
             }
@@ -303,10 +308,8 @@ namespace Bannerlord_Social_AI
             }
 
             NearEnoughToStartConversation = false;
-            EndingSocialExchange = true;
 
             EnoughRest = false;
-
         }
 
         public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
