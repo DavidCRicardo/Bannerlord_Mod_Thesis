@@ -60,13 +60,12 @@ namespace Bannerlord_Social_AI
                     PreInitializeOnSettlement();
 
                     InitializeOnSettlement(giveTraitsToNPCs);
-                    CIF_Range = 5;
+
                     this._firstTick = false;
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
-                    InformationManager.DisplayMessage(new InformationMessage("OnGoingSEs: " + OnGoingSEs.ToString()));
                     DecreaseNPCsCountdown(dt);
                     
                     foreach (CustomAgent customAgent in customAgentsList)
@@ -87,35 +86,9 @@ namespace Bannerlord_Social_AI
                         }
                     }
                 }
-                else 
+                else
                 {
-                    if (!playerStartedASE && customAgentInteractingWithPlayer == null)
-                    {
-                        customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
-
-                        if (customAgentInteractingWithPlayer != null)
-                        {
-                            if (customAgentInteractingWithPlayer.customAgentTarget == null)
-                            {
-                                playerStartedASE = true;
-                                OnGoingSEs++;
-                            }
-                            else
-                            {
-                                if (customAgentInteractingWithPlayer.customAgentTarget.selfAgent != Agent.Main)
-                                {
-                                    playerStartedASE = true;
-                                    OnGoingSEs++;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-                            playerStartedASE = true; OnGoingSEs++;
-                        }
-                        
-                    }
+                    CheckPlayerTalkingWithAgent();
                 }
 
                 UpdateTargetScreen();
@@ -147,7 +120,38 @@ namespace Bannerlord_Social_AI
                     }
                 }
             }
+        }
 
+        private void CheckPlayerTalkingWithAgent()
+        {
+            if (!playerStartedASE && customAgentInteractingWithPlayer == null)
+            {
+                customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
+
+                if (customAgentInteractingWithPlayer != null)
+                {
+                    if (customAgentInteractingWithPlayer.customAgentTarget == null)
+                    {
+                        playerStartedASE = true;
+                        OnGoingSEs++;
+                    }
+                    else
+                    {
+                        if (customAgentInteractingWithPlayer.customAgentTarget.selfAgent != Agent.Main)
+                        {
+                            playerStartedASE = true;
+                            OnGoingSEs++;
+                        }
+                    }
+                }
+                else
+                {
+                    customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    playerStartedASE = true;
+                    OnGoingSEs++;
+                }
+
+            }
         }
 
         internal void ResetSocialExchangesAllNPCsOptions()

@@ -190,8 +190,13 @@ namespace Bannerlord_Social_AI
         {
             if (FriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                FriendlyBool = false;
-                return true;
+                if (value <= 0)
+                {
+                    FriendlyBool = false;
+                    value = NewRandom();
+                    return true;
+                }
+                else { value--; }    
             }
 
             return false;
@@ -211,8 +216,13 @@ namespace Bannerlord_Social_AI
         {
             if (UnFriendlyBool && ThisAgentWillInteractWithPlayer())
             {
-                UnFriendlyBool = false;
-                return true;
+                if (value <= 0)
+                {
+                    UnFriendlyBool = false;
+                    value = NewRandom();
+                    return true;
+                }
+                else { value--; }
             }
 
             return false;
