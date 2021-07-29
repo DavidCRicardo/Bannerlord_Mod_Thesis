@@ -44,6 +44,7 @@ namespace Bannerlord_Social_AI
         public bool UnFriendlyOptionExists;
         public bool RomanticOptionExists;
         public bool HostileOptionExists;
+        public bool AskOutPerformed;
 
         private Dictionary<string, ConversationSentence.OnConditionDelegate> dictionaryConditions;
         private Dictionary<string, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
@@ -111,7 +112,6 @@ namespace Bannerlord_Social_AI
             };
         }
 
-
         private void AddSocialAgentsDialogs(CampaignGameStarter campaignGameStarter)
         {
             /**/
@@ -141,6 +141,7 @@ namespace Bannerlord_Social_AI
             UnFriendlyOptionExists = false;
             RomanticOptionExists = false;
             HostileOptionExists = false;
+            AskOutPerformed = false;
         }
 
         private int NewRandom()
@@ -389,6 +390,11 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerCanAskOutWithNPC_condition()
         {
+            if (AskOutPerformed)
+            {
+                return false;
+            }
+
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
@@ -400,17 +406,21 @@ namespace Bannerlord_Social_AI
 
                     if (customAgentConversation != null && customAgentConversation.selfAgent.Age > 18)
                     {
-                        customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                        SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                        bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                        if (!available)
+                        {
+                            customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
 
-                        if (belief != null && belief.relationship == "Dating")
-                        {
-                            return false;
-                        }
-                        if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
-                        {
-                            return true;
+                            if (belief != null && belief.relationship == "Dating")
+                            {
+                                return false;
+                            }
+                            if (belief != null && belief.relationship == "Friends" && belief.value >= 3)
+                            {
+                                return true; // NPC_Gender_condition(customAgentConversation);
+                            }
                         }
                     }
                 }
@@ -519,12 +529,16 @@ namespace Bannerlord_Social_AI
 
                 if (customAgentConversation != null)
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Dating" && belief.value <= 0)
+                    bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                    if (!available)
                     {
-                        return true;
+                        customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                        if (belief != null && belief.relationship == "Dating" && belief.value <= 0)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -543,18 +557,21 @@ namespace Bannerlord_Social_AI
 
                 if (customAgentConversation != null)
                 {
-                    customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                    CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
-                    SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
-                    if (belief != null && belief.relationship == "Friends")
+                    bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                    if (!available)
                     {
-                        return false;
+                        customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
+                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
+                        if (belief != null && belief.relationship == "Friends")
+                        {
+                            return false;
+                        }
+                        if (belief != null && belief.relationship == "Dating" && belief.value >= 5)
+                        {
+                            return true;
+                        }
                     }
-                    if (belief != null && belief.relationship == "Dating" && belief.value >= 5)
-                    {
-                        return true;
-                    }
-
                 }
             }
             return false;
@@ -562,6 +579,11 @@ namespace Bannerlord_Social_AI
 
         private bool NPC_AcceptReject_AskOut_condition()
         {
+            if (AskOutPerformed)
+            {
+                return false;
+            }
+
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
@@ -571,6 +593,8 @@ namespace Bannerlord_Social_AI
 
                 if (customAgentConversation != null)
                 {
+                    AskOutPerformed = true;
+
                     if (NPC_Gender_condition(customAgentConversation))
                     {
                         customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
@@ -594,7 +618,7 @@ namespace Bannerlord_Social_AI
                     }
                 }
             }
-
+            
             return false;
         }
 

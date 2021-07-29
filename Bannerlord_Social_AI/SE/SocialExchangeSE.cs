@@ -117,10 +117,11 @@ namespace Bannerlord_Social_AI
                     }
                     break;
                 case "Break":
+                case "Gratitude":
                     Intention = IntentionEnum.Special;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.MarkerTyperRef = 1;
                         CustomAgentInitiator.PlayAnimation("act_argue_3");
                         CustomAgentReceiver.PlayAnimation("act_argue_4");
                     }
@@ -193,7 +194,6 @@ namespace Bannerlord_Social_AI
             ResetCustomAgentVariables(CustomAgentInitiator);
             
             ReceptorIsPlayer = false;
-            
         }
 
         private void UpdateBeliefsAndStatus()

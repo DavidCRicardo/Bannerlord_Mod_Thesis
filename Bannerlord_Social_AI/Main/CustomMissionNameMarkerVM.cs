@@ -9,7 +9,6 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
-using TaleWorlds.GauntletUI;
 
 namespace Bannerlord_Social_AI
 {
@@ -62,12 +61,22 @@ namespace Bannerlord_Social_AI
                     InitializeOnSettlement(giveTraitsToNPCs);
 
                     this._firstTick = false;
+
+                    //Hero.MainHero.Clan.ResetClanRenown();
+                    //Hero.MainHero.Clan.Renown;
+                    //Hero.MainHero.Clan.AddRenown(100);
+
+                    CIF_Range = 5; // verificar se consigo por o loop nas conversas
+                    int renownRequirement = Hero.MainHero.Clan.RenownRequirementForNextTier;
+                    int tier = Hero.MainHero.Clan.Tier;
+                    // quando atingir nova tier, dar trigger rule "gratitude" a um NPC
+
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
                     DecreaseNPCsCountdown(dt);
-                    
+
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
                         if (CustomAgentInsideRangeFromPlayer(customAgent) || customAgent.Busy)
@@ -150,7 +159,6 @@ namespace Bannerlord_Social_AI
                     playerStartedASE = true;
                     OnGoingSEs++;
                 }
-
             }
         }
 
@@ -174,236 +182,6 @@ namespace Bannerlord_Social_AI
 
             }
         }
-
-        #region On Battle
-        private static bool PlacesAvailableToSpeak()
-        {
-            if (CampaignMission.Current.Location == null)
-            {
-                if (Hero.MainHero.CurrentSettlement == null)
-                {
-                    return true; // battle open world
-                }
-                else
-                {
-                    if (Hero.MainHero.CurrentSettlement.IsHideout())
-                    {
-                        return false; // hideout
-                    }
-                    else if (Hero.MainHero.CurrentSettlement.IsVillage)
-                    {
-                        return true; // raid village
-                    }
-                    else
-                    {
-                        return false; // arena - tournament
-                    }
-                }
-            }
-            else
-            {
-                if (CampaignMission.Current.Location.StringId != "arena")
-                {
-                    return false; // arena - practice fight
-                }
-                else { return false; }
-            }
-        }
-
-        private void DecreaseCountdownOnBattle(float dt)
-        {
-            foreach (CustomAgent customAgent in customAgentsList)
-            {
-                if (customAgent.Message != "" && customAgent.SecsDelay(dt, customAgent.Countdown))
-                {
-                    customAgent.Message = "";
-                    if (customAgent.IsPlayerTeam)
-                    {
-                        PlayerTeamCurrentSpeakers--;
-                    }
-                    else
-                    {
-                        OtherTeamCurrentSpeakers--;
-                    }
-                }
-            }
-        }
-
-        private void OnBattle()
-        {
-            float teamOpponentPercentage = 0;
-            float teamPlayerPercentage = 0;
-            int auxCountPlayerTeam = 0;
-
-            CheckDeadAgentsFromTeams(ref teamOpponentPercentage, ref teamPlayerPercentage, ref auxCountPlayerTeam);
-
-            if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
-            {
-                return;
-            }
-
-            int index = rnd.Next(customAgentsList.Count);
-            CustomAgent customAgent = customAgentsList[index];
-
-
-            if (!CustomAgentInsideRangeFromPlayer(customAgent))
-            {
-                return;
-            }
-
-            if (customAgent.IsDead)
-            {
-                customAgent.Message = "";
-            }
-            else
-            {
-                if (customAgent.IsPlayerTeam)
-                {
-                    customAgent.MarkerTyperRef = 1;
-                    PlayerTeamCurrentSpeakers++;
-                }
-                else
-                {
-                    customAgent.MarkerTyperRef = 2;
-                    OtherTeamCurrentSpeakers++;
-                }
-
-                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, teamPlayerPercentage, teamOpponentPercentage, rnd);
-            }
-        }
-
-        private void CheckDeadAgentsFromTeams(ref float teamOpponentCount, ref float teamPlayerCount, ref int auxCountOpponentTeam)
-        {
-            foreach (Team team in Mission.Current.Teams)
-            {
-                if (!team.IsPlayerTeam)
-                {
-                    teamOpponentCount = CheckDeadAgentFromThisTeam(team);
-                    auxCountOpponentTeam = team.TeamAgents.Count;
-                }
-                else
-                {
-                    teamPlayerCount = CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
-                }
-            }
-        }
-
-        private float CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
-        {
-            for (int i = 0; i < team.TeamAgents.Count; i++)
-            {
-                Agent item = team.TeamAgents[i];
-                if (!item.IsActive() || item.Health <= 0)
-                {
-                    customAgentsList[auxInt + i].IsDead = true;
-                }
-            }
-
-            if (team.TeamAgents.Count == 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return (team.ActiveAgents.Count / team.TeamAgents.Count);
-            }
-        }
-
-        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, float teamPlayerCount, float teamOpponentCount, Random rnd)
-        {
-            if (teamPlayerCount < teamOpponentCount)
-            {
-                if (isPlayerTeam)
-                {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
-                }
-                else
-                {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
-                }
-            }
-            else if (teamPlayerCount > teamOpponentCount)
-            {
-                if (isPlayerTeam)
-                {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
-                }
-                else
-                {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
-                }
-            }
-            else
-            {
-                GetBattleSingleSentence(customAgent, BattleDictionary.Neutral, rnd);
-            }
-        }
-
-        private void GetBattleSingleSentence(CustomAgent customAgent, BattleDictionary key, Random rnd)
-        {
-            battleDictionarySentences.TryGetValue(key, out List<string> BattleSentences);
-
-            int index = rnd.Next(BattleSentences.Count);
-            customAgent.Message = BattleSentences[index];
-        }
-
-        private void InitializeOnBattle(Random rnd)
-        {
-            int index = 0;
-            foreach (Team team in Mission.Current.Teams)
-            {
-                foreach (Agent agent in team.TeamAgents)
-                {
-                    if (agent.IsHuman && agent.Character != null)
-                    {
-                        CreateCustomAgent(agent, false, rnd);
-
-                        customAgentsList[index].IsPlayerTeam = team.IsPlayerTeam;
-                        index++;
-                    }
-                }
-            }
-        }
-
-        private void PreInitializeOnBattle()
-        {
-            OtherTeamCurrentSpeakers = 0;
-            PlayerTeamCurrentSpeakers = 0;
-            rnd = new Random();
-            customAgentsList = new List<CustomAgent>();
-            battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
-
-            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/battle_conversations.json");
-            BattleConversationsJson deserializedBattleClass = JsonConvert.DeserializeObject<BattleConversationsJson>(json);
-            if (deserializedBattleClass != null)
-            {
-                battleDictionarySentences.Add(BattleDictionary.Winning, deserializedBattleClass.Winning);
-                battleDictionarySentences.Add(BattleDictionary.Neutral, deserializedBattleClass.Neutral);
-                battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
-                OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
-                PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
-                CIF_Range = deserializedBattleClass.RangeConversations;
-            }
-        }
-
-        private Dictionary<BattleDictionary, List<string>> battleDictionarySentences { get; set; }
-        private enum BattleDictionary { Losing, Winning, Neutral }
-        private int OtherTeamLimitSpeakers { get; set; }
-        private int PlayerTeamLimitSpeakers { get; set; }
-        private int OtherTeamCurrentSpeakers { get; set; }
-        private int PlayerTeamCurrentSpeakers { get; set; }
-
-        public Dictionary<Enum, CustomAgent.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CustomAgent.Intentions>()
-        {
-            { SocialExchangeSE.IntentionEnum.Undefined, CustomAgent.Intentions.Undefined  },
-            { SocialExchangeSE.IntentionEnum.Positive , CustomAgent.Intentions.Friendly   },
-            { SocialExchangeSE.IntentionEnum.Negative , CustomAgent.Intentions.Unfriendly },
-            { SocialExchangeSE.IntentionEnum.Romantic , CustomAgent.Intentions.Romantic   },
-            { SocialExchangeSE.IntentionEnum.Hostile  , CustomAgent.Intentions.Hostile    },
-            { SocialExchangeSE.IntentionEnum.Special  , CustomAgent.Intentions.Special    }
-        };
-
-        #endregion
 
         private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
         {
@@ -679,11 +457,22 @@ namespace Bannerlord_Social_AI
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
-            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "Bully", "RomanticSabotage", "Break" };
+            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "Bully", "RomanticSabotage", "Break", "Gratitude" };
             foreach (string SE_Name in Temp_SEs)
             {
                 SocialExchangesList.Add(new SocialExchangeSE(SE_Name, null, null));
             }
+
+            foreach (EnumTemp_SEs se in Enum.GetValues(typeof(EnumTemp_SEs)))
+            {
+                int r = ((int)se);
+            }
+
+        }
+
+        public enum EnumTemp_SEs
+        {
+            Undefined = -1, Compliment, GiveGift, Jealous, FriendSabotage, AskOut, Flirt, Bully, RomanticSabotage, Break, Gratitude
         }
 
         private void InitializeStatusList()
@@ -921,10 +710,9 @@ namespace Bannerlord_Social_AI
             {
                 if (myDeserializedClass.SEsPerformedList != null)
                 {
-                    List<SEsPerformed> SESavedList = myDeserializedClass.SEsPerformedList.FindAll(c => c.Hero_Name == customAgent.Name);
+                    List<SEsPerformed> SESavedList = myDeserializedClass.SEsPerformedList.FindAll(c => c.Hero_Name == customAgent.Name && c.Hero_ID == customAgent.Id);
                     if (SESavedList != null)
                     {
-
                         foreach (SEsPerformed item in SESavedList)
                         {
                             var key = CustomAgent.Intentions.Hostile;
@@ -942,6 +730,10 @@ namespace Bannerlord_Social_AI
                                 case "Hostile":
                                     key = CustomAgent.Intentions.Hostile;
                                     break;
+                                case "AskOut":
+                                case "Break":
+                                    key = CustomAgent.Intentions.Special;
+                                    break;
                                 default:
                                     break;
                             }
@@ -958,7 +750,7 @@ namespace Bannerlord_Social_AI
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json");
             SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
 
-            myDeserializedClass.SEsPerformedList.Add(new SEsPerformed(customAgent.Name, socialExchange));
+            myDeserializedClass.SEsPerformedList.Add(new SEsPerformed(customAgent.Name, customAgent.Id, socialExchange));
 
             File.WriteAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
@@ -1190,11 +982,13 @@ namespace Bannerlord_Social_AI
 
         public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
         public int customCharacterIdRefCampaignBehaviorBase { get; set; }
+        public string SocialMoveRefCampaignBehaviorBase { get; set; }
         public SocialExchangeSE.IntentionEnum intentionRefToCBB { get; set; }
         private SocialExchangeSE.IntentionEnum GetIntentionToCBB(CustomAgent customAgent)
         {
             if (customAgent.SocialMove != "")
             {
+                SocialMoveRefCampaignBehaviorBase = customAgent.SocialMove;
                 if (customAgent.SocialMove == "Compliment" || customAgent.SocialMove == "GiveGift")
                 {
                     return SocialExchangeSE.IntentionEnum.Positive;
@@ -1211,7 +1005,7 @@ namespace Bannerlord_Social_AI
                 {
                     return SocialExchangeSE.IntentionEnum.Negative;
                 }
-                else if (customAgent.SocialMove == "Break")
+                else if (customAgent.SocialMove == "Break" || customAgent.SocialMove == "Gratitude")
                 {
                     return SocialExchangeSE.IntentionEnum.Special;
                 }
@@ -1225,6 +1019,236 @@ namespace Bannerlord_Social_AI
                 return SocialExchangeSE.IntentionEnum.Undefined;
             }
         }
+
+        #region On Battle
+        private static bool PlacesAvailableToSpeak()
+        {
+            if (CampaignMission.Current.Location == null)
+            {
+                if (Hero.MainHero.CurrentSettlement == null)
+                {
+                    return true; // battle open world
+                }
+                else
+                {
+                    if (Hero.MainHero.CurrentSettlement.IsHideout())
+                    {
+                        return false; // hideout
+                    }
+                    else if (Hero.MainHero.CurrentSettlement.IsVillage)
+                    {
+                        return true; // raid village
+                    }
+                    else
+                    {
+                        return false; // arena - tournament
+                    }
+                }
+            }
+            else
+            {
+                if (CampaignMission.Current.Location.StringId != "arena")
+                {
+                    return false; // arena - practice fight
+                }
+                else { return false; }
+            }
+        }
+
+        private void DecreaseCountdownOnBattle(float dt)
+        {
+            foreach (CustomAgent customAgent in customAgentsList)
+            {
+                if (customAgent.Message != "" && customAgent.SecsDelay(dt, customAgent.Countdown))
+                {
+                    customAgent.Message = "";
+                    if (customAgent.IsPlayerTeam)
+                    {
+                        PlayerTeamCurrentSpeakers--;
+                    }
+                    else
+                    {
+                        OtherTeamCurrentSpeakers--;
+                    }
+                }
+            }
+        }
+
+        private void OnBattle()
+        {
+            float teamOpponentPercentage = 0;
+            float teamPlayerPercentage = 0;
+            int auxCountPlayerTeam = 0;
+
+            CheckDeadAgentsFromTeams(ref teamOpponentPercentage, ref teamPlayerPercentage, ref auxCountPlayerTeam);
+
+            if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
+            {
+                return;
+            }
+
+            int index = rnd.Next(customAgentsList.Count);
+            CustomAgent customAgent = customAgentsList[index];
+
+
+            if (!CustomAgentInsideRangeFromPlayer(customAgent))
+            {
+                return;
+            }
+
+            if (customAgent.IsDead)
+            {
+                customAgent.Message = "";
+            }
+            else
+            {
+                if (customAgent.IsPlayerTeam)
+                {
+                    customAgent.MarkerTyperRef = 1;
+                    PlayerTeamCurrentSpeakers++;
+                }
+                else
+                {
+                    customAgent.MarkerTyperRef = 2;
+                    OtherTeamCurrentSpeakers++;
+                }
+
+                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, teamPlayerPercentage, teamOpponentPercentage, rnd);
+            }
+        }
+
+        private void CheckDeadAgentsFromTeams(ref float teamOpponentCount, ref float teamPlayerCount, ref int auxCountOpponentTeam)
+        {
+            foreach (Team team in Mission.Current.Teams)
+            {
+                if (!team.IsPlayerTeam)
+                {
+                    teamOpponentCount = CheckDeadAgentFromThisTeam(team);
+                    auxCountOpponentTeam = team.TeamAgents.Count;
+                }
+                else
+                {
+                    teamPlayerCount = CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
+                }
+            }
+        }
+
+        private float CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
+        {
+            for (int i = 0; i < team.TeamAgents.Count; i++)
+            {
+                Agent item = team.TeamAgents[i];
+                if (!item.IsActive() || item.Health <= 0)
+                {
+                    customAgentsList[auxInt + i].IsDead = true;
+                }
+            }
+
+            if (team.TeamAgents.Count == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return (team.ActiveAgents.Count / team.TeamAgents.Count);
+            }
+        }
+
+        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, float teamPlayerCount, float teamOpponentCount, Random rnd)
+        {
+            if (teamPlayerCount < teamOpponentCount)
+            {
+                if (isPlayerTeam)
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                }
+                else
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                }
+            }
+            else if (teamPlayerCount > teamOpponentCount)
+            {
+                if (isPlayerTeam)
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                }
+                else
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                }
+            }
+            else
+            {
+                GetBattleSingleSentence(customAgent, BattleDictionary.Neutral, rnd);
+            }
+        }
+
+        private void GetBattleSingleSentence(CustomAgent customAgent, BattleDictionary key, Random rnd)
+        {
+            battleDictionarySentences.TryGetValue(key, out List<string> BattleSentences);
+
+            int index = rnd.Next(BattleSentences.Count);
+            customAgent.Message = BattleSentences[index];
+        }
+
+        private void InitializeOnBattle(Random rnd)
+        {
+            int index = 0;
+            foreach (Team team in Mission.Current.Teams)
+            {
+                foreach (Agent agent in team.TeamAgents)
+                {
+                    if (agent.IsHuman && agent.Character != null)
+                    {
+                        CreateCustomAgent(agent, false, rnd);
+
+                        customAgentsList[index].IsPlayerTeam = team.IsPlayerTeam;
+                        index++;
+                    }
+                }
+            }
+        }
+
+        private void PreInitializeOnBattle()
+        {
+            OtherTeamCurrentSpeakers = 0;
+            PlayerTeamCurrentSpeakers = 0;
+            rnd = new Random();
+            customAgentsList = new List<CustomAgent>();
+            battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
+
+            string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/battle_conversations.json");
+            BattleConversationsJson deserializedBattleClass = JsonConvert.DeserializeObject<BattleConversationsJson>(json);
+            if (deserializedBattleClass != null)
+            {
+                battleDictionarySentences.Add(BattleDictionary.Winning, deserializedBattleClass.Winning);
+                battleDictionarySentences.Add(BattleDictionary.Neutral, deserializedBattleClass.Neutral);
+                battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
+                OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
+                PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
+                CIF_Range = deserializedBattleClass.RangeConversations;
+            }
+        }
+
+        private Dictionary<BattleDictionary, List<string>> battleDictionarySentences { get; set; }
+        private enum BattleDictionary { Losing, Winning, Neutral }
+        private int OtherTeamLimitSpeakers { get; set; }
+        private int PlayerTeamLimitSpeakers { get; set; }
+        private int OtherTeamCurrentSpeakers { get; set; }
+        private int PlayerTeamCurrentSpeakers { get; set; }
+
+        public Dictionary<Enum, CustomAgent.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CustomAgent.Intentions>()
+        {
+            { SocialExchangeSE.IntentionEnum.Undefined, CustomAgent.Intentions.Undefined  },
+            { SocialExchangeSE.IntentionEnum.Positive , CustomAgent.Intentions.Friendly   },
+            { SocialExchangeSE.IntentionEnum.Negative , CustomAgent.Intentions.Unfriendly },
+            { SocialExchangeSE.IntentionEnum.Romantic , CustomAgent.Intentions.Romantic   },
+            { SocialExchangeSE.IntentionEnum.Hostile  , CustomAgent.Intentions.Hostile    },
+            { SocialExchangeSE.IntentionEnum.Special  , CustomAgent.Intentions.Special    }
+        };
+
+        #endregion
 
         private bool CustomAgentIsNearToPlayer(CustomAgent customAgent)
         {

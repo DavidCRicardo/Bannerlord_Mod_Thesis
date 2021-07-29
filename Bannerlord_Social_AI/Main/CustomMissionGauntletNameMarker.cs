@@ -11,6 +11,7 @@ using TaleWorlds.Library;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Bannerlord_Social_AI
 {
@@ -175,14 +176,17 @@ namespace Bannerlord_Social_AI
         {
             if (_dataSource != null && _dataSource.customAgentsList != null)
             {
-                foreach (CustomAgent custom in _dataSource.customAgentsList)
+                if (CBB_ref.customAgentConversation == null) // prevent some kind of bug
                 {
-                    if (custom.selfAgent.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
+                    foreach (CustomAgent custom in _dataSource.customAgentsList)
                     {
-                        CBB_ref.customAgentConversation = custom;
-                        break;
+                        if (custom.selfAgent.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
+                        {
+                            CBB_ref.customAgentConversation = custom;
+                            break;
+                        }
                     }
-                }
+                }         
      
                 CBB_ref.FriendlyOptionExists = false;
                 CBB_ref.UnFriendlyOptionExists = false;
@@ -196,16 +200,26 @@ namespace Bannerlord_Social_AI
 
         private void CheckIfThereIsAnyChange(CustomAgent customAgentConversation)
         {
+            if (CBB_ref.AskOutPerformed)
+            {
+                CBB_ref.AskOutPerformed = false;
+                CheckOptionToLock(customAgentConversation, "AskOut");
+            }
+
             if (CBB_ref.StartDating)
             {
                 Start_Dating(customAgentConversation);
+
                 CBB_ref.StartDating = false;
+                CheckOptionToLock(customAgentConversation, "AskOut");
+
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is now Dating with " + customAgentConversation.Name));
             }
             else if (CBB_ref.DoBreak)
             {
                 DoBreak(customAgentConversation);
                 CBB_ref.DoBreak = false;
+                CheckOptionToLock(customAgentConversation, "Break");
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
@@ -248,37 +262,47 @@ namespace Bannerlord_Social_AI
         //    customAgent.UpdateAllStatus(0, 0, 1, 0, 0, 0);
         //}
 
-        private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value)
+        private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value = 0)
         {
             string socialExchange = "";
             CustomAgent.Intentions customAgentIntention = CustomAgent.Intentions.Undefined;
-            if (localRelation == "Friends")
+
+            if (localRelation == "AskOut" || localRelation == "Break")
             {
-                if (value > 0)
-                {
-                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
-                    socialExchange = "Friendly";
-                    customAgentIntention = CustomAgent.Intentions.Friendly;
-                }
-                else
-                {
-                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
-                    socialExchange = "UnFriendly";
-                    customAgentIntention = CustomAgent.Intentions.Unfriendly;
-                }
+                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
+                socialExchange = "AskOut";
+                customAgentIntention = CustomAgent.Intentions.Special;
             }
             else
             {
-                if (value > 0)
+                if (localRelation == "Friends")
                 {
-                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
-                    socialExchange = "Romantic";
-                    customAgentIntention = CustomAgent.Intentions.Romantic;
+                    if (value > 0)
+                    {
+                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
+                        socialExchange = "Friendly";
+                        customAgentIntention = CustomAgent.Intentions.Friendly;
+                    }
+                    else
+                    {
+                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
+                        socialExchange = "UnFriendly";
+                        customAgentIntention = CustomAgent.Intentions.Unfriendly;
+                    }
                 }
                 else
                 {
-                    SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
-                    socialExchange = "Hostile";
+                    if (value > 0)
+                    {
+                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
+                        socialExchange = "Romantic";
+                        customAgentIntention = CustomAgent.Intentions.Romantic;
+                    }
+                    else
+                    {
+                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
+                        socialExchange = "Hostile";
+                    }
                 }
             }
 
@@ -446,8 +470,11 @@ namespace Bannerlord_Social_AI
                 int newValue = (int)(relationWithPlayer + value);
                 if (value > 0)
                 {
-                    InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
-                    Hero.MainHero.SetPersonalRelation(hero, newValue);
+                    if (newValue <= 100)
+                    {
+                        InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
+                        Hero.MainHero.SetPersonalRelation(hero, newValue);
+                    }              
                 }
                 else
                 {
@@ -524,6 +551,7 @@ namespace Bannerlord_Social_AI
             CBB_ref.DoBreak = false;
             CBB_ref.IncreaseRelationshipWithPlayer = false;
             CBB_ref.DecreaseRelationshipWithPlayer = false;
+
             _dataSource.intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
             _dataSource.customCharacterReftoCampaignBehaviorBase = null;
         }
@@ -670,6 +698,5 @@ namespace Bannerlord_Social_AI
                 return "";
             }
         }
-
     }
 }

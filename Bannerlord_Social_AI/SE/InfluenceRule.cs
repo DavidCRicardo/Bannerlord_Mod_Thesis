@@ -42,7 +42,7 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Romantic:
                     switch (RelationName)
                     {
-                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
+                        //case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
                         case "Flirt": return RunRules(Dictionary, true, false, false, true, true, true, false, false,  false);
                         default: return 0;
                     }
@@ -58,7 +58,9 @@ namespace Bannerlord_Social_AI
                 case SocialExchangeSE.IntentionEnum.Special:
                     switch (RelationName)
                     {
+                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
                         case "Break": return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
+                        case "Gratitude": return RunRules(Dictionary, true, false, false, false, false, false, false, false, true);
                         default: return 0;
                     }
 
