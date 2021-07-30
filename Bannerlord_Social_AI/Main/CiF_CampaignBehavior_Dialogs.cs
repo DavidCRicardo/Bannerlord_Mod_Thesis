@@ -98,7 +98,9 @@ namespace Bannerlord_Social_AI
                 { "UnFriendly_NPC" , new ConversationSentence.OnConditionDelegate(UnFriendlyNPC) },
                 { "Romantic_NPC" , new ConversationSentence.OnConditionDelegate(RomanticNPC) },
                 { "Hostile_NPC" , new ConversationSentence.OnConditionDelegate(HostileNPC) },
-                { "Special_NPC" , new ConversationSentence.OnConditionDelegate(SpecialNPC) }
+                { "Break_NPC" , new ConversationSentence.OnConditionDelegate(BreakNPC) },
+                { "Gratitude_NPC" , new ConversationSentence.OnConditionDelegate(GratitudeNPC) }
+
 
             };
 
@@ -137,7 +139,7 @@ namespace Bannerlord_Social_AI
             ReadJsonFile(campaignGameStarter);
 
             rnd = new Random();
-            value = NewRandom();
+            value = NewRandomValue();
 
             FriendlyOptionExists = false;
             UnFriendlyOptionExists = false;
@@ -146,7 +148,7 @@ namespace Bannerlord_Social_AI
             AskOutPerformed = false;
         }
 
-        private int NewRandom()
+        private int NewRandomValue()
         {
             return rnd.Next(1, 3);
         }
@@ -179,16 +181,19 @@ namespace Bannerlord_Social_AI
             else { return false; }
         }
 
+        public bool GratitudeBool { get; set; }
+        private bool GratitudeNPC()
+        {
+            if (GratitudeBool && ThisAgentWillInteractWithPlayer())
+            {
+                GratitudeBool = false;
+                return true;
+            }
+
+            return false;
+        }
+
         public bool FriendlyBool { get; set; }
-
-        public bool RomanticBool { get; set; }
-
-        public bool UnFriendlyBool { get; set; }
-
-        public bool HostileBool { get; set; }
-
-        public bool SpecialBool { get; set; }
-
         private bool FriendlyNPC()
         {
             if (FriendlyBool && ThisAgentWillInteractWithPlayer())
@@ -196,15 +201,16 @@ namespace Bannerlord_Social_AI
                 if (value <= 0)
                 {
                     FriendlyBool = false;
-                    value = NewRandom();
+                    value = NewRandomValue();
                     return true;
                 }
-                else { value--; }    
+                else { value--; }
             }
 
             return false;
         }
 
+        public bool RomanticBool { get; set; }
         private bool RomanticNPC()
         {
             if (RomanticBool && ThisAgentWillInteractWithPlayer())
@@ -215,6 +221,7 @@ namespace Bannerlord_Social_AI
             else { return false; }
         }
 
+        public bool UnFriendlyBool { get; set; }
         private bool UnFriendlyNPC()
         {
             if (UnFriendlyBool && ThisAgentWillInteractWithPlayer())
@@ -222,7 +229,7 @@ namespace Bannerlord_Social_AI
                 if (value <= 0)
                 {
                     UnFriendlyBool = false;
-                    value = NewRandom();
+                    value = NewRandomValue();
                     return true;
                 }
                 else { value--; }
@@ -231,6 +238,7 @@ namespace Bannerlord_Social_AI
             return false;
         }
 
+        public bool HostileBool { get; set; }
         private bool HostileNPC()
         {
             if (HostileBool && ThisAgentWillInteractWithPlayer())
@@ -241,11 +249,12 @@ namespace Bannerlord_Social_AI
             else { return false; }
         }
 
-        private bool SpecialNPC()
+        public bool BreakBool { get; set; }
+        private bool BreakNPC()
         {
-            if (SpecialBool && ThisAgentWillInteractWithPlayer())
+            if (BreakBool && ThisAgentWillInteractWithPlayer())
             {
-                SpecialBool = false;
+                BreakBool = false;
                 return true;
             }
             else { return false; }
@@ -327,7 +336,7 @@ namespace Bannerlord_Social_AI
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
-                                    value = NewRandom();
+                                    value = NewRandomValue();
                                     FriendlyOptionExists = true;
                                     return true;
                                 }
@@ -372,7 +381,7 @@ namespace Bannerlord_Social_AI
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
-                                    value = NewRandom();
+                                    value = NewRandomValue();
                                     UnFriendlyOptionExists = true;
                                     return true;
                                 }
@@ -463,7 +472,7 @@ namespace Bannerlord_Social_AI
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
-                                    value = NewRandom();
+                                    value = NewRandomValue();
                                     RomanticOptionExists = true;
                                     return true;
                                 }
@@ -508,7 +517,7 @@ namespace Bannerlord_Social_AI
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
-                                    value = NewRandom();
+                                    value = NewRandomValue();
                                     HostileOptionExists = true;
                                     return true;
                                 }

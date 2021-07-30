@@ -175,12 +175,13 @@ namespace Bannerlord_Social_AI
                         CBB_ref.HostileBool = true;
                         break;
                     case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
-                        CBB_ref.AskOutPerformed = true; //?
+                        CBB_ref.AskOutPerformed = true; 
                         break;
                     case CustomMissionNameMarkerVM.SEs_Enum.Break:
-                        CBB_ref.SpecialBool = true;
+                        CBB_ref.BreakBool = true;
                         break;
                     case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                        CBB_ref.GratitudeBool = true;
                         break;
                     default:
                         break;
@@ -439,9 +440,10 @@ namespace Bannerlord_Social_AI
             CBB_ref.RomanticBool = false;
             CBB_ref.UnFriendlyBool = false;
             CBB_ref.HostileBool = false;
-            CBB_ref.SpecialBool = false;
+            CBB_ref.BreakBool = false;
             CBB_ref.StartDating = false;
             CBB_ref.DoBreak = false;
+            CBB_ref.GratitudeBool = false;
             CBB_ref.IncreaseRelationshipWithPlayer = false;
             CBB_ref.DecreaseRelationshipWithPlayer = false;
 

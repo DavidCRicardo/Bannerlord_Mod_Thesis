@@ -44,7 +44,8 @@ namespace Bannerlord_Social_AI
         private int CIF_Range = 0;
         private Random rnd { get; set; }
 
-        private int tier { get; set; }
+        private int nextRequiredRenown { get; set; }
+        public bool StopSEs { get; set; }
 
         public void Tick(float dt)
         {
@@ -54,30 +55,17 @@ namespace Bannerlord_Social_AI
                 if (this._firstTick)
                 {
                     rnd = new Random();
-
                     PreInitializeOnSettlement();
 
                     InitializeOnSettlement(giveTraitsToNPCs);
 
                     this._firstTick = false;
-
-                    //Hero.MainHero.Clan.ResetClanRenown();
-                    //Hero.MainHero.Clan.Renown;
-                    //Hero.MainHero.Clan.AddRenown(100);
-
-                    //CIF_Range = 5; // para testar o loop nas conversas
-                    int renownRequirement = Hero.MainHero.Clan.RenownRequirementForNextTier;
-                    int tier = Hero.MainHero.Clan.Tier;
-
-                    if (true)
-                    {
-
-                    }
-                    // quando atingir nova tier, dar trigger rule "gratitude" a um NPC
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
+                    CheckGratitudeMethod();
+
                     DecreaseNPCsCountdown(dt);
 
                     foreach (CustomAgent customAgent in customAgentsList)
@@ -85,7 +73,7 @@ namespace Bannerlord_Social_AI
                         if (CustomAgentInsideRangeFromPlayer(customAgent) || customAgent.Busy)
                         {
                             customAgent.NearPlayer = CustomAgentIsNearToPlayer(customAgent);
-                            
+
                             if (customAgent.Busy && customAgent.IsInitiator)
                             {
                                 CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
@@ -133,6 +121,39 @@ namespace Bannerlord_Social_AI
                 }
             }
         }
+
+        private void CheckGratitudeMethod()
+        {
+            if (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule)
+            {
+                CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.selfAgent != Agent.Main);
+                if (CurrentAgentsWhoAreRunningAI != null && CurrentAgentsWhoAreRunningAI.Count > 0)
+                {
+                    ReadyToGiveTriggerRule = true;
+
+                    foreach (CustomAgent item in CurrentAgentsWhoAreRunningAI)
+                    {
+                        if (ReadyToGiveTriggerRule)
+                        {
+                            if (item.Busy)
+                            {
+                                continue;
+                            }
+
+                            item.AddToTriggerRulesList(new TriggerRule(SEs_Enum.Gratitude.ToString(), Agent.Main.Name, 0));
+                            ReadyToGiveTriggerRule = false;
+                        }
+                    }
+                    nextRequiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
+                }
+                else
+                {
+                    ReadyToGiveTriggerRule = true;
+                }
+            }
+        }
+        private List<CustomAgent> CurrentAgentsWhoAreRunningAI { get; set; }
+        private bool ReadyToGiveTriggerRule { get; set; }
 
         private void CheckPlayerTalkingWithAgent()
         {
@@ -203,6 +224,7 @@ namespace Bannerlord_Social_AI
                 customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
 
                 SocialExchange_E = customAgent.SocialMove_SE;
+
             }
 
             if (customAgent.StartingASocialExchange)
@@ -216,7 +238,6 @@ namespace Bannerlord_Social_AI
 
         public bool letsUpdate;
         public int BooleanNumber;
-        public SEs_Enum SE_identifier;
 
         private void DecreaseNPCsCountdown(float dt)
         {
@@ -498,7 +519,7 @@ namespace Bannerlord_Social_AI
                 custom.TalkingWithPlayer = false;
                 custom.EnoughRest = false;
                 custom.UpdateAllStatus(0, 0, 0, 0, 0, 1);
-                
+
                 custom.FinalizeSocialExchange();
             }
 
@@ -838,6 +859,7 @@ namespace Bannerlord_Social_AI
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
+            nextRequiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
             foreach (SettlementJson _settlement in myDeserializedClass.SettlementJson)
             {
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
@@ -916,6 +938,8 @@ namespace Bannerlord_Social_AI
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/Bannerlord_Social_AI/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
+
+            myDeserializedClass.requiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
 
             foreach (SettlementJson item in myDeserializedClass.SettlementJson)
             {

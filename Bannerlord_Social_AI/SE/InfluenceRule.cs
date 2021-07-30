@@ -99,7 +99,7 @@ namespace Bannerlord_Social_AI
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
 
-            sum += CheckMemoryForPreviousSEs(RelationName, Initiator, Receiver);
+            sum += CheckMemoryForPreviousSEs(SE_Enum_Name.ToString(), Initiator, Receiver);
 
             if (NeedsToBeOlderThan18)
             {
@@ -439,17 +439,17 @@ namespace Bannerlord_Social_AI
             return 0;
         }
 
-        public int CheckInitiatorTriggerRules(CustomAgent agentWhoWillCheck, CustomAgent agentChecked, string relationName)
+        public int CheckInitiatorTriggerRules(CustomAgent agentInitiator, CustomAgent agentReceiver, string relationName)
         {
-            if (!agentWhoWillCheck.TriggerRuleList.IsEmpty())
+            if (!agentInitiator.TriggerRuleList.IsEmpty())
             {
-                TriggerRule triggerRule = agentWhoWillCheck.TriggerRuleList.Find(
-                    rule => rule.NPC_OnRule == agentChecked.Name && rule.NPC_ID == agentChecked.Id && rule.SocialExchangeToDo == relationName);
+                TriggerRule triggerRule = agentInitiator.TriggerRuleList.Find(
+                    rule => rule.NPC_OnRule == agentReceiver.Name && rule.NPC_ID == agentReceiver.Id && rule.SocialExchangeToDo == relationName);
                 
                 if (triggerRule != null)
                 {
-                    agentWhoWillCheck.RemoveTriggerRule(triggerRule);
-                    return 200;
+                    agentInitiator.RemoveTriggerRule(triggerRule);
+                    return 300;
                 }
             }
 
@@ -474,7 +474,6 @@ namespace Bannerlord_Social_AI
         public CustomAgent Receiver { get; }
         public bool IsReacting { get; set; }
         public int InitialValue { get; set; }
-        public string RelationName { get; set; }
         public SocialExchangeSE.IntentionEnum RelationIntention { get; set; }
         public CustomMissionNameMarkerVM.SEs_Enum SE_Enum_Name { get; internal set; }
 

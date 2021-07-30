@@ -12,7 +12,6 @@ namespace Bannerlord_Social_AI
     {
         public SocialExchangeSE(CustomMissionNameMarkerVM.SEs_Enum seEnum, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
         {
-            //this.SEName = seEnum.ToString();
             SE_Enum = seEnum;
 
             if (_customAgentinitiator != null)
@@ -39,7 +38,6 @@ namespace Bannerlord_Social_AI
                 CustomAgentInitiator.UpdateTarget(CustomAgentReceiver.Name, CustomAgentReceiver.Id);
             }
         }
-        public string SEName { get; set; }
 
         public void OnInitialize(Random _rnd)
         {
@@ -396,23 +394,10 @@ namespace Bannerlord_Social_AI
                     CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
                     CustomAgentReceiver.AddItem(tempItem.itemName, 1);
                 }
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Gratitude)
+                {
 
-                //if (SEName == "Compliment")
-                //{
-                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-
-                //    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
-                //}
-                //else if (SEName == "GiveGift")
-                //{
-                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
-
-                //    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
-
-                //    Item tempItem = CustomAgentInitiator.GetItem();
-                //    CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
-                //    CustomAgentReceiver.AddItem(tempItem.itemName, 1);
-                //}
+                }
             }
             else
             {
@@ -636,7 +621,7 @@ namespace Bannerlord_Social_AI
         
         private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
         {
-            IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.RelationName) : 0;
+            IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.SE_Enum_Name.ToString()) : 0;
 
             IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
             IR.InitialValue += IR.SRunRules();

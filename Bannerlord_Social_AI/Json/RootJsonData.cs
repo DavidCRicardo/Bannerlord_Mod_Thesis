@@ -3,9 +3,10 @@ using System.Collections.Generic;
 
 namespace Bannerlord_Social_AI
 {
-    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
     public class RootJsonData
     {
+        [JsonProperty("requiredRenown")]
+        public int requiredRenown { get; set; }
         [JsonProperty("SettlementJson")]
         public List<SettlementJson> SettlementJson { get; set; }
     }
