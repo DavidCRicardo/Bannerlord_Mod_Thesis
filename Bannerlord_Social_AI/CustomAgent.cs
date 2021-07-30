@@ -212,7 +212,7 @@ namespace Bannerlord_Social_AI
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
 
-        public void StartSE(string _SEName, CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
+        public void StartSE(CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
 

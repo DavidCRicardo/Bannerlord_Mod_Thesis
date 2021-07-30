@@ -12,7 +12,7 @@ namespace Bannerlord_Social_AI
     {
         public SocialExchangeSE(CustomMissionNameMarkerVM.SEs_Enum seEnum, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
         {
-            this.SEName = seEnum.ToString();
+            //this.SEName = seEnum.ToString();
             SE_Enum = seEnum;
 
             if (_customAgentinitiator != null)
@@ -179,7 +179,7 @@ namespace Bannerlord_Social_AI
         {
             List<string> tempListNames = new List<string>() { CustomAgentInitiator.Name , CustomAgentReceiver.Name };
             List<int> tempListIds = new List<int>() { CustomAgentInitiator.Id , CustomAgentReceiver.Id };
-            MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SEName /*SE_Enum.ToString()*/);
+            MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SE_Enum.ToString());
             CustomAgentInitiator.AddToMemory(newMemory);
             CustomAgentReceiver.AddToMemory(newMemory);
 

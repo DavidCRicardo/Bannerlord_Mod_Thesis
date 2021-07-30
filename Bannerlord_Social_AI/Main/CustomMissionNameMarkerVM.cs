@@ -28,7 +28,6 @@ namespace Bannerlord_Social_AI
         private NextSE nextSE { get; set; }
 
         public List<CustomAgent> customAgentsList { get; set; }
-        private SocialExchangeSE socialExchangeSE { get; set; }
         private List<string> StatusList { get; set; }
 
         private string CurrentSettlement { get; set; }
@@ -37,16 +36,15 @@ namespace Bannerlord_Social_AI
         private int OnGoingSEs { get; set; }
         private int MaximumSEs { get; set; }
 
-        private string auxSEName;
         private SEs_Enum auxSE;
-        private CustomAgent auxInitiatorAgent;
-        private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
         public CustomAgent customAgentInteractingWithPlayer;
         public bool playerStartedASE;
         private int CIF_Range = 0;
         private Random rnd { get; set; }
+
+        private int tier { get; set; }
 
         public void Tick(float dt)
         {
@@ -70,6 +68,11 @@ namespace Bannerlord_Social_AI
                     //CIF_Range = 5; // para testar o loop nas conversas
                     int renownRequirement = Hero.MainHero.Clan.RenownRequirementForNextTier;
                     int tier = Hero.MainHero.Clan.Tier;
+
+                    if (true)
+                    {
+
+                    }
                     // quando atingir nova tier, dar trigger rule "gratitude" a um NPC
                 }
 
@@ -270,14 +273,12 @@ namespace Bannerlord_Social_AI
             /* Set mostWantedSE & nextSE to default values */
             foreach (var k in mostWantedSEList)
             {
-                k.nextSE.SEName = "";
                 k.nextSE.se = SEs_Enum.Undefined;
                 k.nextSE.InitiatorAgent = null;
                 k.nextSE.ReceiverAgent = null;
                 k.nextSE.Volition = 0;
             }
 
-            nextSE.SEName = "";
             nextSE.se = SEs_Enum.Undefined;
             nextSE.Volition = 0;
             nextSE.InitiatorAgent = null;
@@ -292,10 +293,7 @@ namespace Bannerlord_Social_AI
                 }
 
                 auxVolition = 0;
-                auxSEName = "";
                 auxSE = SEs_Enum.Undefined;
-                auxInitiatorAgent = null;
-                auxReceiverAgent = null;
 
                 nextSEList.Clear();
 
@@ -313,19 +311,16 @@ namespace Bannerlord_Social_AI
                         int initiatorVolition = se.InitiadorVolition();
                         if (initiatorVolition == auxVolition)
                         {
-                            nextSEList.Add(new NextSE(se.SEName, se.SE_Enum, c1, c2, initiatorVolition));
+                            nextSEList.Add(new NextSE(se.SE_Enum, c1, c2, initiatorVolition));
                         }
 
                         else if (initiatorVolition > auxVolition)
                         {
                             auxVolition = se.CustomAgentInitiator.SEVolition;
-                            auxSEName = se.SEName;
                             auxSE = se.SE_Enum;
-                            auxInitiatorAgent = se.CustomAgentInitiator;
-                            auxReceiverAgent = se.CustomAgentReceiver;
 
                             nextSEList.Clear();
-                            nextSEList.Add(new NextSE(auxSEName, auxSE, c1, c2, initiatorVolition));
+                            nextSEList.Add(new NextSE(auxSE, c1, c2, initiatorVolition));
                         }
                     }
                 }
@@ -336,7 +331,6 @@ namespace Bannerlord_Social_AI
                     int index = rnd.Next(nextSEList.Count);
                     NextSE sE = nextSEList[index];
 
-                    mostWanted.nextSE.SEName = sE.SEName;
                     mostWanted.nextSE.se = sE.se;
                     mostWanted.nextSE.InitiatorAgent = sE.InitiatorAgent;
                     mostWanted.nextSE.ReceiverAgent = sE.ReceiverAgent;
@@ -349,7 +343,6 @@ namespace Bannerlord_Social_AI
             {
                 if (k.nextSE.Volition > nextSE.Volition)
                 {
-                    nextSE.SEName = k.nextSE.SEName;
                     nextSE.se = k.nextSE.se;
                     nextSE.InitiatorAgent = k.nextSE.InitiatorAgent;
                     nextSE.ReceiverAgent = k.nextSE.ReceiverAgent;
@@ -360,7 +353,7 @@ namespace Bannerlord_Social_AI
             if (nextSE.Volition > 0)
             {
                 /* Get NPC & Start SE */
-                nextSE.InitiatorAgent.StartSE(nextSE.SEName, nextSE.se, nextSE.ReceiverAgent);
+                nextSE.InitiatorAgent.StartSE(nextSE.se, nextSE.ReceiverAgent);
                 OnGoingSEs++;
             }
         }
@@ -393,7 +386,7 @@ namespace Bannerlord_Social_AI
                 {
                     customAgentsList = new List<CustomAgent>();
 
-                    nextSE = new NextSE("", SEs_Enum.Undefined, null, null, 0);
+                    nextSE = new NextSE(SEs_Enum.Undefined, null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
                     nextSEList = new List<NextSE>();
 
@@ -466,9 +459,6 @@ namespace Bannerlord_Social_AI
             {
                 if (SocialExchange_E != SEs_Enum.Undefined)
                 {
-                    //int r = ((int)SocialExchange_E);
-                    //string seName = SocialExchange_E.ToString();
-
                     SocialExchangesList.Add(new SocialExchangeSE(SocialExchange_E, null, null));
                 }
             }
@@ -682,7 +672,7 @@ namespace Bannerlord_Social_AI
             {
                 RandomItem(customAgentTemp);
 
-                mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", SEs_Enum.Undefined, null, null, 0));
+                mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE(SEs_Enum.Undefined, null, null, 0));
                 mostWantedSEList.Add(sE);
             }
             else

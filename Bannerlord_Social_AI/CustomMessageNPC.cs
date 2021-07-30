@@ -74,15 +74,13 @@ namespace Bannerlord_Social_AI
                 culture = CultureCode.AnyOtherCulture;
             }
 
-            bool containsIntention = DialogsDictionary.TryGetValue(SE.SEName, out Dictionary<string, Dictionary<string, List<string>>> a);
+            bool containsIntention = DialogsDictionary.TryGetValue(SE.SE_Enum.ToString(), out Dictionary<string, Dictionary<string, List<string>>> dictionaryWithCultures);
             if (containsIntention)
             {
-                bool containsCulture = a.TryGetValue(culture.ToString(), out Dictionary<string, List<string>> b);
-
+                bool containsCulture = dictionaryWithCultures.TryGetValue(culture.ToString(), out Dictionary<string, List<string>> NPCDialogs);
                 if (containsCulture)
                 {
-                    bool containsMessageList = b.TryGetValue(id, out List<string> SentencesList);
-
+                    bool containsMessageList = NPCDialogs.TryGetValue(id, out List<string> SentencesList);
                     if (containsMessageList)
                     {
                         int i = rnd.Next(SentencesList.Count);
