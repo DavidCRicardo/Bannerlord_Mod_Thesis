@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.Missions;
-using TaleWorlds.Library;
-using System.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Bannerlord_Social_AI
 {
@@ -33,35 +32,49 @@ namespace Bannerlord_Social_AI
         private int PlayerInteractedWithNPCs;
         private int NPCsInteractedWithNPCs;
         private int DaysPassed;
+
         private List<string> list;
 
-        private enum DictionaryEnumWithSEs { Undefined, FriendlySEs, UnfriendlySEs, RomanticSEs, HostileSEs, SpecialSEs }
+        private enum DictionaryEnumWithSEs { Undefined, Compliment, GiveGift, Gratitude, Jealous, FriendSabotage, AskOut, Flirt, Bully, RomanticSabotage, Break, HaveAChild }
 
         private Dictionary<bool, Dictionary<Enum, int>> PlayerOrNPC_Dictionary =
             new Dictionary<bool, Dictionary<Enum, int>>
             {
                 { false , new Dictionary<Enum, int> { 
-                    { DictionaryEnumWithSEs.Undefined    , 0 },
-                    { DictionaryEnumWithSEs.FriendlySEs  , 0 },
-                    { DictionaryEnumWithSEs.UnfriendlySEs, 0 },
-                    { DictionaryEnumWithSEs.RomanticSEs  , 0 },
-                    { DictionaryEnumWithSEs.HostileSEs   , 0 },
-                    { DictionaryEnumWithSEs.SpecialSEs   , 0 }, 
+                    { DictionaryEnumWithSEs.Undefined       , 0 },
+                    { DictionaryEnumWithSEs.Compliment      , 0 },
+                    { DictionaryEnumWithSEs.GiveGift        , 0 },
+                    { DictionaryEnumWithSEs.Gratitude       , 0 },
+                    { DictionaryEnumWithSEs.Jealous         , 0 },
+                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
+                    { DictionaryEnumWithSEs.AskOut          , 0 },
+                    { DictionaryEnumWithSEs.Flirt           , 0 },
+                    { DictionaryEnumWithSEs.Bully           , 0 },
+                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
+                    { DictionaryEnumWithSEs.Break           , 0 },
+                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
+                    
                 } },
                 { true , new Dictionary<Enum, int> {
-                    { DictionaryEnumWithSEs.Undefined    , 0 },
-                    { DictionaryEnumWithSEs.FriendlySEs  , 0 },
-                    { DictionaryEnumWithSEs.UnfriendlySEs, 0 },
-                    { DictionaryEnumWithSEs.RomanticSEs  , 0 },
-                    { DictionaryEnumWithSEs.HostileSEs   , 0 },
-                    { DictionaryEnumWithSEs.SpecialSEs   , 0 },
+                    { DictionaryEnumWithSEs.Undefined       , 0 },
+                    { DictionaryEnumWithSEs.Compliment      , 0 },
+                    { DictionaryEnumWithSEs.GiveGift        , 0 },
+                    { DictionaryEnumWithSEs.Gratitude       , 0 },
+                    { DictionaryEnumWithSEs.Jealous         , 0 },
+                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
+                    { DictionaryEnumWithSEs.AskOut          , 0 },
+                    { DictionaryEnumWithSEs.Flirt           , 0 },
+                    { DictionaryEnumWithSEs.Bully           , 0 },
+                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
+                    { DictionaryEnumWithSEs.Break           , 0 },
+                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
                 } },
             };
 
         public override void OnMissionScreenInitialize()
         {
             base.OnMissionScreenInitialize();
-
+            
             _dataSource = new CustomMissionNameMarkerVM(mission, base.MissionScreen.CombatCamera);
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
@@ -92,7 +105,7 @@ namespace Bannerlord_Social_AI
                 {
                     _dataSource.letsUpdate = false;
 
-                    var result = ConvertCustomAgentIntentionToDictionaryEnum(_dataSource.SE_identifier);
+                    var result = ConvertCustomAgentSEToDictionaryEnum(_dataSource.SocialExchange_E);
                     UpdateUserInfo(result, _dataSource.BooleanNumber);
                 }
 
@@ -137,34 +150,37 @@ namespace Bannerlord_Social_AI
 
         private void CheckIntentionFromNPCToPlayer()
         {
-            if (_dataSource.intentionRefToCBB != SocialExchangeSE.IntentionEnum.Undefined && _dataSource.customCharacterReftoCampaignBehaviorBase != null)
+            if (_dataSource.customCharacterReftoCampaignBehaviorBase != null)
             {
-                // check social move from character (offergift e.g) 
                 CBB_ref.characterRef = _dataSource.customCharacterReftoCampaignBehaviorBase;
                 CBB_ref.characterIdRef = _dataSource.customCharacterIdRefCampaignBehaviorBase;
-                switch (_dataSource.intentionRefToCBB)
+
+                switch (_dataSource.SocialExchange_E)
                 {
-                    case SocialExchangeSE.IntentionEnum.Positive:
-                        if (CBB_ref.characterRef.SocialMove == "GiveGift")
-                        {
-                            CBB_ref.OfferGift = true;
-                        }
-                        else
-                        {
-                            CBB_ref.FriendlyBool = true;
-                        }
+                    case CustomMissionNameMarkerVM.SEs_Enum.Compliment: 
+                        CBB_ref.FriendlyBool = true;
                         break;
-                    case SocialExchangeSE.IntentionEnum.Romantic:
-                        CBB_ref.RomanticBool = true;
+                    case CustomMissionNameMarkerVM.SEs_Enum.GiveGift: 
+                        CBB_ref.OfferGift = true;
                         break;
-                    case SocialExchangeSE.IntentionEnum.Negative:
+                    case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                    case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
                         CBB_ref.UnFriendlyBool = true;
                         break;
-                    case SocialExchangeSE.IntentionEnum.Hostile:
+                    case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                        CBB_ref.RomanticBool = true;
+                        break;
+                    case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                    case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
                         CBB_ref.HostileBool = true;
                         break;
-                    case SocialExchangeSE.IntentionEnum.Special:
+                    case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                        CBB_ref.AskOutPerformed = true; //?
+                        break;
+                    case CustomMissionNameMarkerVM.SEs_Enum.Break:
                         CBB_ref.SpecialBool = true;
+                        break;
+                    case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
                         break;
                     default:
                         break;
@@ -203,7 +219,18 @@ namespace Bannerlord_Social_AI
             if (CBB_ref.AskOutPerformed)
             {
                 CBB_ref.AskOutPerformed = false;
-                CheckOptionToLock(customAgentConversation, "AskOut");
+                if (_dataSource.playerStartedASE)
+                {
+                    CheckOptionToLock(customAgentConversation, "AskOut");
+                }
+            }
+            else if (CBB_ref.HaveAChildInitialMovePerformed)
+            {
+                CBB_ref.HaveAChildInitialMovePerformed = false;
+                if (_dataSource.playerStartedASE)
+                {
+                    CheckOptionToLock(customAgentConversation, "HaveAChild");
+                }
             }
 
             if (CBB_ref.StartDating)
@@ -211,7 +238,11 @@ namespace Bannerlord_Social_AI
                 Start_Dating(customAgentConversation);
 
                 CBB_ref.StartDating = false;
-                CheckOptionToLock(customAgentConversation, "AskOut");
+
+                if (_dataSource.playerStartedASE)
+                {
+                    CheckOptionToLock(customAgentConversation, "AskOut");
+                }
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is now Dating with " + customAgentConversation.Name));
             }
@@ -219,22 +250,29 @@ namespace Bannerlord_Social_AI
             {
                 DoBreak(customAgentConversation);
                 CBB_ref.DoBreak = false;
-                CheckOptionToLock(customAgentConversation, "Break");
+
+                if (_dataSource.playerStartedASE)
+{
+                    CheckOptionToLock(customAgentConversation, "Break");
+                }
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
-                DictionaryEnumWithSEs b = ConvertCustomAgentIntentionToDictionaryEnum(CustomAgent.Intentions.Special);
-                UpdateUserInfo(b, 1);
+                DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CustomMissionNameMarkerVM.SEs_Enum.Break);
+                UpdateUserInfo(key, 1);
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
                 int value = 1;
 
-                RelationInGameChanges(customAgentConversation, value);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value);
+                if (_dataSource.playerStartedASE)
+                {
+                    CheckOptionToLock(customAgentConversation, localRelation, value);
+                }
 
-                CheckOptionToLock(customAgentConversation, localRelation, value);
+                RelationInGameChanges(customAgentConversation, value);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value, se_enum);          
 
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
@@ -242,36 +280,36 @@ namespace Bannerlord_Social_AI
             {
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
                 int value = -1;
-                RelationInGameChanges(customAgentConversation, value);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value);
 
-                CheckOptionToLock(customAgentConversation, localRelation, value);
+                if (_dataSource.playerStartedASE)
+                {
+                    CheckOptionToLock(customAgentConversation, localRelation, value);
+                }
+
+                RelationInGameChanges(customAgentConversation, value);
+                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value, se_enum);
 
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
-            //else if (CBB_ref.giveCourage)
-            //{
-            //    GiveCourageToCharacter(customAgentConversation);
-            //    CBB_ref.giveCourage = false;
-            //}
         }
-
-        //private void GiveCourageToCharacter(CustomAgent customAgentConversation)
-        //{
-        //    CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
-        //    customAgent.UpdateAllStatus(0, 0, 1, 0, 0, 0);
-        //}
+        CustomMissionNameMarkerVM.SEs_Enum se_enum { get; set; }
 
         private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value = 0)
         {
-            string socialExchange = "";
-            CustomAgent.Intentions customAgentIntention = CustomAgent.Intentions.Undefined;
-
-            if (localRelation == "AskOut" || localRelation == "Break")
+            if (localRelation == "AskOut" )
             {
                 SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
-                socialExchange = "AskOut";
-                customAgentIntention = CustomAgent.Intentions.Special;
+                se_enum = CustomMissionNameMarkerVM.SEs_Enum.AskOut;
+            }
+            else if (localRelation == "Break")
+            {
+                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
+                se_enum = CustomMissionNameMarkerVM.SEs_Enum.Break;
+            }
+            else if (localRelation == "HaveAChild")
+            {
+                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
+                se_enum = CustomMissionNameMarkerVM.SEs_Enum.HaveAChild;
             }
             else
             {
@@ -280,14 +318,12 @@ namespace Bannerlord_Social_AI
                     if (value > 0)
                     {
                         SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
-                        socialExchange = "Friendly";
-                        customAgentIntention = CustomAgent.Intentions.Friendly;
+                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Compliment;
                     }
                     else
                     {
                         SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
-                        socialExchange = "UnFriendly";
-                        customAgentIntention = CustomAgent.Intentions.Unfriendly;
+                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Jealous;
                     }
                 }
                 else
@@ -295,165 +331,22 @@ namespace Bannerlord_Social_AI
                     if (value > 0)
                     {
                         SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
-                        socialExchange = "Romantic";
-                        customAgentIntention = CustomAgent.Intentions.Romantic;
+                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Flirt;
                     }
                     else
                     {
                         SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
-                        socialExchange = "Hostile";
+                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Bully;
                     }
                 }
             }
 
             //Player fez uma SE com um NPC e vai guardar a info 
-            DictionaryEnumWithSEs SE_Enum = ConvertCustomAgentIntentionToDictionaryEnum(customAgentIntention);
+            DictionaryEnumWithSEs SE_Enum = ConvertCustomAgentSEToDictionaryEnum(se_enum);
             // Save information from dictionary and variables to File
             UpdateUserInfo(SE_Enum, 1);
 
-            _dataSource.SaveSavedSEs(customAgentConversation, socialExchange);
-        }
-
-        private static DictionaryEnumWithSEs ConvertCustomAgentIntentionToDictionaryEnum(CustomAgent.Intentions a)
-        {
-            var b = DictionaryEnumWithSEs.Undefined;
-            switch (a)
-            {
-                case CustomAgent.Intentions.Friendly:
-                    b = DictionaryEnumWithSEs.FriendlySEs;
-                    break;
-                case CustomAgent.Intentions.Unfriendly:
-                    b = DictionaryEnumWithSEs.UnfriendlySEs;
-                    break;
-                case CustomAgent.Intentions.Romantic:
-                    b = DictionaryEnumWithSEs.RomanticSEs;
-                    break;
-                case CustomAgent.Intentions.Hostile:
-                    b = DictionaryEnumWithSEs.HostileSEs;
-                    break;
-                case CustomAgent.Intentions.Special:
-                    b = DictionaryEnumWithSEs.SpecialSEs;
-                    break;
-                default:
-                    break;
-            }
-
-            return b;
-        }
-
-        private void LoadUserInfoFromFile()
-        {
-            string json = File.ReadAllText(filePath + fileName);
-
-            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
-            if (deserializedUserInfoClass != null)
-            {
-                TotalSEs = deserializedUserInfoClass.TotalSocialExchanges;
-                NPCsInteractedWithPlayer = deserializedUserInfoClass.NPCInteractedWithPlayer;
-                PlayerInteractedWithNPCs = deserializedUserInfoClass.PlayerInteractedWithNPC;
-                NPCsInteractedWithNPCs = deserializedUserInfoClass.NPCsInteractedWithNPC;
-                DaysPassed = deserializedUserInfoClass.DaysPassedInGame;
-
-                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
-                result[DictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.NFriendly;
-                result[DictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.NFriendly;
-                result[DictionaryEnumWithSEs.UnfriendlySEs] = deserializedUserInfoClass.NUnFriendly;
-                result[DictionaryEnumWithSEs.RomanticSEs] = deserializedUserInfoClass.NRomantic;
-                result[DictionaryEnumWithSEs.HostileSEs] = deserializedUserInfoClass.NHostile;
-                result[DictionaryEnumWithSEs.SpecialSEs] = deserializedUserInfoClass.NSpecial;
-
-                PlayerOrNPC_Dictionary[false] = result;
-
-                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
-                result[DictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.PFriendly;
-                result[DictionaryEnumWithSEs.FriendlySEs] = deserializedUserInfoClass.PFriendly;
-                result[DictionaryEnumWithSEs.UnfriendlySEs] = deserializedUserInfoClass.PUnFriendly;
-                result[DictionaryEnumWithSEs.RomanticSEs] = deserializedUserInfoClass.PRomantic;
-                result[DictionaryEnumWithSEs.HostileSEs] = deserializedUserInfoClass.PHostile;
-                result[DictionaryEnumWithSEs.SpecialSEs] = deserializedUserInfoClass.PSpecial;
-
-                PlayerOrNPC_Dictionary[true] = result;
-            }
-        }
-
-        private void UpdateUserInfo(DictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
-        {
-            Dictionary<Enum, int> result;
-            int value; 
-
-            switch (WhoWasTheInitiator)
-            {
-                case -1:
-                    NPCsInteractedWithPlayer++;
-
-                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
-                    result.TryGetValue(dictionaryKey, out value);
-                    result[dictionaryKey] = value + 1;
-                    break;
-                case 0:
-                    NPCsInteractedWithNPCs++;
-
-                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
-                    result.TryGetValue(dictionaryKey, out value);
-                    result[dictionaryKey] = value + 1;
-                    break;
-                case 1:
-                    PlayerInteractedWithNPCs++;
-
-                    PlayerOrNPC_Dictionary.TryGetValue(true, out result);
-                    result.TryGetValue(dictionaryKey, out value);
-                    result[dictionaryKey] = value + 1;
-                    break;
-                default:
-                    break;
-            }
-
-            TotalSEs = NPCsInteractedWithNPCs + NPCsInteractedWithPlayer + PlayerInteractedWithNPCs;
-
-            SaveUserInfoToFile();
-        }
-
-        private void SaveUserInfoToFile()
-        {
-            string json = File.ReadAllText(filePath + fileName);
-
-            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
-            if (deserializedUserInfoClass != null)
-            {
-                deserializedUserInfoClass.NPCInteractedWithPlayer = NPCsInteractedWithPlayer;
-                deserializedUserInfoClass.PlayerInteractedWithNPC = PlayerInteractedWithNPCs;
-                deserializedUserInfoClass.NPCsInteractedWithNPC = NPCsInteractedWithNPCs;
-                deserializedUserInfoClass.TotalSocialExchanges = TotalSEs;
-                deserializedUserInfoClass.DaysPassedInGame = DaysPassed;
-
-                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
-
-                result.TryGetValue(DictionaryEnumWithSEs.FriendlySEs, out int value);
-                deserializedUserInfoClass.NFriendly = value;
-                result.TryGetValue(DictionaryEnumWithSEs.UnfriendlySEs, out value);
-                deserializedUserInfoClass.NUnFriendly = value;
-                result.TryGetValue(DictionaryEnumWithSEs.RomanticSEs, out value);
-                deserializedUserInfoClass.NRomantic = value;
-                result.TryGetValue(DictionaryEnumWithSEs.HostileSEs, out value);
-                deserializedUserInfoClass.NHostile = value;
-                result.TryGetValue(DictionaryEnumWithSEs.SpecialSEs, out value);
-                deserializedUserInfoClass.NSpecial = value;
-
-                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
-
-                result.TryGetValue(DictionaryEnumWithSEs.FriendlySEs, out value);
-                deserializedUserInfoClass.PFriendly = value;
-                result.TryGetValue(DictionaryEnumWithSEs.UnfriendlySEs, out value);
-                deserializedUserInfoClass.PUnFriendly = value;
-                result.TryGetValue(DictionaryEnumWithSEs.RomanticSEs, out value);
-                deserializedUserInfoClass.PRomantic = value;
-                result.TryGetValue(DictionaryEnumWithSEs.HostileSEs, out value);
-                deserializedUserInfoClass.PHostile = value;
-                result.TryGetValue(DictionaryEnumWithSEs.SpecialSEs, out value);
-                deserializedUserInfoClass.PSpecial = value;
-            }
-
-            File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
+            _dataSource.SaveSavedSEs(customAgentConversation, se_enum.ToString());
         }
 
         private void SetOptionAsUnavailable(CustomAgent customAgent, CustomAgent.Intentions intention, bool value)
@@ -504,7 +397,7 @@ namespace Bannerlord_Social_AI
 
         private void DoBreak(CustomAgent customAgentConversation)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
+            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum.Break);
             se.BreakUpMethod();
 
             _dataSource.SaveToJson();
@@ -512,27 +405,27 @@ namespace Bannerlord_Social_AI
 
         private void Start_Dating(CustomAgent customAgentConversation)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
+            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum.AskOut);
             se.AskOutMethod(true);
 
             _dataSource.SaveToJson();
         }
 
-        private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value)
+        private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value, CustomMissionNameMarkerVM.SEs_Enum seEnum)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation);
-            se.PlayerConversationWithNPC(relation, value, true);
+            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, seEnum);
+            se.PlayerConversationWithNPC(relation, value, customAgentConversation.selfAgent.IsHero);
 
             _dataSource.SaveToJson();
         }
 
-        private SocialExchangeSE InitializeSocialExchange(CustomAgent customAgentConversation)
+        private SocialExchangeSE InitializeSocialExchange(CustomAgent customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum seEnum)
         {
             CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
             CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
             MainCustomAgent.customAgentTarget = customAgent;
 
-            SocialExchangeSE se = new SocialExchangeSE("", MainCustomAgent, _dataSource.customAgentsList)
+            SocialExchangeSE se = new SocialExchangeSE(seEnum, MainCustomAgent, _dataSource.customAgentsList)
             {
                 CustomAgentReceiver = customAgent
             };
@@ -552,8 +445,211 @@ namespace Bannerlord_Social_AI
             CBB_ref.IncreaseRelationshipWithPlayer = false;
             CBB_ref.DecreaseRelationshipWithPlayer = false;
 
-            _dataSource.intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
+            _dataSource.SocialExchange_E = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
             _dataSource.customCharacterReftoCampaignBehaviorBase = null;
+        }
+
+        private static DictionaryEnumWithSEs ConvertCustomAgentSEToDictionaryEnum(CustomMissionNameMarkerVM.SEs_Enum se)
+        {
+            DictionaryEnumWithSEs key;
+            switch (se)
+            {
+                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
+                    key = DictionaryEnumWithSEs.Compliment;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
+                    key = DictionaryEnumWithSEs.GiveGift;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                    key = DictionaryEnumWithSEs.Jealous;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                    key = DictionaryEnumWithSEs.FriendSabotage;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                    key = DictionaryEnumWithSEs.Flirt;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                    key = DictionaryEnumWithSEs.Bully;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                    key = DictionaryEnumWithSEs.RomanticSabotage;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                    key = DictionaryEnumWithSEs.AskOut;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                    key = DictionaryEnumWithSEs.Break;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                    key = DictionaryEnumWithSEs.Gratitude;
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
+                    key = DictionaryEnumWithSEs.HaveAChild;
+                    break;
+                default:
+                    key = DictionaryEnumWithSEs.Undefined;
+                    break;
+            }
+
+            return key;
+        }
+
+        private void LoadUserInfoFromFile()
+        {
+            string json = File.ReadAllText(filePath + fileName);
+
+            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+            if (deserializedUserInfoClass != null)
+            {
+                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
+                result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.NCompliment;
+                result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.NGiveGift;
+                result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.NJealous;
+                result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.NFriendSabotage;
+                result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.NFlirt;
+                result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.NBully;
+                result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.NRomanticSabotage;
+                result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.NBreak;
+                result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.NAskOut;
+                result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.NGratitude;
+                result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.NHaveAChild;
+                PlayerOrNPC_Dictionary[false] = result;
+
+                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.PCompliment;
+                result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.PGiveGift;
+                result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.PJealous;
+                result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.PFriendSabotage;
+                result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.PFlirt;
+                result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.PBully;
+                result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.PRomanticSabotage;
+                result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.PBreak;
+                result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.PAskOut;
+                result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.PGratitude;
+                result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.PHaveAChild;
+                PlayerOrNPC_Dictionary[true] = result;
+
+                TotalSEs = deserializedUserInfoClass.TotalSocialExchanges;
+                NPCsInteractedWithPlayer = deserializedUserInfoClass.NPCInteractedWithPlayer;
+                PlayerInteractedWithNPCs = deserializedUserInfoClass.PlayerInteractedWithNPC;
+                NPCsInteractedWithNPCs = deserializedUserInfoClass.NPCsInteractedWithNPC;
+                DaysPassed = deserializedUserInfoClass.DaysPassedInGame;
+            }
+        }
+
+        private void UpdateUserInfo(DictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
+        {
+            Dictionary<Enum, int> result;
+            int value;
+
+            switch (WhoWasTheInitiator)
+            {
+                case -1:
+                    NPCsInteractedWithPlayer++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                case 0:
+                    NPCsInteractedWithNPCs++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                case 1:
+                    PlayerInteractedWithNPCs++;
+
+                    PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                    result.TryGetValue(dictionaryKey, out value);
+                    result[dictionaryKey] = value + 1;
+                    break;
+                default:
+                    break;
+            }
+
+            TotalSEs = NPCsInteractedWithNPCs + NPCsInteractedWithPlayer + PlayerInteractedWithNPCs;
+
+            SaveUserInfoToFile();
+        }
+
+        private void SaveUserInfoToFile()
+        {
+            string json = File.ReadAllText(filePath + fileName);
+
+            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+            if (deserializedUserInfoClass != null)
+            {
+                deserializedUserInfoClass.NPCInteractedWithPlayer = NPCsInteractedWithPlayer;
+                deserializedUserInfoClass.PlayerInteractedWithNPC = PlayerInteractedWithNPCs;
+                deserializedUserInfoClass.NPCsInteractedWithNPC = NPCsInteractedWithNPCs;
+                deserializedUserInfoClass.TotalSocialExchanges = TotalSEs;
+                deserializedUserInfoClass.DaysPassedInGame = DaysPassed;
+
+                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
+                result.TryGetValue(DictionaryEnumWithSEs.Compliment, out int value);
+                deserializedUserInfoClass.NCompliment = value;
+                result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
+                deserializedUserInfoClass.NGiveGift = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
+                deserializedUserInfoClass.NJealous = value;
+                result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
+                deserializedUserInfoClass.NFriendSabotage = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
+                deserializedUserInfoClass.NFlirt = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
+                deserializedUserInfoClass.NBully = value;
+                result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
+                deserializedUserInfoClass.NRomanticSabotage = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
+                deserializedUserInfoClass.NBreak = value;
+                result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
+                deserializedUserInfoClass.NAskOut = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
+                deserializedUserInfoClass.NGratitude = value;
+                result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
+                deserializedUserInfoClass.NHaveAChild = value;
+
+                deserializedUserInfoClass.NFriendlySEs = deserializedUserInfoClass.NCompliment + deserializedUserInfoClass.NGiveGift + deserializedUserInfoClass.NGratitude;
+                deserializedUserInfoClass.NUnFriendlySEs = deserializedUserInfoClass.NJealous + deserializedUserInfoClass.NFriendSabotage;
+                deserializedUserInfoClass.NRomanticSEs = deserializedUserInfoClass.NFlirt;
+                deserializedUserInfoClass.NHostileSEs = deserializedUserInfoClass.NBully + deserializedUserInfoClass.NRomanticSabotage;
+                deserializedUserInfoClass.NSpecialSEs = deserializedUserInfoClass.NBreak + deserializedUserInfoClass.NAskOut + deserializedUserInfoClass.NHaveAChild;
+
+                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                result.TryGetValue(DictionaryEnumWithSEs.Compliment, out value);
+                deserializedUserInfoClass.PCompliment = value;
+                result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
+                deserializedUserInfoClass.PGiveGift = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
+                deserializedUserInfoClass.PJealous = value;
+                result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
+                deserializedUserInfoClass.PFriendSabotage = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
+                deserializedUserInfoClass.PFlirt = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
+                deserializedUserInfoClass.PBully = value;
+                result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
+                deserializedUserInfoClass.PRomanticSabotage = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
+                deserializedUserInfoClass.PBreak = value;
+                result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
+                deserializedUserInfoClass.PAskOut = value;
+                result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
+                deserializedUserInfoClass.PGratitude = value;
+                result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
+                deserializedUserInfoClass.PHaveAChild = value;
+
+                deserializedUserInfoClass.PFriendlySEs = deserializedUserInfoClass.PCompliment + deserializedUserInfoClass.PGiveGift + deserializedUserInfoClass.PGratitude;
+                deserializedUserInfoClass.PUnFriendlySEs = deserializedUserInfoClass.PJealous + deserializedUserInfoClass.PFriendSabotage;
+                deserializedUserInfoClass.PRomanticSEs = deserializedUserInfoClass.PFlirt;
+                deserializedUserInfoClass.PHostileSEs = deserializedUserInfoClass.PBully + deserializedUserInfoClass.PRomanticSabotage;
+                deserializedUserInfoClass.PSpecialSEs = deserializedUserInfoClass.PBreak + deserializedUserInfoClass.PAskOut + deserializedUserInfoClass.PHaveAChild;
+            }
+
+            File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
         }
 
         private void UploadFileToFTP()
@@ -700,3 +796,14 @@ namespace Bannerlord_Social_AI
         }
     }
 }
+
+//private void GiveCourageToCharacter(CustomAgent customAgentConversation)
+//{
+//    CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
+//    customAgent.UpdateAllStatus(0, 0, 1, 0, 0, 0);
+//}
+//else if (CBB_ref.giveCourage)
+//{
+//    GiveCourageToCharacter(customAgentConversation);
+//    CBB_ref.giveCourage = false;
+//}

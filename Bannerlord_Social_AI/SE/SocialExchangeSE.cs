@@ -10,9 +10,10 @@ namespace Bannerlord_Social_AI
 {
     public class SocialExchangeSE
     {
-        public SocialExchangeSE(string _SEName, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
+        public SocialExchangeSE(CustomMissionNameMarkerVM.SEs_Enum seEnum, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
         {
-            this.SEName = _SEName;
+            this.SEName = seEnum.ToString();
+            SE_Enum = seEnum;
 
             if (_customAgentinitiator != null)
             {
@@ -25,23 +26,20 @@ namespace Bannerlord_Social_AI
                 this.CustomAgentList = customAgents;
                 this.index = -1;
 
-                if (AgentReceiver == Agent.Main)
+                if (AgentInitiator == Agent.Main || AgentReceiver == Agent.Main)
                 {
                     SetIntention(false, true);
                 }
                 else 
                 {
+                    CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
                     SetIntention(true, true);
                 }
                 
-
-                if (AgentInitiator != Agent.Main && AgentReceiver != Agent.Main)
-                {
-                    CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
-                }
-                CustomAgentReceiver.UpdateTarget(_customAgentinitiator.Name, _customAgentinitiator.Id);
+                CustomAgentInitiator.UpdateTarget(CustomAgentReceiver.Name, CustomAgentReceiver.Id);
             }
         }
+        public string SEName { get; set; }
 
         public void OnInitialize(Random _rnd)
         {
@@ -52,16 +50,16 @@ namespace Bannerlord_Social_AI
             ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
 
             CustomAgentReceiver.Busy = true;
-            CustomAgentReceiver.SocialMove = SEName;
-            
+            CustomAgentReceiver.SocialMove_SE = SE_Enum;
         }
 
         private void SetIntention(bool setMarkerAndAnimation, bool OnSocialExchange)
         {
-            switch (SEName)
+            switch (SE_Enum)
             {
-                case "Compliment":
-                case "GiveGift":
+                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
+                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
+                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
                     Intention = IntentionEnum.Positive;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -70,16 +68,7 @@ namespace Bannerlord_Social_AI
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
-                case "FriendSabotage":
-                    Intention = IntentionEnum.Negative;
-                    if (setMarkerAndAnimation && OnSocialExchange)
-                    {
-                        CustomAgentInitiator.MarkerTyperRef = 1;
-                        CustomAgentInitiator.PlayAnimation("act_gossip");
-                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
-                    }
-                    break;
-                case "Jealous":
+                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -88,8 +77,16 @@ namespace Bannerlord_Social_AI
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
-                case "AskOut":
-                case "Flirt":
+                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                    Intention = IntentionEnum.Negative;
+                    if (setMarkerAndAnimation && OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.PlayAnimation("act_gossip");
+                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
+                    }
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
                     Intention = IntentionEnum.Romantic;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -98,16 +95,7 @@ namespace Bannerlord_Social_AI
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
-                case "RomanticSabotage":
-                    Intention = IntentionEnum.Hostile;
-                    if (setMarkerAndAnimation && OnSocialExchange)
-                    {
-                        CustomAgentInitiator.MarkerTyperRef = 1;
-                        CustomAgentInitiator.PlayAnimation("act_gossip");
-                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
-                    }
-                    break;
-                case "Bully":
+                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
                     Intention = IntentionEnum.Hostile;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -116,8 +104,18 @@ namespace Bannerlord_Social_AI
                         CustomAgentReceiver.PlayAnimation("act_bullied");
                     }
                     break;
-                case "Break":
-                case "Gratitude":
+                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                    Intention = IntentionEnum.Hostile;
+                    if (setMarkerAndAnimation && OnSocialExchange)
+                    {
+                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.PlayAnimation("act_gossip");
+                        CustomAgentReceiver.PlayAnimation("act_gossip_2");
+                    }
+                    break;
+                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
                     Intention = IntentionEnum.Special;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -125,7 +123,7 @@ namespace Bannerlord_Social_AI
                         CustomAgentInitiator.PlayAnimation("act_argue_3");
                         CustomAgentReceiver.PlayAnimation("act_argue_4");
                     }
-                    break;          
+                    break;
                 default:
                     Intention = IntentionEnum.Undefined;
                     if (setMarkerAndAnimation)
@@ -181,7 +179,7 @@ namespace Bannerlord_Social_AI
         {
             List<string> tempListNames = new List<string>() { CustomAgentInitiator.Name , CustomAgentReceiver.Name };
             List<int> tempListIds = new List<int>() { CustomAgentInitiator.Id , CustomAgentReceiver.Id };
-            MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SEName);
+            MemorySE newMemory = new MemorySE(tempListNames, tempListIds, SEName /*SE_Enum.ToString()*/);
             CustomAgentInitiator.AddToMemory(newMemory);
             CustomAgentReceiver.AddToMemory(newMemory);
 
@@ -229,9 +227,24 @@ namespace Bannerlord_Social_AI
         {
             if (true)
             {
-                CustomAgentInitiator.UpdateAllStatus(0, 0, -1, -1, 0, 0);
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.AskOut)
+                {
+                    AskOutMethod(false);
+                }
+                //if (SEName == "AskOut")
+                //{
+                //    AskOutMethod(false);
+                //}
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Break)
+                {
+                    CustomAgentInitiator.UpdateAllStatus(0, 0, -1, -1, 0, 0);
 
-                BreakUpMethod();
+                    BreakUpMethod();
+                }
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Gratitude)
+                {
+
+                }
             }
         }
 
@@ -239,9 +252,12 @@ namespace Bannerlord_Social_AI
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                //Bully or RomanticSabotage
-                CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, -0.3, 1, 0);
-                CustomAgentReceiver.UpdateAllStatus(0, 0.5, -0.2, 0, 0, 0);
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Bully || SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage)
+                {
+                    //Bully or RomanticSabotage
+                    CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, -0.3, 1, 0);
+                    CustomAgentReceiver.UpdateAllStatus(0, 0.5, -0.2, 0, 0, 0);
+                }               
             }
             else
             {
@@ -256,29 +272,39 @@ namespace Bannerlord_Social_AI
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Jealous)
+                {
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
+                }
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage)
+                {
+                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
+
+                }
                 //Decreases relation with Initiator
-                if (SEName == "Jealous")
-                {
-                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
-                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
-                }
-                else if (SEName == "FriendSabotage")
-                {
-                    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
-                    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
-                }
+                //if (SEName == "Jealous")
+                //{
+                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                //    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
+                //}
+                //else if (SEName == "FriendSabotage")
+                //{
+                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
+                //    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
+                //}
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
             }
             else
             {
-                if (SEName == "Jealous")
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Jealous)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 1, 0);
                     CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
                 }
-
-                else if (SEName == "FriendSabotage")
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, -0.2, 0, 0, 0);
 
@@ -294,8 +320,32 @@ namespace Bannerlord_Social_AI
                         {
                             ChangeHeroRelationInGame(-1, CAtoDecrease);
                         }
-                    }  
+                    }
                 }
+                //if (SEName == "Jealous")
+                //{
+                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 1, 0);
+                //    CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
+                //}
+
+                //else if (SEName == "FriendSabotage")
+                //{
+                //    CustomAgentInitiator.UpdateAllStatus(0, -1, -0.2, 0, 0, 0);
+
+                //    //Decreases relation 
+                //    CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
+
+                //    if (CAtoDecrease != null)
+                //    {
+                //        SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
+                //        CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
+
+                //        if (CAtoDecrease.selfAgent.IsHero && CAtoDecrease.selfAgent == Agent.Main)
+                //        {
+                //            ChangeHeroRelationInGame(-1, CAtoDecrease);
+                //        }
+                //    }  
+                //}
             }
             UpdateNPCsNearSocialMove();
         }
@@ -305,11 +355,15 @@ namespace Bannerlord_Social_AI
             if (CustomAgentReceiver.SE_Accepted)
             {
                 //Increases Relationship for both
-                if (SEName == "AskOut")
-                { 
-                    AskOutMethod(false);
-                }
-                else if (SEName == "Flirt")
+                //if (SEName == "AskOut")
+                //{ 
+                //    AskOutMethod(false);
+                //}
+                ///*else*/ if (SEName == "Flirt")
+                //{
+                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
+                //}
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Flirt)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
                 }
@@ -326,13 +380,13 @@ namespace Bannerlord_Social_AI
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                if (SEName == "Compliment")
+                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Compliment)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
                 }
-                else if (SEName == "GiveGift")
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.GiveGift)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
@@ -342,6 +396,23 @@ namespace Bannerlord_Social_AI
                     CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
                     CustomAgentReceiver.AddItem(tempItem.itemName, 1);
                 }
+
+                //if (SEName == "Compliment")
+                //{
+                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
+
+                //    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
+                //}
+                //else if (SEName == "GiveGift")
+                //{
+                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
+
+                //    CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
+
+                //    Item tempItem = CustomAgentInitiator.GetItem();
+                //    CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
+                //    CustomAgentReceiver.AddItem(tempItem.itemName, 1);
+                //}
             }
             else
             {
@@ -351,6 +422,7 @@ namespace Bannerlord_Social_AI
             
             UpdateNPCsNearSocialMove();
         }
+
 
         private static void ChangeHeroRelationInGame(int value, CustomAgent customAgent)
         {
@@ -506,11 +578,11 @@ namespace Bannerlord_Social_AI
 
             InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, false, initialValue)
             {
-                RelationName = SEName,
-                RelationType = Intention
+                SE_Enum_Name = SE_Enum,
+                RelationIntention = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
-            finalVolition = CheckMemory(finalVolition, 5);
+            finalVolition = CheckMemory(finalVolition, 3);
 
             CustomAgentInitiator.SEVolition = finalVolition;
 
@@ -521,7 +593,7 @@ namespace Bannerlord_Social_AI
         {
             int howManyTimes = CustomAgentInitiator.MemorySEs.Count(
                 memorySlot => 
-                memorySlot.SE_Name == SEName && 
+                memorySlot.SE_Name == SE_Enum.ToString() && 
                 memorySlot.agents.Contains(CustomAgentInitiator.Name) && 
                 memorySlot.agents.Contains(CustomAgentReceiver.Name) && 
                 memorySlot.IDs.Contains(CustomAgentInitiator.Id) && 
@@ -535,12 +607,12 @@ namespace Bannerlord_Social_AI
 
             int howManyTimesNPCDidThatSE = CustomAgentInitiator.MemorySEs.Count(
                 memorySlot =>
-                memorySlot.SE_Name == SEName
+                memorySlot.SE_Name == SE_Enum.ToString()
                 );
 
-            if (howManyTimes > 0)
+            if (howManyTimesNPCDidThatSE > 0)
             {
-                finalVolition -= howManyTimes * multiplyToDecrease;
+                finalVolition -= howManyTimesNPCDidThatSE * multiplyToDecrease;
             }
 
             return finalVolition;
@@ -552,8 +624,8 @@ namespace Bannerlord_Social_AI
 
             InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, true, initialValue)
             {
-                RelationName = SEName,
-                RelationType = Intention
+                SE_Enum_Name = SE_Enum,
+                RelationIntention = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentReceiver, CustomAgentInitiator);
 
@@ -580,13 +652,20 @@ namespace Bannerlord_Social_AI
 
             if (!PlayerInteractingWithHero)
             {
-                InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " is " + belief.value));
+                if (value > 0)
+                {
+                    InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " increased to " + belief.value));
+                }
+                else if (value < 0)
+                {
+                    InformationManager.DisplayMessage(new InformationMessage("Relation " + belief.relationship + " between " + belief.agents[0] + " and " + belief.agents[1] + " decreased to " + belief.value));
+                }
             }
         }
 
         private void ResetCustomAgentVariables(CustomAgent customAgent)
         {
-            customAgent.SocialMove = "";
+            customAgent.SocialMove_SE = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
             customAgent.IsInitiator = false;
             customAgent.FullMessage = null;
             customAgent.Message = "";
@@ -598,7 +677,13 @@ namespace Bannerlord_Social_AI
             customAgent.MarkerTyperRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
-        }
+        }    
+
+        public bool SocialExchangeDoneAndReacted { get; set; }
+        public bool ReceptorIsPlayer { get; set; }
+        public bool ReduceDelay { get; set; }
+
+        public CustomMissionNameMarkerVM.SEs_Enum SE_Enum { get; }
 
         public IntentionEnum Intention { get; private set; }
         public enum IntentionEnum
@@ -611,11 +696,6 @@ namespace Bannerlord_Social_AI
             Special
         }
 
-        public bool SocialExchangeDoneAndReacted { get; set; }
-        public bool ReceptorIsPlayer { get; set; }
-        public bool ReduceDelay { get; set; }
-
-        public string SEName { get; set; }
         private Random Rnd { get; set; }
         private int auxToCheckWhoIsSpeaking { get; set; }
         private int index { get; set; }

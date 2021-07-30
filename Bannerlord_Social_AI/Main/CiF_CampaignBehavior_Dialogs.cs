@@ -45,6 +45,7 @@ namespace Bannerlord_Social_AI
         public bool RomanticOptionExists;
         public bool HostileOptionExists;
         public bool AskOutPerformed;
+        public bool HaveAChildInitialMovePerformed;
 
         private Dictionary<string, ConversationSentence.OnConditionDelegate> dictionaryConditions;
         private Dictionary<string, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
@@ -87,7 +88,7 @@ namespace Bannerlord_Social_AI
                 { "DatingForRomantic" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForRomanticSEWithNPC_condition) },
                 { "DatingForHostile" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForHostileSEWithNPC_condition) },
                 { "CanBreak" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
-                { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerSleepWithNPC_condition) },
+                { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanHaveAChildWithNPC_condition) },
                 { "NPCReactsToAskOut" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
                 { "PlayerOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
                 { "CompanionOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfCompanionCanOfferGiftToPlayer_condition) },
@@ -105,8 +106,9 @@ namespace Bannerlord_Social_AI
             {
                 { "None" , null},
                 { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
-                { "DoBreak" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUp) },
+                { "DoBreakConsequence" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUpSE) },
                 { "PlayerGiveItem" , new ConversationSentence.OnConsequenceDelegate(PlayerGivesItem) },
+                { "RomanticAdvancedConsequence" , new ConversationSentence.OnConsequenceDelegate(PlayerPerformHaveAChildSE) },
                 { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) },
                 { "Decrease_Relation" , new ConversationSentence.OnConsequenceDelegate(Decrease_Relation) }
             };
@@ -258,7 +260,7 @@ namespace Bannerlord_Social_AI
 
         /* Break */
         public bool DoBreak { get; set; }
-        private void Do_BreakUp()
+        private void Do_BreakUpSE()
         {
             DoBreak = true;
         }
@@ -288,6 +290,11 @@ namespace Bannerlord_Social_AI
             InformationManager.DisplayMessage(new InformationMessage(text.ToString()));*/
 
             InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " receives " + item.itemName));
+        }
+
+        private void PlayerPerformHaveAChildSE()
+        {
+            HaveAChildInitialMovePerformed = true;
         }
 
         public List<CustomAgent> customAgents;
@@ -520,6 +527,11 @@ namespace Bannerlord_Social_AI
 
         private bool CheckIfPlayerCanBreakWithNPC_condition()
         {
+            if (DoBreak)
+            {
+                return false;
+            }
+
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
@@ -546,8 +558,13 @@ namespace Bannerlord_Social_AI
             return false;
         }
 
-        private bool CheckIfPlayerSleepWithNPC_condition()
+        private bool CheckIfPlayerCanHaveAChildWithNPC_condition()
         {
+            if (HaveAChildInitialMovePerformed)
+            {
+                return false;
+            }
+
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();

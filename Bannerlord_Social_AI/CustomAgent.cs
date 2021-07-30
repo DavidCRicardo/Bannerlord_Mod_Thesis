@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
@@ -27,7 +28,6 @@ namespace Bannerlord_Social_AI
 
         public string[] FullMessage { get; set; } // Output Full Message
         public string Message { get; set; } // Output Message
-        public string SocialMove { get; set; }
         public bool SE_Accepted { get; set; }
         public int SEVolition { get; set; }
         public List<CustomAgent> CustomAgentsList { get; set; } // reference to NPCs around 
@@ -61,11 +61,14 @@ namespace Bannerlord_Social_AI
         public bool IsDead { get; set; }
 
         public enum Intentions { Undefined, Friendly, Unfriendly, Romantic, Hostile, Special }
-        public Dictionary<Intentions, bool> keyValuePairsSEs{ get; set; }
+        public Dictionary<Intentions, bool> keyValuePairsSEs { get; set; }
+
+        public CustomMissionNameMarkerVM.SEs_Enum SocialMove_SE { get; set; }
+
         public bool RunAI { get; internal set; }
 
-        public CustomAgent(Agent _agent, int _id, List<string> _statusList = null)
-        {
+        public CustomAgent(Agent _agent, int _id, List<string> _statusList = null, CustomMissionNameMarkerVM.SEs_Enum se_enum = default)
+        {            
             this.selfAgent = _agent;
             this.Name = _agent.Name;
             this.Id = _id;
@@ -76,7 +79,8 @@ namespace Bannerlord_Social_AI
             this.IdTarget = -1;
 
             this.Message = "";
-            this.SocialMove = "";
+            this.SocialMove_SE = se_enum;
+
             this.CustomAgentsList = new List<CustomAgent>();
 
             this.TraitList = new List<Trait>();
@@ -125,6 +129,7 @@ namespace Bannerlord_Social_AI
             keyValuePairsSEs.Add(Intentions.Unfriendly, false);
             keyValuePairsSEs.Add(Intentions.Romantic, false);
             keyValuePairsSEs.Add(Intentions.Hostile, false);
+            keyValuePairsSEs.Add(Intentions.Special, false);
         }
 
         private void SetCultureCodeInfo(Agent _agent)
@@ -207,7 +212,7 @@ namespace Bannerlord_Social_AI
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
 
-        public void StartSE(string _SEName, CustomAgent _Receiver)
+        public void StartSE(string _SEName, CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
         {
             UpdateTarget(_Receiver.Name, _Receiver.Id);
 
@@ -215,7 +220,8 @@ namespace Bannerlord_Social_AI
 
             this.EndingSocialExchange = false;
             IsInitiator = true;
-            SocialMove = _SEName;
+
+            SocialMove_SE = _seEnum;
 
             Busy = true;
         }
@@ -239,7 +245,7 @@ namespace Bannerlord_Social_AI
                 if (this.selfAgent.Position.Distance(this.customAgentTarget.selfAgent.Position) < 3)
                 {
                     /* Social Exchange */
-                    socialExchangeSE = new SocialExchangeSE(SocialMove, this, CustomAgentsList);
+                    socialExchangeSE = new SocialExchangeSE(SocialMove_SE, this, CustomAgentsList);
                     socialExchangeSE.OnInitialize(rnd);
 
                     if (socialExchangeSE.ReceptorIsPlayer)
@@ -278,7 +284,6 @@ namespace Bannerlord_Social_AI
         public int booleanNumber;
         public void SetBooleanNumber(bool PlayerToNPC, bool NPCToPlayer, bool NPCToNPC)
         {
-            SE_Intention = socialExchangeSE.Intention;
             StartingASocialExchange = true;
 
             booleanNumber = 0;
@@ -448,7 +453,8 @@ namespace Bannerlord_Social_AI
         internal void AbortSocialExchange()
         {
             IsInitiator = false;
-            SocialMove = "";
+            SocialMove_SE = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
+
             if (selfAgent != Agent.Main)
             {
                 EndFollowBehavior();
@@ -485,7 +491,6 @@ namespace Bannerlord_Social_AI
         }
         private float dtControl;
 
-        public SocialExchangeSE.IntentionEnum SE_Intention;
         public bool StartingASocialExchange;
 
         public CustomAgent GetCustomAgentByName(string _name, int _id)

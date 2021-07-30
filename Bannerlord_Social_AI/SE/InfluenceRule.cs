@@ -19,52 +19,33 @@ namespace Bannerlord_Social_AI
 
         public int SRunRules()
         {
-            var Dictionary = GetDictionaryToCheckTraitsValues(RelationType);
+            var Dictionary = GetDictionaryToCheckTraitsValues(RelationIntention);
 
-            switch (RelationType)
+            switch (SE_Enum_Name)
             {
-                case SocialExchangeSE.IntentionEnum.Positive:
-                    switch (RelationName)
-                    {
-                        case "Compliment": return RunRules(Dictionary, true, false, true, false, false, false, false, false,  false);
-                        case "GiveGift": return RunRules(Dictionary, true, true, true, false, false, false, false, false,  false);
-                        default: return 0;
-                    }
-                   
-                case SocialExchangeSE.IntentionEnum.Negative:
-                    switch (RelationName)
-                    {
-                        case "Jealous": return RunRules(Dictionary, false, false, true, false, false, false, false, false, false);
-                        case "FriendSabotage": return RunRules(Dictionary, false, false, false, false, false, false, true, false, false);
-                        default: return 0;
-                    }
-
-                case SocialExchangeSE.IntentionEnum.Romantic:
-                    switch (RelationName)
-                    {
-                        //case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
-                        case "Flirt": return RunRules(Dictionary, true, false, false, true, true, true, false, false,  false);
-                        default: return 0;
-                    }
-
-                case SocialExchangeSE.IntentionEnum.Hostile:
-                    switch (RelationName)
-                    {
-                        case "Bully": return RunRules(Dictionary, false, false, true, true, false, false, false, false, false);
-                        case "RomanticSabotage": return RunRules(Dictionary, false, false, false, false, false, false, false, false, true);
-                        default: return 0;
-                    }
-                   
-                case SocialExchangeSE.IntentionEnum.Special:
-                    switch (RelationName)
-                    {
-                        case "AskOut": return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
-                        case "Break": return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
-                        case "Gratitude": return RunRules(Dictionary, true, false, false, false, false, false, false, false, true);
-                        default: return 0;
-                    }
-
-                default:
+                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
+                    return RunRules(Dictionary, true, false, true, false, false, false, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
+                    return RunRules(Dictionary, true, true, true, false, false, false, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                    return RunRules(Dictionary, false, false, true, false, false, false, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                    return RunRules(Dictionary, false, false, false, false, false, false, true, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                    return RunRules(Dictionary, true, false, false, true, true, true, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                    return RunRules(Dictionary, false, false, true, true, false, false, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                    return RunRules(Dictionary, false, false, false, false, false, false, false, false, true);
+                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                    return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                    return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
+                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                    return RunRules(Dictionary, true, false, false, false, false, false, false, false, true);
+                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
+                    return -100;
+                default: 
                     return 0;
             }
         }
@@ -204,7 +185,7 @@ namespace Bannerlord_Social_AI
                 return -100;
             }
 
-            return 0;
+            return 2;
         }
 
         // different genders
@@ -331,7 +312,7 @@ namespace Bannerlord_Social_AI
 
             /* SocialTalk Status */
             status = CheckStatusIntensity(customAgent, "SocialTalk");
-            if (RelationType == SocialExchangeSE.IntentionEnum.Positive)
+            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -349,7 +330,7 @@ namespace Bannerlord_Social_AI
 
             /* Anger Status */
             status = CheckStatusIntensity(customAgent, "Anger");
-            if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive || RelationIntention == SocialExchangeSE.IntentionEnum.Romantic)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -364,7 +345,7 @@ namespace Bannerlord_Social_AI
                     localSum -= 6;
                 }
             }
-            else if (RelationType == SocialExchangeSE.IntentionEnum.Negative || RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+            else if (RelationIntention == SocialExchangeSE.IntentionEnum.Negative || RelationIntention == SocialExchangeSE.IntentionEnum.Hostile)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -381,7 +362,7 @@ namespace Bannerlord_Social_AI
             }
 
             status = CheckStatusIntensity(customAgent, "BullyNeed");
-            if (RelationType == SocialExchangeSE.IntentionEnum.Positive || RelationType == SocialExchangeSE.IntentionEnum.Romantic)
+            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive || RelationIntention == SocialExchangeSE.IntentionEnum.Romantic)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -396,7 +377,7 @@ namespace Bannerlord_Social_AI
                     localSum -= 10;
                 }
             }
-            else if (RelationType == SocialExchangeSE.IntentionEnum.Hostile)
+            else if (RelationIntention == SocialExchangeSE.IntentionEnum.Hostile)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -494,7 +475,8 @@ namespace Bannerlord_Social_AI
         public bool IsReacting { get; set; }
         public int InitialValue { get; set; }
         public string RelationName { get; set; }
-        public SocialExchangeSE.IntentionEnum RelationType { get; set; }
+        public SocialExchangeSE.IntentionEnum RelationIntention { get; set; }
+        public CustomMissionNameMarkerVM.SEs_Enum SE_Enum_Name { get; internal set; }
 
         public Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<String, Func<CustomAgent, int>>();
         public Dictionary<String, Func<CustomAgent, int>> GetDictionaryToCheckTraitsValues(SocialExchangeSE.IntentionEnum intention)
@@ -571,7 +553,7 @@ namespace Bannerlord_Social_AI
             {
                 localSum -= 2;
             }
-            else if (memory != null && (SocialExchangeSE.IntentionEnum.Hostile == RelationType))
+            else if (memory != null && (SocialExchangeSE.IntentionEnum.Hostile == RelationIntention))
             {
                 localSum += 2;
             }

@@ -38,12 +38,13 @@ namespace Bannerlord_Social_AI
         private int MaximumSEs { get; set; }
 
         private string auxSEName;
+        private SEs_Enum auxSE;
         private CustomAgent auxInitiatorAgent;
         private CustomAgent auxReceiverAgent;
         private int auxVolition;
 
         public CustomAgent customAgentInteractingWithPlayer;
-        private bool playerStartedASE;
+        public bool playerStartedASE;
         private int CIF_Range = 0;
         private Random rnd { get; set; }
 
@@ -66,11 +67,10 @@ namespace Bannerlord_Social_AI
                     //Hero.MainHero.Clan.Renown;
                     //Hero.MainHero.Clan.AddRenown(100);
 
-                    CIF_Range = 5; // verificar se consigo por o loop nas conversas
+                    //CIF_Range = 5; // para testar o loop nas conversas
                     int renownRequirement = Hero.MainHero.Clan.RenownRequirementForNextTier;
                     int tier = Hero.MainHero.Clan.Tier;
                     // quando atingir nova tier, dar trigger rule "gratitude" a um NPC
-
                 }
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
@@ -199,14 +199,12 @@ namespace Bannerlord_Social_AI
                 customCharacterReftoCampaignBehaviorBase = customAgent;
                 customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
 
-                intentionRefToCBB = GetIntentionToCBB(customAgent);
+                SocialExchange_E = customAgent.SocialMove_SE;
             }
 
             if (customAgent.StartingASocialExchange)
             {
-                dictionaryWithSEsToGauntlet.TryGetValue(customAgent.SE_Intention, out CustomAgent.Intentions value);
-                SE_identifier = value;
-
+                SocialExchange_E = customAgent.SocialMove_SE;
                 BooleanNumber = customAgent.booleanNumber;
                 letsUpdate = true;
                 customAgent.StartingASocialExchange = false;
@@ -215,7 +213,7 @@ namespace Bannerlord_Social_AI
 
         public bool letsUpdate;
         public int BooleanNumber;
-        public CustomAgent.Intentions SE_identifier;
+        public SEs_Enum SE_identifier;
 
         private void DecreaseNPCsCountdown(float dt)
         {
@@ -273,11 +271,14 @@ namespace Bannerlord_Social_AI
             foreach (var k in mostWantedSEList)
             {
                 k.nextSE.SEName = "";
+                k.nextSE.se = SEs_Enum.Undefined;
                 k.nextSE.InitiatorAgent = null;
                 k.nextSE.ReceiverAgent = null;
                 k.nextSE.Volition = 0;
             }
+
             nextSE.SEName = "";
+            nextSE.se = SEs_Enum.Undefined;
             nextSE.Volition = 0;
             nextSE.InitiatorAgent = null;
             nextSE.ReceiverAgent = null;
@@ -292,6 +293,7 @@ namespace Bannerlord_Social_AI
 
                 auxVolition = 0;
                 auxSEName = "";
+                auxSE = SEs_Enum.Undefined;
                 auxInitiatorAgent = null;
                 auxReceiverAgent = null;
 
@@ -311,18 +313,19 @@ namespace Bannerlord_Social_AI
                         int initiatorVolition = se.InitiadorVolition();
                         if (initiatorVolition == auxVolition)
                         {
-                            nextSEList.Add(new NextSE(se.SEName, c1, c2, initiatorVolition));
+                            nextSEList.Add(new NextSE(se.SEName, se.SE_Enum, c1, c2, initiatorVolition));
                         }
 
                         else if (initiatorVolition > auxVolition)
                         {
                             auxVolition = se.CustomAgentInitiator.SEVolition;
                             auxSEName = se.SEName;
+                            auxSE = se.SE_Enum;
                             auxInitiatorAgent = se.CustomAgentInitiator;
                             auxReceiverAgent = se.CustomAgentReceiver;
 
                             nextSEList.Clear();
-                            nextSEList.Add(new NextSE(auxSEName, c1, c2, initiatorVolition));
+                            nextSEList.Add(new NextSE(auxSEName, auxSE, c1, c2, initiatorVolition));
                         }
                     }
                 }
@@ -334,6 +337,7 @@ namespace Bannerlord_Social_AI
                     NextSE sE = nextSEList[index];
 
                     mostWanted.nextSE.SEName = sE.SEName;
+                    mostWanted.nextSE.se = sE.se;
                     mostWanted.nextSE.InitiatorAgent = sE.InitiatorAgent;
                     mostWanted.nextSE.ReceiverAgent = sE.ReceiverAgent;
                     mostWanted.nextSE.Volition = sE.Volition;
@@ -346,6 +350,7 @@ namespace Bannerlord_Social_AI
                 if (k.nextSE.Volition > nextSE.Volition)
                 {
                     nextSE.SEName = k.nextSE.SEName;
+                    nextSE.se = k.nextSE.se;
                     nextSE.InitiatorAgent = k.nextSE.InitiatorAgent;
                     nextSE.ReceiverAgent = k.nextSE.ReceiverAgent;
                     nextSE.Volition = k.nextSE.Volition;
@@ -355,7 +360,7 @@ namespace Bannerlord_Social_AI
             if (nextSE.Volition > 0)
             {
                 /* Get NPC & Start SE */
-                nextSE.InitiatorAgent.StartSE(nextSE.SEName, nextSE.ReceiverAgent);
+                nextSE.InitiatorAgent.StartSE(nextSE.SEName, nextSE.se, nextSE.ReceiverAgent);
                 OnGoingSEs++;
             }
         }
@@ -388,7 +393,7 @@ namespace Bannerlord_Social_AI
                 {
                     customAgentsList = new List<CustomAgent>();
 
-                    nextSE = new NextSE("", null, null, 0);
+                    nextSE = new NextSE("", SEs_Enum.Undefined, null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
                     nextSEList = new List<NextSE>();
 
@@ -453,26 +458,20 @@ namespace Bannerlord_Social_AI
         private void InitializeSocialExchanges()
         {
             OnGoingSEs = 0;
-            MaximumSEs = CurrentLocation == "center" ? 4 : 2;
+            MaximumSEs = CurrentLocation == "center" ? 3 : 2;
 
             SocialExchangesList = new List<SocialExchangeSE>();
 
-            List<string> Temp_SEs = new List<string>() { "Compliment", "GiveGift", "Jealous", "FriendSabotage", "AskOut", "Flirt", "Bully", "RomanticSabotage", "Break", "Gratitude" };
-            foreach (string SE_Name in Temp_SEs)
+            foreach (SEs_Enum SocialExchange_E in Enum.GetValues(typeof(SEs_Enum)))
             {
-                SocialExchangesList.Add(new SocialExchangeSE(SE_Name, null, null));
+                if (SocialExchange_E != SEs_Enum.Undefined)
+                {
+                    //int r = ((int)SocialExchange_E);
+                    //string seName = SocialExchange_E.ToString();
+
+                    SocialExchangesList.Add(new SocialExchangeSE(SocialExchange_E, null, null));
+                }
             }
-
-            foreach (EnumTemp_SEs se in Enum.GetValues(typeof(EnumTemp_SEs)))
-            {
-                int r = ((int)se);
-            }
-
-        }
-
-        public enum EnumTemp_SEs
-        {
-            Undefined = -1, Compliment, GiveGift, Jealous, FriendSabotage, AskOut, Flirt, Bully, RomanticSabotage, Break, Gratitude
         }
 
         private void InitializeStatusList()
@@ -499,7 +498,6 @@ namespace Bannerlord_Social_AI
 
             if (custom.customAgentTarget != null && custom.customAgentTarget.Name == Agent.Main.Name)
             {
-                intentionRefToCBB = SocialExchangeSE.IntentionEnum.Undefined;
                 customCharacterReftoCampaignBehaviorBase = null;
                 customCharacterIdRefCampaignBehaviorBase = -1;
                 SetCanResetCBB_refVariables(true);
@@ -662,7 +660,7 @@ namespace Bannerlord_Social_AI
         private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null)
         {
             int id = 0;
-            CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList);
+            CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList, SEs_Enum.Undefined);
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
@@ -684,15 +682,13 @@ namespace Bannerlord_Social_AI
             {
                 RandomItem(customAgentTemp);
 
-                mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", null, null, 0));
+                mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE("", SEs_Enum.Undefined, null, null, 0));
                 mostWantedSEList.Add(sE);
             }
             else
             {
                 customAgentTemp.Countdown = rnd.Next(1, 3);
             }
-
-
         }
 
         private void ResetSavedSEs()
@@ -982,42 +978,12 @@ namespace Bannerlord_Social_AI
 
         public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
         public int customCharacterIdRefCampaignBehaviorBase { get; set; }
-        public string SocialMoveRefCampaignBehaviorBase { get; set; }
-        public SocialExchangeSE.IntentionEnum intentionRefToCBB { get; set; }
-        private SocialExchangeSE.IntentionEnum GetIntentionToCBB(CustomAgent customAgent)
+
+        public SEs_Enum SocialExchange_E { get; set; }
+
+        public enum SEs_Enum
         {
-            if (customAgent.SocialMove != "")
-            {
-                SocialMoveRefCampaignBehaviorBase = customAgent.SocialMove;
-                if (customAgent.SocialMove == "Compliment" || customAgent.SocialMove == "GiveGift")
-                {
-                    return SocialExchangeSE.IntentionEnum.Positive;
-                }
-                else if (customAgent.SocialMove == "Flirt" || customAgent.SocialMove == "AskOut")
-                {
-                    return SocialExchangeSE.IntentionEnum.Romantic;
-                }
-                else if (customAgent.SocialMove == "Bully" || customAgent.SocialMove == "RomanticSabotage")
-                {
-                    return SocialExchangeSE.IntentionEnum.Hostile;
-                }
-                else if (customAgent.SocialMove == "Jealous" || customAgent.SocialMove == "FriendSabotage")
-                {
-                    return SocialExchangeSE.IntentionEnum.Negative;
-                }
-                else if (customAgent.SocialMove == "Break" || customAgent.SocialMove == "Gratitude")
-                {
-                    return SocialExchangeSE.IntentionEnum.Special;
-                }
-                else
-                {
-                    return SocialExchangeSE.IntentionEnum.Undefined;
-                }
-            }
-            else
-            {
-                return SocialExchangeSE.IntentionEnum.Undefined;
-            }
+            Undefined = -1, Compliment, GiveGift, Gratitude, Jealous, FriendSabotage, Flirt, Bully, RomanticSabotage, AskOut, Break, HaveAChild
         }
 
         #region On Battle
