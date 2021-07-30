@@ -1,0 +1,27 @@
+﻿<Module>
+  <Name value="FriendlyLords"/>
+  <Id value="FriendlyLords"/>
+  <Version value="e1.6.0"/>
+  <DefaultModule value="false"/>
+  <SingleplayerModule value="true"/>
+  <MultiplayerModule value="false"/>
+  <Official value ="true" />
+  <DependedModules>
+    <DependedModule Id="Native" DependentVersion="e1.6.0"/>
+    <DependedModule Id="SandBoxCore" DependentVersion="e1.6.0"/>
+    <DependedModule Id="Sandbox" DependentVersion="e1.6.0"/>
+    <DependedModule Id="StoryMode" DependentVersion="e1.6.0"/>
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="FriendlyLords"/>
+      <DLLName value="FriendlyLords.dll"/>
+      <SubModuleClassType value="FriendlyLords.SubModule"/>
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+  <Xmls/>
+</Module>
