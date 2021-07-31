@@ -193,7 +193,7 @@ namespace FriendlyLords
         {
             if (_dataSource != null && _dataSource.customAgentsList != null)
             {
-                //if (CBB_ref.customAgentConversation == null) // prevent some kind of bug
+                //if (CBB_ref.customAgentConversation == null) // prevent some kind of bug //
                 //{
                     foreach (CustomAgent custom in _dataSource.customAgentsList)
                     {
