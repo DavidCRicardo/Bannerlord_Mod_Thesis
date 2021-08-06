@@ -482,7 +482,7 @@ namespace FriendlyLords
 
         public bool SecsDelay(float dt, int seconds)
         {
-            dtControl = dtControl + dt;
+            dtControl += dt;
             if (dtControl >= seconds)
             {
                 dtControl = 0;

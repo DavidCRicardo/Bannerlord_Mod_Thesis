@@ -203,7 +203,6 @@ namespace FriendlyLords
                 }
 
                 ResetSavedSEs();
-
             }
         }
 
@@ -224,7 +223,6 @@ namespace FriendlyLords
                 customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
 
                 SocialExchange_E = customAgent.SocialMove_SE;
-
             }
 
             if (customAgent.StartingASocialExchange)
@@ -874,7 +872,7 @@ namespace FriendlyLords
                             customAgent.TraitList = _customAgentJson.TraitList;
                             customAgent.SocialNetworkBeliefs = _customAgentJson.SocialNetworkBeliefs;
                             customAgent.ItemList = _customAgentJson.ItemsList;
-                            customAgent.MemorySEs = _customAgentJson.MemoriesList;
+                            customAgent.MemorySEs = _customAgentJson.SocialExchangeMemory;
 
                             // Set Custom Agent Belief with Relation Value
                             CheckInGameRelationBetweenHeroes(customMain, customAgent);
@@ -953,7 +951,7 @@ namespace FriendlyLords
                             _customAgentJson.TraitList = x.TraitList;
                             _customAgentJson.SocialNetworkBeliefs = x.SocialNetworkBeliefs;
                             _customAgentJson.ItemsList = x.ItemList;
-                            _customAgentJson.MemoriesList = x.MemorySEs;
+                            _customAgentJson.SocialExchangeMemory = x.MemorySEs;
                         }
                     }
                     break;

@@ -154,20 +154,22 @@ namespace FriendlyLords
         }
 
         public CustomAgent customAgentConversation { get; set; }
-        public CustomAgent characterRef { get; set; }
-        public int characterIdRef { get; set; }
+        public CustomAgent characterRefWithDesireToPlayer { get; set; }
+        public int characterIdRefWithDesireToPlayer { get; set; }
 
         private bool ThisAgentWillInteractWithPlayer()
         {
-            customAgentConversation = customAgents.Find(c => c == characterRef && c.Id == characterIdRef);
-
-            if (customAgentConversation != null)
+            customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
+            if (CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
             {
-                //characterRef = null;
-                //characterIdRef = -1;
-                return true;
+                if (customAgentConversation != null)
+                {
+                    //characterRef = null;
+                    //characterIdRef = -1;
+                    return true;
+                }
             }
-            else { return false; }
+            return false;
         }
 
         public bool OfferGift { get; set; }

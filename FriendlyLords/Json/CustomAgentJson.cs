@@ -19,7 +19,7 @@ namespace FriendlyLords
             }
             
             ItemsList = itemList;
-            MemoriesList = new List<MemorySE>();
+            SocialExchangeMemory = new List<MemorySE>();
         }
 
         [JsonProperty("Name")]
@@ -32,7 +32,7 @@ namespace FriendlyLords
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         [JsonProperty("ItemsList")]
         public List<Item> ItemsList { get; set; }
-        [JsonProperty("MemorySEList")]
-        public List<MemorySE> MemoriesList { get; set; }
+        [JsonProperty("SocialExchangeMemory")]
+        public List<MemorySE> SocialExchangeMemory { get; set; }
     }
 }

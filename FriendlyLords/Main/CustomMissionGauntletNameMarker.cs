@@ -152,8 +152,8 @@ namespace FriendlyLords
         {
             if (_dataSource.customCharacterReftoCampaignBehaviorBase != null)
             {
-                CBB_ref.characterRef = _dataSource.customCharacterReftoCampaignBehaviorBase;
-                CBB_ref.characterIdRef = _dataSource.customCharacterIdRefCampaignBehaviorBase;
+                CBB_ref.characterRefWithDesireToPlayer = _dataSource.customCharacterReftoCampaignBehaviorBase;
+                CBB_ref.characterIdRefWithDesireToPlayer = _dataSource.customCharacterIdRefCampaignBehaviorBase;
 
                 switch (_dataSource.SocialExchange_E)
                 {
