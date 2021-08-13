@@ -61,7 +61,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Positive;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.MarkerTypeRef = 0;
                         CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
@@ -70,7 +70,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 2;
+                        CustomAgentInitiator.MarkerTypeRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
@@ -79,7 +79,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.MarkerTypeRef = 1;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
@@ -88,7 +88,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Romantic;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.MarkerTypeRef = 0;
                         CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
@@ -97,7 +97,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Hostile;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 2;
+                        CustomAgentInitiator.MarkerTypeRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_bully");
                         CustomAgentReceiver.PlayAnimation("act_bullied");
                     }
@@ -106,7 +106,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Hostile;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.MarkerTypeRef = 1;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
@@ -117,7 +117,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Special;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 1;
+                        CustomAgentInitiator.MarkerTypeRef = 1;
                         CustomAgentInitiator.PlayAnimation("act_argue_3");
                         CustomAgentReceiver.PlayAnimation("act_argue_4");
                     }
@@ -126,7 +126,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Undefined;
                     if (setMarkerAndAnimation)
                     {
-                        CustomAgentInitiator.MarkerTyperRef = 0;
+                        CustomAgentInitiator.MarkerTypeRef = 0;
                     }
                     break;
             }
@@ -659,7 +659,7 @@ namespace FriendlyLords
             customAgent.customAgentTarget = null;
             customAgent.thirdAgent = "";
             customAgent.thirdAgentId = 0;
-            customAgent.MarkerTyperRef = 1;
+            customAgent.MarkerTypeRef = 1;
             customAgent.StopAnimation();
             customAgent.EndFollowBehavior();
         }    

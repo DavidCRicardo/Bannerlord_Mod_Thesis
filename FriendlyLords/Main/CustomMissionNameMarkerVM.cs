@@ -1082,12 +1082,12 @@ namespace FriendlyLords
             {
                 if (customAgent.IsPlayerTeam)
                 {
-                    customAgent.MarkerTyperRef = 1;
+                    customAgent.MarkerTypeRef = 1;
                     PlayerTeamCurrentSpeakers++;
                 }
                 else
                 {
-                    customAgent.MarkerTyperRef = 2;
+                    customAgent.MarkerTypeRef = 2;
                     OtherTeamCurrentSpeakers++;
                 }
 
@@ -1313,7 +1313,7 @@ namespace FriendlyLords
                 {
                     if (customAgent.Message != "")
                     {
-                        item.MarkerType = customAgent.MarkerTyperRef;
+                        item.MarkerType = customAgent.MarkerTypeRef;
                         item.Message = customAgent.Message;
                         item.IsEnabled = true;
                     }

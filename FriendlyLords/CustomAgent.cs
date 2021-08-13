@@ -15,7 +15,7 @@ namespace FriendlyLords
 {
     public class CustomAgent : CampaignBehaviorBase
     {
-        public Agent selfAgent; // reference to self
+        public Agent selfAgent; 
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -26,21 +26,21 @@ namespace FriendlyLords
         public CustomAgent customAgentTarget;
         public int IdTarget { get; set; }
 
-        public string[] FullMessage { get; set; } // Output Full Message
-        public string Message { get; set; } // Output Message
+        public string[] FullMessage { get; set; } 
+        public string Message { get; set; } 
         public bool SE_Accepted { get; set; }
         public int SEVolition { get; set; }
-        public List<CustomAgent> CustomAgentsList { get; set; } // reference to NPCs around 
+        public List<CustomAgent> CustomAgentsList { get; set; }
 
-        public SocialExchangeSE socialExchangeSE { get; set; }
         public List<mostWantedSE> mostWantedSEList { get; set; }
+        public SocialExchangeSE socialExchangeSE { get; set; }
 
         public List<Trait> TraitList { get; set; }
+        public List<Status> StatusList { get; set; }
         public List<SocialNetworkBelief> SocialNetworkBeliefs { get; set; }
         public List<Item> ItemList { get; set; }
-        public List<MemorySE> MemorySEs { get; set; }
         public List<TriggerRule> TriggerRuleList { get; set; }
-        public List<Status> StatusList { get; set; }
+        public List<MemorySE> MemorySEs { get; set; }
 
         public bool NearEnoughToStartConversation { get; set; }
         public bool EnoughRest { get; set; } // is not in cooldown? // enough rest?
@@ -50,7 +50,7 @@ namespace FriendlyLords
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }
         public bool NearPlayer { get; set; }
-        public int MarkerTyperRef { get; set; }
+        public int MarkerTypeRef { get; set; }
 
         private readonly int memorySize = 5;
         public string thirdAgent;
@@ -59,13 +59,12 @@ namespace FriendlyLords
 
         public bool IsPlayerTeam { get; set; }
         public bool IsDead { get; set; }
+        public bool RunAI { get; internal set; }
 
         public enum Intentions { Undefined, Friendly, Unfriendly, Romantic, Hostile, Special }
         public Dictionary<Intentions, bool> keyValuePairsSEs { get; set; }
 
         public CustomMissionNameMarkerVM.SEs_Enum SocialMove_SE { get; set; }
-
-        public bool RunAI { get; internal set; }
 
         public CustomAgent(Agent _agent, int _id, List<string> _statusList = null, CustomMissionNameMarkerVM.SEs_Enum se_enum = default)
         {            
@@ -92,7 +91,7 @@ namespace FriendlyLords
 
             this.IsInitiator = false;
             this.NearPlayer = false;
-            this.MarkerTyperRef = 1;
+            this.MarkerTypeRef = 1;
 
             AddStatusToCustomAgent(_statusList);
             this.Countdown = SetCountdownToCustomAgent();
@@ -711,9 +710,9 @@ namespace FriendlyLords
                 {
                     status.intensity = 0;
                 }
-                else if (status.intensity >= 3)
+                else if (status.intensity >= 10)
                 {
-                    status.intensity = 3;
+                    status.intensity = 10;
                 }
             }
         }
