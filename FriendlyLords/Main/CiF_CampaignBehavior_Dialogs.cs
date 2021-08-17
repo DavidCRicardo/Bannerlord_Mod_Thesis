@@ -708,7 +708,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena")
+                if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 

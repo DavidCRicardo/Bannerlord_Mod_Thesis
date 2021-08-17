@@ -1054,11 +1054,9 @@ namespace FriendlyLords
 
         private void OnBattle()
         {
-            float teamOpponentPercentage = 0;
-            float teamPlayerPercentage = 0;
             int auxCountPlayerTeam = 0;
 
-            CheckDeadAgentsFromTeams(ref teamOpponentPercentage, ref teamPlayerPercentage, ref auxCountPlayerTeam);
+            CheckDeadAgentsFromBothTeams(ref auxCountPlayerTeam);
 
             if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
             {
@@ -1068,12 +1066,16 @@ namespace FriendlyLords
             int index = rnd.Next(customAgentsList.Count);
             CustomAgent customAgent = customAgentsList[index];
 
-
             if (!CustomAgentInsideRangeFromPlayer(customAgent))
             {
                 return;
             }
 
+            CheckIfAgentIsAvailableToSpeak(customAgent);
+        }
+
+        private void CheckIfAgentIsAvailableToSpeak(CustomAgent customAgent)
+        {
             if (customAgent.IsDead)
             {
                 customAgent.Message = "";
@@ -1091,75 +1093,123 @@ namespace FriendlyLords
                     OtherTeamCurrentSpeakers++;
                 }
 
-                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, teamPlayerPercentage, teamOpponentPercentage, rnd);
+
+                GetBattleSentences(customAgent, customAgent.IsPlayerTeam, rnd);
             }
         }
 
-        private void CheckDeadAgentsFromTeams(ref float teamOpponentCount, ref float teamPlayerCount, ref int auxCountOpponentTeam)
+        private void CheckDeadAgentsFromBothTeams(ref int auxCountOpponentTeam)
         {
             foreach (Team team in Mission.Current.Teams)
             {
                 if (!team.IsPlayerTeam)
                 {
-                    teamOpponentCount = CheckDeadAgentFromThisTeam(team);
                     auxCountOpponentTeam = team.TeamAgents.Count;
                 }
-                else
-                {
-                    teamPlayerCount = CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
-                }
+                
+                CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
             }
         }
 
-        private float CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
+        private void CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
         {
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
-                Agent item = team.TeamAgents[i];
-                if (!item.IsActive() || item.Health <= 0)
-                {
-                    customAgentsList[auxInt + i].IsDead = true;
-                }
-            }
+                Agent agent = team.TeamAgents[i];
 
-            if (team.TeamAgents.Count == 0)
-            {
-                return 0;
-            }
-            else
-            {
-                return (team.ActiveAgents.Count / team.TeamAgents.Count);
+                if (!agent.IsActive() || agent.Health <= 0)
+                {
+                    if (customAgentsList.Count > auxInt + i)
+                    {
+                        customAgentsList[auxInt + i].IsDead = true;
+                        CustomAgent customAgentHelper = customAgentsList[auxInt + i];
+                        NormalizeSpeakers(customAgentHelper);
+                    }
+                    else
+                    {
+                        //InformationManager.DisplayMessage(new InformationMessage("Debug"));
+                    }
+                }
             }
         }
 
-        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, float teamPlayerCount, float teamOpponentCount, Random rnd)
+        private void NormalizeSpeakers(CustomAgent customAgentHelper)
         {
-            if (teamPlayerCount < teamOpponentCount)
+            if (customAgentHelper.Message != "")
             {
-                if (isPlayerTeam)
+                if (customAgentHelper.IsPlayerTeam)
                 {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                    PlayerTeamCurrentSpeakers--;
                 }
                 else
                 {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                    OtherTeamCurrentSpeakers--;
                 }
             }
-            else if (teamPlayerCount > teamOpponentCount)
+        }
+
+        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, Random rnd)
+        {
+            foreach (Team team in Mission.Current.Teams)
             {
-                if (isPlayerTeam)
+                if (team.IsPlayerTeam)
                 {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                    teamPlayerPower = team.QuerySystem.TeamPower;
+                    if (initialTeamPlayerPower == -1)
+                    {
+                        initialTeamPlayerPower = teamPlayerPower;
+                    }
                 }
                 else
                 {
-                    GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
-                }
+                    teamOpponentPower = team.QuerySystem.TeamPower;
+                    if (initialTeamOpponentPower == -1)
+                    {
+                        initialTeamOpponentPower = teamOpponentPower;
+                    }
+                } 
             }
-            else
+
+            if (teamPlayerPower == initialTeamPlayerPower && teamOpponentPower == initialTeamOpponentPower)
             {
                 GetBattleSingleSentence(customAgent, BattleDictionary.Neutral, rnd);
             }
+            else
+            {
+                if (teamPlayerPower < teamOpponentPower)
+                {
+                    if (isPlayerTeam)
+                    {
+                        GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                    }
+                    else
+                    {
+                        GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                    }
+                }
+                else if (teamPlayerPower > teamOpponentPower)
+                {
+                    if (isPlayerTeam)
+                    {
+                        GetBattleSingleSentence(customAgent, BattleDictionary.Winning, rnd);
+                    }
+                    else
+                    {
+                        if (teamOpponentPower == 0)
+                        {
+                            customAgent.Message = "";
+                        }
+                        else
+                        {
+                            GetBattleSingleSentence(customAgent, BattleDictionary.Losing, rnd);
+                        }
+                    }
+                }
+                else
+                {
+                    GetBattleSingleSentence(customAgent, BattleDictionary.Neutral, rnd);
+                }
+            }        
         }
 
         private void GetBattleSingleSentence(CustomAgent customAgent, BattleDictionary key, Random rnd)
@@ -1192,6 +1242,8 @@ namespace FriendlyLords
         {
             OtherTeamCurrentSpeakers = 0;
             PlayerTeamCurrentSpeakers = 0;
+            initialTeamPlayerPower = -1;
+            initialTeamOpponentPower = -1;
             rnd = new Random();
             customAgentsList = new List<CustomAgent>();
             battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
@@ -1215,6 +1267,10 @@ namespace FriendlyLords
         private int PlayerTeamLimitSpeakers { get; set; }
         private int OtherTeamCurrentSpeakers { get; set; }
         private int PlayerTeamCurrentSpeakers { get; set; }
+        private float initialTeamPlayerPower { get; set; }
+        private float initialTeamOpponentPower { get; set; }
+        private float teamPlayerPower { get; set; }
+        private float teamOpponentPower { get; set; }
 
         public Dictionary<Enum, CustomAgent.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CustomAgent.Intentions>()
         {

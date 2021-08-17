@@ -193,7 +193,7 @@ namespace FriendlyLords
         {
             if (_dataSource != null && _dataSource.customAgentsList != null)
             {
-                //if (CBB_ref.customAgentConversation == null) // prevent some kind of bug //
+                //if (CBB_ref.customAgentConversation == null) 
                 //{
                     foreach (CustomAgent custom in _dataSource.customAgentsList)
                     {
@@ -371,7 +371,7 @@ namespace FriendlyLords
                         Hero.MainHero.SetPersonalRelation(hero, newValue);
                     }              
                 }
-                else
+                else if (value < 0) 
                 {
                     InformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
