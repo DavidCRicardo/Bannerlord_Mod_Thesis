@@ -324,7 +324,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena")
+                    if (_currentLocation != "arena" && customAgents != null)
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -369,7 +369,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena")
+                    if (_currentLocation != "arena" && customAgents != null)
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -419,7 +419,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena")
+                if (_currentLocation != "arena" && customAgents != null)
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -462,7 +462,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena")
+                    if (_currentLocation != "arena" && customAgents != null)
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -502,7 +502,7 @@ namespace FriendlyLords
 
             if (value <= 0)
             {
-                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+                if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
                 {
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -545,7 +545,7 @@ namespace FriendlyLords
                 return false;
             }
 
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -578,7 +578,7 @@ namespace FriendlyLords
                 return false;
             }
 
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -614,7 +614,7 @@ namespace FriendlyLords
                 return false;
             }
 
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -678,7 +678,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena")
+                if (_currentLocation != "arena" && customAgents != null)
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -708,7 +708,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)
+                if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null && customAgents != null)
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
