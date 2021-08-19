@@ -112,10 +112,12 @@ namespace FriendlyLords
                     }
                     else
                     {
-                        OnBattle();
+                        if (SecsDelay(dt, 1))
+                        {
+                            OnBattle();
+                        }
 
                         DecreaseCountdownOnBattle(dt);
-
                         UpdateTargetScreen();
                     }
                 }
@@ -1058,7 +1060,7 @@ namespace FriendlyLords
 
             CheckDeadAgentsFromBothTeams(ref auxCountPlayerTeam);
 
-            if (OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers || customAgentsList.Count == 0)
+            if (/*OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers ||*/ customAgentsList.Count == 0)
             {
                 return;
             }
@@ -1093,42 +1095,70 @@ namespace FriendlyLords
                     OtherTeamCurrentSpeakers++;
                 }
 
-
                 GetBattleSentences(customAgent, customAgent.IsPlayerTeam, rnd);
             }
         }
 
         private void CheckDeadAgentsFromBothTeams(ref int auxCountOpponentTeam)
         {
+            bool auxBool;
             foreach (Team team in Mission.Current.Teams)
             {
                 if (!team.IsPlayerTeam)
                 {
                     auxCountOpponentTeam = team.TeamAgents.Count;
+                    auxBool = false;
                 }
+                else { auxBool = true; }
                 
-                CheckDeadAgentFromThisTeam(team, auxCountOpponentTeam);
+                CheckDeadAgentForThisTeam(team, auxBool, auxCountOpponentTeam);
             }
         }
 
-        private void CheckDeadAgentFromThisTeam(Team team, int auxInt = 0)
+        private void CheckDeadAgentForThisTeam(Team team, bool IsPlayerTeam, int auxInt = 0)
         {
+            CustomAgent customAgentHelper;
+            int index;
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
                 Agent agent = team.TeamAgents[i];
 
                 if (!agent.IsActive() || agent.Health <= 0)
                 {
-                    if (customAgentsList.Count > auxInt + i)
+                    if (IsPlayerTeam)
                     {
-                        customAgentsList[auxInt + i].IsDead = true;
-                        CustomAgent customAgentHelper = customAgentsList[auxInt + i];
+                        index = auxInt + i;
+                    }
+                    else 
+                    { 
+                        index = i; 
+                    }
+
+                    if (customAgentsList.Count > index)
+                    {
+                        customAgentsList[index].IsDead = true;
+                        customAgentHelper = customAgentsList[index];
                         NormalizeSpeakers(customAgentHelper);
                     }
-                    else
-                    {
-                        //InformationManager.DisplayMessage(new InformationMessage("Debug"));
-                    }
+                    //if (IsPlayerTeam)
+                    //{
+                    //    if (customAgentsList.Count > auxInt + i)
+                    //    {
+                    //        customAgentsList[auxInt + i].IsDead = true;
+                    //        customAgentHelper = customAgentsList[auxInt + i];
+                    //        NormalizeSpeakers(customAgentHelper);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    if (customAgentsList.Count > i)
+                    //    {
+                    //        customAgentsList[i].IsDead = true;
+                    //        customAgentHelper = customAgentsList[i];
+                    //        NormalizeSpeakers(customAgentHelper);
+                    //    }
+                    //}
+                    //NormalizeSpeakers(customAgentHelper);
                 }
             }
         }
@@ -1145,6 +1175,8 @@ namespace FriendlyLords
                 {
                     OtherTeamCurrentSpeakers--;
                 }
+
+                customAgentHelper.Message = "";
             }
         }
 
