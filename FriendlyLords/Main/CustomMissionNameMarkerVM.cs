@@ -22,6 +22,8 @@ namespace FriendlyLords
             this._mission = mission;
         }
 
+        private config configReference { get; set; }
+
         private List<SocialExchangeSE> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
         private List<NextSE> nextSEList { get; set; }
@@ -54,6 +56,9 @@ namespace FriendlyLords
             {
                 if (this._firstTick)
                 {
+                    configReference = ReadConfigFile();
+                    CIF_Range = configReference.RangeConversations;
+
                     rnd = new Random();
                     PreInitializeOnSettlement();
 
@@ -99,29 +104,43 @@ namespace FriendlyLords
                 {
                     if (this._firstTick)
                     {
+                        configReference = ReadConfigFile();
+                        CIF_Range = configReference.RangeConversations;
+
                         PreInitializeOnBattle();
 
                         this._firstTick = false;
                     }
 
-                    if (Mission.Current.Teams.Count != 0 && Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
+                    if (configReference.ConversationOnBattle)
                     {
-                        InitializeOnBattle(rnd);
-
-                        _secondTick = false;
-                    }
-                    else
-                    {
-                        if (SecsDelay(dt, 1))
+                        if (Mission.Current.Teams.Count != 0 && Mission.Current.Teams[0].TeamAgents.Count != 0 && _secondTick)
                         {
-                            OnBattle();
-                        }
+                            InitializeOnBattle(rnd);
 
-                        DecreaseCountdownOnBattle(dt);
-                        UpdateTargetScreen();
+                            _secondTick = false;
+                        }
+                        else
+                        {
+                            if (SecsDelay(dt, 1))
+                            {
+                                OnBattle();
+                            }
+
+                            DecreaseCountdownOnBattle(dt);
+                            UpdateTargetScreen();
+                        }
                     }
                 }
             }
+        }
+
+        private config ReadConfigFile()
+        {
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/config.json");
+            config myDeserializedClass = JsonConvert.DeserializeObject<config>(json);
+
+            return myDeserializedClass;
         }
 
         private void CheckGratitudeMethod()
@@ -399,8 +418,6 @@ namespace FriendlyLords
 
             InitializeStatusList();
 
-            ReadConfigFileToSetCIFRange();
-
             if (Mission.Current.MainAgent != null)
             {
                 if (customAgentsList == null)
@@ -437,16 +454,6 @@ namespace FriendlyLords
 
                     LoadDialogsFromJSON();
                 }
-            }
-        }
-
-        private void ReadConfigFileToSetCIFRange()
-        {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/player_conversations.json");
-            CBB_Root deserializedBattleClass = JsonConvert.DeserializeObject<CBB_Root>(json);
-            if (deserializedBattleClass != null)
-            {
-                CIF_Range = deserializedBattleClass.RangeCIFConversations;
             }
         }
 
@@ -1289,7 +1296,6 @@ namespace FriendlyLords
                 battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
                 OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
                 PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
-                CIF_Range = deserializedBattleClass.RangeConversations;
             }
         }
 

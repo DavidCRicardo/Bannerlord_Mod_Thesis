@@ -82,16 +82,16 @@ namespace FriendlyLords
         {
             dictionaryConditions = new Dictionary<string, ConversationSentence.OnConditionDelegate>() {
                 { "None" , null },
-                { "NotRelationOrFriendForFriendly" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition) }, // daily countdown
-                { "NotRelationOrFriendForUnFriendly" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition) }, // daily countdown
-                { "CanAskOut" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition) },
-                { "DatingForRomantic" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForRomanticSEWithNPC_condition) },
-                { "DatingForHostile" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForHostileSEWithNPC_condition) },
-                { "CanBreak" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
-                { "RomanticAdvanced" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanHaveAChildWithNPC_condition) },
-                { "NPCReactsToAskOut" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
-                { "PlayerOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
-                { "CompanionOfferGift" , new ConversationSentence.OnConditionDelegate(CheckIfCompanionCanOfferGiftToPlayer_condition) },
+                { "FriendlySE_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition) }, // daily countdown
+                { "UnFriendlySE_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition) }, // daily countdown
+                { "AskOut_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanAskOutWithNPC_condition) },
+                { "Romantic_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForRomanticSEWithNPC_condition) },
+                { "Hostile_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerIsDatingForHostileSEWithNPC_condition) },
+                { "Break_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanBreakWithNPC_condition) },
+                { "RomanticAdvanced_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanHaveAChildWithNPC_condition) },
+                { "NPCReactsToAskOut_condition" , new ConversationSentence.OnConditionDelegate(NPC_AcceptReject_AskOut_condition) },
+                { "PlayerOfferGift_condition" , new ConversationSentence.OnConditionDelegate(CheckIfPlayerCanOfferGiftToCompanion_condition) },
+                { "CompanionOfferGift_condition" , new ConversationSentence.OnConditionDelegate(CheckIfCompanionCanOfferGiftToPlayer_condition) },
 
                 { "Friendly_NPC" , new ConversationSentence.OnConditionDelegate(FriendlyNPC) },
                 { "OfferGift_NPC" , new ConversationSentence.OnConditionDelegate(OfferGiftNPC) },
@@ -107,10 +107,10 @@ namespace FriendlyLords
             dictionaryConsequences = new Dictionary<string, ConversationSentence.OnConsequenceDelegate>()
             {
                 { "None" , null},
-                { "Start_Dating" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
-                { "DoBreakConsequence" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUpSE) },
-                { "PlayerGiveItem" , new ConversationSentence.OnConsequenceDelegate(PlayerGivesItem) },
-                { "RomanticAdvancedConsequence" , new ConversationSentence.OnConsequenceDelegate(PlayerPerformHaveAChildSE) },
+                { "Start_Dating_consequence" , new ConversationSentence.OnConsequenceDelegate(Start_Dating) },
+                { "DoBreak_consequence" , new ConversationSentence.OnConsequenceDelegate(Do_BreakUpSE) },
+                { "PlayerGiveItem_consequence" , new ConversationSentence.OnConsequenceDelegate(PlayerGivesItem) },
+                { "RomanticAdvanced_consequence" , new ConversationSentence.OnConsequenceDelegate(PlayerPerformHaveAChildSE) },
                 { "Increase_Relation" , new ConversationSentence.OnConsequenceDelegate(Increase_Relation) },
                 { "Decrease_Relation" , new ConversationSentence.OnConsequenceDelegate(Decrease_Relation) }
             };
@@ -150,7 +150,7 @@ namespace FriendlyLords
 
         private int NewRandomValue()
         {
-            return rnd.Next(1, 3);
+            return rnd.Next(1, 5);
         }
 
         public CustomAgent customAgentConversation { get; set; }
@@ -705,7 +705,7 @@ namespace FriendlyLords
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
-                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
                 if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)

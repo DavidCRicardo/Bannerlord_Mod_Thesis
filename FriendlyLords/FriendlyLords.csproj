@@ -257,6 +257,7 @@
   <!-- Files & Classes -->
   <ItemGroup>
     <Compile Include="BattleConversationsJson.cs" />
+    <Compile Include="config.cs" />
     <Compile Include="NPC_NPC_Conversation\GlobalDialog.cs" />
     <Compile Include="Player_NPC_Conversation\CBB_Root.cs" />
     <Compile Include="NPC_NPC_Conversation\Culture.cs" />
