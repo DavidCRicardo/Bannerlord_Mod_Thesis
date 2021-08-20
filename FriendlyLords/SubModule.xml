@@ -1,16 +1,16 @@
 ﻿<Module>
   <Name value="FriendlyLords"/>
   <Id value="FriendlyLords"/>
-  <Version value="e1.6.0"/>
+  <Version value="e1.6.1"/>
   <DefaultModule value="false"/>
   <SingleplayerModule value="true"/>
   <MultiplayerModule value="false"/>
   <Official value ="true" />
   <DependedModules>
-    <DependedModule Id="Native" DependentVersion="e1.6.0"/>
-    <DependedModule Id="SandBoxCore" DependentVersion="e1.6.0"/>
-    <DependedModule Id="Sandbox" DependentVersion="e1.6.0"/>
-    <DependedModule Id="StoryMode" DependentVersion="e1.6.0"/>
+    <DependedModule Id="Native" DependentVersion="e1.6.1"/>
+    <DependedModule Id="SandBoxCore" DependentVersion="e1.6.1"/>
+    <DependedModule Id="Sandbox" DependentVersion="e1.6.1"/>
+    <DependedModule Id="StoryMode" DependentVersion="e1.6.1"/>
   </DependedModules>
   <SubModules>
     <SubModule>

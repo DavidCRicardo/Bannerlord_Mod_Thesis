@@ -131,16 +131,29 @@ namespace FriendlyLords
                     CBB_ref.ResetSocialExchanges = false;
                     DaysPassed++;
 
-                    SaveUserInfoToFile();
-                    UploadFileToFTP();
+                    try
+                    {
+                        SaveUserInfoToFile();
+                        UploadFileToFTP();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                    
                 }
             }
         }
 
         public override void OnMissionScreenFinalize()
         {
-            UploadFileToFTP();
-
+            try
+            {
+                UploadFileToFTP();
+            }
+            catch (Exception e)
+            {
+            }
+            
             base.OnMissionScreenFinalize();
             base.MissionScreen.RemoveLayer(_gauntletLayer);
             _gauntletLayer = null;
@@ -199,7 +212,7 @@ namespace FriendlyLords
                     {
                         if (custom.selfAgent.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
                         {
-                            CBB_ref.customAgentConversation = custom;
+                            //CBB_ref.customAgentConversation = custom;
                             break;
                         }
                     }

@@ -312,7 +312,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition()
         {
-            if (FriendlyOptionExists)
+            if (FriendlyOptionExists || customAgents == null)
             {
                 return false;
             }
@@ -357,7 +357,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerHasFriendOrNullRelationForUnFriendlySEWithNPC_condition()
         {
-            if (UnFriendlyOptionExists)
+            if (UnFriendlyOptionExists || customAgents == null)
             {
                 return false;
             }
@@ -414,12 +414,12 @@ namespace FriendlyLords
                 return false;
             }
 
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena" && customAgents != null)
+                if (_currentLocation != "arena" )
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -450,7 +450,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerIsDatingForRomanticSEWithNPC_condition()
         {
-            if (RomanticOptionExists)
+            if (RomanticOptionExists || customAgents == null)
             {
                 return false;
             }
@@ -462,7 +462,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena" && customAgents != null)
+                    if (_currentLocation != "arena")
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -495,7 +495,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerIsDatingForHostileSEWithNPC_condition()
         {
-            if (HostileOptionExists)
+            if (HostileOptionExists || customAgents == null)
             {
                 return false;
             }
@@ -540,7 +540,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerCanBreakWithNPC_condition()
         {
-            if (DoBreak)
+            if (DoBreak || customAgents == null)
             {
                 return false;
             }
@@ -573,7 +573,7 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerCanHaveAChildWithNPC_condition()
         {
-            if (HaveAChildInitialMovePerformed)
+            if (HaveAChildInitialMovePerformed || customAgents == null)
             {
                 return false;
             }
@@ -609,12 +609,12 @@ namespace FriendlyLords
 
         private bool NPC_AcceptReject_AskOut_condition()
         {
-            if (AskOutPerformed)
+            if (AskOutPerformed || customAgents == null)
             {
                 return false;
             }
 
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
@@ -673,12 +673,12 @@ namespace FriendlyLords
 
         private bool CheckIfPlayerCanOfferGiftToCompanion_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena" && customAgents != null)
+                if (_currentLocation != "arena")
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -703,12 +703,12 @@ namespace FriendlyLords
 
         private bool CheckIfCompanionCanOfferGiftToPlayer_condition()
         {
-            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
+            if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null && customAgents != null)
+                if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 

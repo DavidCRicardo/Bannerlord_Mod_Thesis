@@ -168,7 +168,15 @@ namespace FriendlyLords
 
             if ((CustomAgentInitiator.Message == "" && CustomAgentReceiver.Message == "") || ReceptorIsPlayer)
             {
-                if (ReceptorIsPlayer) { CustomAgentInitiator.TalkingWithPlayer = true; AgentInitiator.OnUse(AgentReceiver); }
+                if (ReceptorIsPlayer) 
+                { 
+                    CustomAgentInitiator.TalkingWithPlayer = true;
+                    if (CustomAgentInitiator.customAgentTarget.selfAgent != Agent.Main)
+                    {
+
+                    }
+                    AgentInitiator.OnUse(AgentReceiver); 
+                }
                 SocialExchangeDoneAndReacted = true;  
             }
         }
