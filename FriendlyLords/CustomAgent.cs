@@ -270,7 +270,7 @@ namespace FriendlyLords
             {
                 socialExchangeSE.OnGoingSocialExchange(_dialogsDictionary, _CurrentLocation);
 
-                if (socialExchangeSE.SocialExchangeDoneAndReacted)
+                if (socialExchangeSE.IsCompleted)
                 {
                     if (!socialExchangeSE.ReceptorIsPlayer)
                     {

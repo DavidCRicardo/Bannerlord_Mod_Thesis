@@ -43,7 +43,7 @@ namespace FriendlyLords
         {
             Rnd = _rnd;
 
-            SocialExchangeDoneAndReacted = false;
+            IsCompleted = false;
 
             ReceptorIsPlayer = AgentReceiver.Name == Agent.Main.Name;
 
@@ -177,7 +177,7 @@ namespace FriendlyLords
                     }
                     AgentInitiator.OnUse(AgentReceiver); 
                 }
-                SocialExchangeDoneAndReacted = true;  
+                IsCompleted = true;  
             }
         }
 
@@ -237,10 +237,6 @@ namespace FriendlyLords
                 {
                     AskOutMethod(false);
                 }
-                //if (SEName == "AskOut")
-                //{
-                //    AskOutMethod(false);
-                //}
                 else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Break)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, 0, -1, -1, 0, 0);
@@ -289,17 +285,6 @@ namespace FriendlyLords
                     CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
 
                 }
-                //Decreases relation with Initiator
-                //if (SEName == "Jealous")
-                //{
-                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
-                //    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
-                //}
-                //else if (SEName == "FriendSabotage")
-                //{
-                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
-                //    CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
-                //}
 
                 SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", -1);
             }
@@ -328,30 +313,6 @@ namespace FriendlyLords
                         }
                     }
                 }
-                //if (SEName == "Jealous")
-                //{
-                //    CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 1, 0);
-                //    CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
-                //}
-
-                //else if (SEName == "FriendSabotage")
-                //{
-                //    CustomAgentInitiator.UpdateAllStatus(0, -1, -0.2, 0, 0, 0);
-
-                //    //Decreases relation 
-                //    CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
-
-                //    if (CAtoDecrease != null)
-                //    {
-                //        SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
-                //        CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
-
-                //        if (CAtoDecrease.selfAgent.IsHero && CAtoDecrease.selfAgent == Agent.Main)
-                //        {
-                //            ChangeHeroRelationInGame(-1, CAtoDecrease);
-                //        }
-                //    }  
-                //}
             }
             UpdateNPCsNearSocialMove();
         }
@@ -360,15 +321,6 @@ namespace FriendlyLords
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                //Increases Relationship for both
-                //if (SEName == "AskOut")
-                //{ 
-                //    AskOutMethod(false);
-                //}
-                ///*else*/ if (SEName == "Flirt")
-                //{
-                //    SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
-                //}
                 if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Flirt)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
@@ -672,7 +624,7 @@ namespace FriendlyLords
             customAgent.EndFollowBehavior();
         }    
 
-        public bool SocialExchangeDoneAndReacted { get; set; }
+        public bool IsCompleted { get; set; }
         public bool ReceptorIsPlayer { get; set; }
         public bool ReduceDelay { get; set; }
 
