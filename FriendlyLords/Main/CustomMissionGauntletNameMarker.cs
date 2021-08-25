@@ -788,6 +788,7 @@ namespace FriendlyLords
                 responseStream.Close();
 
                 list = names.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                list.Sort();
 
                 foreach (string file in list)
                 {
@@ -798,18 +799,34 @@ namespace FriendlyLords
 
                         int id = int.Parse(number) + 1;
 
-                        string newName = "user_" + id.ToString() + ".json";
-                        return newName;
+                        a.Add(id);
+                        //string newName = "user_" + id.ToString() + ".json";
+                        //return newName;
                     }
                 }
 
-                return "";
+                int temp = -1;
+                foreach (var item in a)
+                {
+                    if (item > temp)
+                    {
+                        temp = item;
+                    }
+                }
+
+                string newName = "user_" + temp.ToString() + ".json";
+                return newName;
+
+                //return "";
             }
             catch (Exception)
             {
                 return "";
             }
+
         }
+
+        private List<int> a = new List<int>();
     }
 }
 
