@@ -48,6 +48,9 @@ namespace FriendlyLords
 
         private int nextRequiredRenown { get; set; }
         public bool StopSEs { get; set; }
+        
+        public int ConversationDelay { get; set; }
+        public float NPCCountdownMultiplier { get; set; }
 
         public void Tick(float dt)
         {
@@ -58,11 +61,13 @@ namespace FriendlyLords
                 {
                     configReference = ReadConfigFile();
                     CIF_Range = configReference.RangeConversations;
+                    ConversationDelay = configReference.ConversationDelay;
+                    NPCCountdownMultiplier = configReference.NPCCountdownMultiplier;
 
                     rnd = new Random();
                     PreInitializeOnSettlement();
 
-                    InitializeOnSettlement(giveTraitsToNPCs);
+                    InitializeOnSettlement(giveTraitsToNPCs, NPCCountdownMultiplier);
 
                     this._firstTick = false;
                 }
@@ -106,6 +111,9 @@ namespace FriendlyLords
                     {
                         configReference = ReadConfigFile();
                         CIF_Range = configReference.RangeConversations;
+                        
+                        OtherTeamLimitSpeakers = configReference.SpeakersOnBattlePerTeamLimit;
+                        PlayerTeamLimitSpeakers = configReference.SpeakersOnBattlePerTeamLimit;
 
                         PreInitializeOnBattle();
 
@@ -145,7 +153,7 @@ namespace FriendlyLords
 
         private void CheckGratitudeMethod()
         {
-            if (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule)
+            if (nextRequiredRenown != -1 && (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule))
             {
                 CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.selfAgent != Agent.Main);
                 if (CurrentAgentsWhoAreRunningAI != null && CurrentAgentsWhoAreRunningAI.Count > 0)
@@ -229,7 +237,7 @@ namespace FriendlyLords
 
         private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
         {
-            customAgent.CustomAgentWithDesire(dt, rnd, DialogsDictionary, _CurrentLocation);
+            customAgent.CustomAgentWithDesire(dt, ConversationDelay, rnd, DialogsDictionary, _CurrentLocation);
             if (customAgent.EndingSocialExchange)
             {
                 OnGoingSEs--;
@@ -412,7 +420,7 @@ namespace FriendlyLords
             else { giveTraitsToNPCs = true; }
         }
 
-        private void InitializeOnSettlement(bool giveTraitsToNPCs)
+        private void InitializeOnSettlement(bool giveTraitsToNPCs, float _NPCCountdownMultiplier = 1)
         {
             InitializeSocialExchanges();
 
@@ -430,9 +438,14 @@ namespace FriendlyLords
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {
+                        if (agent == null)
+                        {
+                            InformationManager.DisplayMessage(new InformationMessage("Debug: Agent is null"));
+                        }
+
                         if (agent.IsHuman && agent.Character != null)
                         {
-                            CreateCustomAgent(agent, true);
+                            CreateCustomAgent(agent, true, null, _NPCCountdownMultiplier);
                         }
                     }
 
@@ -675,10 +688,10 @@ namespace FriendlyLords
             }
         }
 
-        private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null)
+        private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null, float _NPCCountdownMultiplier = 1)
         {
             int id = 0;
-            CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList, SEs_Enum.Undefined);
+            CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList, SEs_Enum.Undefined, _NPCCountdownMultiplier);
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
@@ -688,16 +701,16 @@ namespace FriendlyLords
                 }
             }
 
-            if (customAgentTemp.selfAgent.IsHero)
-            {
-                LoadSavedSEs(customAgentTemp);
-            }
-
             customAgentsList.Add(customAgentTemp);
             AddAgentTarget(agent, customAgentTemp.Id);
 
             if (ToPerformSEs)
             {
+                if (customAgentTemp.selfAgent.IsHero)
+                {
+                    LoadSavedSEs(customAgentTemp);
+                }
+
                 RandomItem(customAgentTemp);
 
                 mostWantedSE sE = new mostWantedSE(customAgentTemp, new NextSE(SEs_Enum.Undefined, null, null, 0));
@@ -711,8 +724,8 @@ namespace FriendlyLords
 
         private void ResetSavedSEs()
         {
-            File.Delete(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
-            CheckIfSavedSEsFileExists();
+            string text = "{ " + "SEsPerformedList" + ": [] }";
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json", text);
         }
 
         private static void LoadSavedSEs(CustomAgent customAgent)
@@ -731,21 +744,27 @@ namespace FriendlyLords
                         {
                             var key = CustomAgent.Intentions.Hostile;
                             switch (item.SocialExchange)
-                            {
+                            {            
                                 case "Friendly":
+                                case "Compliment":
                                     key = CustomAgent.Intentions.Friendly;
                                     break;
+                                
                                 case "UnFriendly":
+                                case "Jealous":
                                     key = CustomAgent.Intentions.Unfriendly;
                                     break;
                                 case "Romantic":
+                                case "Flirt":
                                     key = CustomAgent.Intentions.Romantic;
                                     break;
                                 case "Hostile":
+                                case "Bully":
                                     key = CustomAgent.Intentions.Hostile;
                                     break;
                                 case "AskOut":
                                 case "Break":
+                                case "HaveAChild":
                                     key = CustomAgent.Intentions.Special;
                                     break;
                                 default:
@@ -772,7 +791,7 @@ namespace FriendlyLords
         private static void CheckIfSavedSEsFileExists()
         {
             bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
-
+            
             if (!fileExists)
             {
                 FileStream file = File.Create(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
@@ -866,7 +885,16 @@ namespace FriendlyLords
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
-            nextRequiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
+            try
+            {
+                nextRequiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
+            }
+            catch (Exception e)
+            {
+                InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
+                nextRequiredRenown = -1;
+            }
+            
             foreach (SettlementJson _settlement in myDeserializedClass.SettlementJson)
             {
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
@@ -1067,7 +1095,7 @@ namespace FriendlyLords
 
             CheckDeadAgentsFromBothTeams(ref auxCountPlayerTeam);
 
-            if (/*OtherTeamCurrentSpeakers >= OtherTeamLimitSpeakers || PlayerTeamCurrentSpeakers >= PlayerTeamLimitSpeakers ||*/ customAgentsList.Count == 0)
+            if (customAgentsList.Count == 0)
             {
                 return;
             }
@@ -1130,7 +1158,7 @@ namespace FriendlyLords
             {
                 Agent agent = team.TeamAgents[i];
 
-                if (!agent.IsActive() || agent.Health <= 0)
+                if (!agent.IsActive() || agent.Health <= 15)
                 {
                     if (IsPlayerTeam)
                     {
@@ -1147,25 +1175,6 @@ namespace FriendlyLords
                         customAgentHelper = customAgentsList[index];
                         NormalizeSpeakers(customAgentHelper);
                     }
-                    //if (IsPlayerTeam)
-                    //{
-                    //    if (customAgentsList.Count > auxInt + i)
-                    //    {
-                    //        customAgentsList[auxInt + i].IsDead = true;
-                    //        customAgentHelper = customAgentsList[auxInt + i];
-                    //        NormalizeSpeakers(customAgentHelper);
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    if (customAgentsList.Count > i)
-                    //    {
-                    //        customAgentsList[i].IsDead = true;
-                    //        customAgentHelper = customAgentsList[i];
-                    //        NormalizeSpeakers(customAgentHelper);
-                    //    }
-                    //}
-                    //NormalizeSpeakers(customAgentHelper);
                 }
             }
         }
@@ -1261,6 +1270,8 @@ namespace FriendlyLords
 
         private void InitializeOnBattle(Random rnd)
         {
+            CheckIfSavedSEsFileExists();
+
             int index = 0;
             foreach (Team team in Mission.Current.Teams)
             {
@@ -1294,8 +1305,6 @@ namespace FriendlyLords
                 battleDictionarySentences.Add(BattleDictionary.Winning, deserializedBattleClass.Winning);
                 battleDictionarySentences.Add(BattleDictionary.Neutral, deserializedBattleClass.Neutral);
                 battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
-                OtherTeamLimitSpeakers = deserializedBattleClass.OtherTeamLimitSpeakers;
-                PlayerTeamLimitSpeakers = deserializedBattleClass.PlayerTeamLimitSpeakers;
             }
         }
 

@@ -159,16 +159,16 @@ namespace FriendlyLords
 
         private bool ThisAgentWillInteractWithPlayer()
         {
-            customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
-            if (CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
+            if (customAgents != null)
             {
-                if (customAgentConversation != null)
+                customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
+                if (customAgentConversation != null && CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
                 {
-                    //characterRef = null;
-                    //characterIdRef = -1;
                     return true;
                 }
             }
+            else { InformationManager.DisplayMessage(new InformationMessage("Debug: ThisAgentWillInteractWithPlayer - customAgents is null")); }
+            
             return false;
         }
 
@@ -324,7 +324,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena" && customAgents != null)
+                    if (_currentLocation != "arena" )
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -369,7 +369,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena" && customAgents != null)
+                    if (_currentLocation != "arena")
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
 

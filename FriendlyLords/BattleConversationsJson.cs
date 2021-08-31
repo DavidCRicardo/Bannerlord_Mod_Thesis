@@ -5,12 +5,6 @@ namespace FriendlyLords
 {
     class BattleConversationsJson
     {
-        [JsonProperty("PlayerTeamLimitSpeakers")]
-        public int PlayerTeamLimitSpeakers { get; set; }
-
-        [JsonProperty("OtherTeamLimitSpeakers")]
-        public int OtherTeamLimitSpeakers { get; set; }
-
         [JsonProperty("Winning")]
         public List<string> Winning { get; set; }
 

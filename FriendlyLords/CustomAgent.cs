@@ -45,7 +45,7 @@ namespace FriendlyLords
         public bool NearEnoughToStartConversation { get; set; }
         public bool EnoughRest { get; set; } // is not in cooldown? // enough rest?
         public bool Busy { get; set; } // Has Target to start a social exchange when close? // or it's interacting?
-        public int Countdown { get; set; } // How much NPC needs to wait to set cooldown as false
+        public float Countdown { get; set; } // How much NPC needs to wait to set cooldown as false
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }
@@ -66,8 +66,8 @@ namespace FriendlyLords
 
         public CustomMissionNameMarkerVM.SEs_Enum SocialMove_SE { get; set; }
 
-        public CustomAgent(Agent _agent, int _id, List<string> _statusList = null, CustomMissionNameMarkerVM.SEs_Enum se_enum = default)
-        {            
+        public CustomAgent(Agent _agent, int _id, List<string> _statusList = null, CustomMissionNameMarkerVM.SEs_Enum se_enum = default, float _NPCCountdownMultiplier = 1)
+        {
             this.selfAgent = _agent;
             this.Name = _agent.Name;
             this.Id = _id;
@@ -102,13 +102,15 @@ namespace FriendlyLords
             if (_agent == Agent.Main)
             {
                 this.RunAI = true;
-                Countdown += 15;
+                Countdown += 15;  
             }
             else
             {
                 Countdown += 1;
                 this.RunAI = false;
             }
+
+            Countdown *= _NPCCountdownMultiplier;
 
             InitializeSEsOptionsAvailability();
             ResetSocialExchangesOptions();
@@ -226,11 +228,11 @@ namespace FriendlyLords
             Busy = true;
         }
         
-        public void CustomAgentWithDesire(float dt, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
+        public void CustomAgentWithDesire(float dt, int _conversationDelay, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (NearEnoughToStartConversation)
             {
-                ConversationBetweenCustomAgents(dt, _dialogsDictionary, _CurrentLocation);
+                ConversationBetweenCustomAgents(dt, _conversationDelay, _dialogsDictionary, _CurrentLocation);
             }
             else
             {
@@ -262,9 +264,9 @@ namespace FriendlyLords
             }
         }
 
-        public void ConversationBetweenCustomAgents(float dt, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
+        public void ConversationBetweenCustomAgents(float dt, int _conversationDelay, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
-            int seconds = socialExchangeSE.ReduceDelay ? 0 : 3;
+            int seconds = socialExchangeSE.ReduceDelay ? 0 : _conversationDelay;
 
             if (SecsDelay(dt, seconds) || socialExchangeSE.ReceptorIsPlayer)
             {
@@ -479,7 +481,7 @@ namespace FriendlyLords
             return countdownChangesTemp;
         }
 
-        public bool SecsDelay(float dt, int seconds)
+        public bool SecsDelay(float dt, float seconds)
         {
             dtControl += dt;
             if (dtControl >= seconds)
