@@ -728,7 +728,7 @@ namespace FriendlyLords
 
         private void CheckIfUserFileExists()
         {
-            filePath = BasePath.Name + "/Modules/FriendlyLords/ModuleData/saved/";
+            filePath = BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/";
 
             string[] files = Directory.GetFiles(filePath);
             if (files.Length != 0)
