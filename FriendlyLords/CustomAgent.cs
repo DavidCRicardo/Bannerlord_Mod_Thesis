@@ -56,6 +56,7 @@ namespace FriendlyLords
         public string thirdAgent;
         public int thirdAgentId;
         public bool TalkingWithPlayer { get; set; }
+        public bool CompanionFollowingPlayer { get; set; }
 
         public bool IsPlayerTeam { get; set; }
         public bool IsDead { get; set; }
@@ -92,6 +93,7 @@ namespace FriendlyLords
             this.IsInitiator = false;
             this.NearPlayer = false;
             this.MarkerTypeRef = 1;
+            this.CompanionFollowingPlayer = false;
 
             AddStatusToCustomAgent(_statusList);
             this.Countdown = SetCountdownToCustomAgent();
@@ -216,6 +218,23 @@ namespace FriendlyLords
 
         public void StartSE(CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
         {
+            foreach (Hero hero in Clan.PlayerClan.Companions)
+            {
+                if (selfAgent.Character == hero.CharacterObject)
+                {
+                    DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                    var f = behaviorGroup.GetActiveBehavior();
+                    if (f != null && f.IsActive)
+                    {
+                        CompanionFollowingPlayer = true;
+                    }
+                    else
+                    {
+                        CompanionFollowingPlayer = false;
+                    }
+                }
+            }
+
             UpdateTarget(_Receiver.Name, _Receiver.Id);
 
             customAgentTarget.Busy = true;
@@ -277,12 +296,12 @@ namespace FriendlyLords
                     if (!socialExchangeSE.ReceptorIsPlayer)
                     {
                         FinalizeSocialExchange();
-                        
                         EndingSocialExchange = true;
                     }
                 }
             }
         }
+
         public int booleanNumber;
         public void SetBooleanNumber(bool PlayerToNPC, bool NPCToPlayer, bool NPCToNPC)
         {
@@ -413,7 +432,7 @@ namespace FriendlyLords
 
         public void SaveDataFromAgentToJson(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);
 
@@ -429,12 +448,12 @@ namespace FriendlyLords
                 }
             }
 
-            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         public void LoadDataFromJsonToAgent(string _currentSettlement, string _currentLocation)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             SettlementJson settlementJson = myDeserializedClass.SettlementJson.Find(s => s.Name == _currentSettlement && s.LocationWithId == _currentLocation);

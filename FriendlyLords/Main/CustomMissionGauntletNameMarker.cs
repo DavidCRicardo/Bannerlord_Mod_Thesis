@@ -728,7 +728,7 @@ namespace FriendlyLords
 
         private void CheckIfUserFileExists()
         {
-            filePath = BasePath.Name + "/Modules/FriendlyLords/Data/";
+            filePath = BasePath.Name + "/Modules/FriendlyLords/ModuleData/saved/";
 
             string[] files = Directory.GetFiles(filePath);
             if (files.Length != 0)
@@ -800,8 +800,6 @@ namespace FriendlyLords
                         int id = int.Parse(number) + 1;
 
                         a.Add(id);
-                        //string newName = "user_" + id.ToString() + ".json";
-                        //return newName;
                     }
                 }
 
@@ -816,8 +814,6 @@ namespace FriendlyLords
 
                 string newName = "user_" + temp.ToString() + ".json";
                 return newName;
-
-                //return "";
             }
             catch (Exception)
             {

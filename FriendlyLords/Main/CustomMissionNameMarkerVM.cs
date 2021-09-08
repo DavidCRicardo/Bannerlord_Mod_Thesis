@@ -9,6 +9,7 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
+using SandBox;
 
 namespace FriendlyLords
 {
@@ -60,12 +61,9 @@ namespace FriendlyLords
                 if (this._firstTick)
                 {
                     configReference = ReadConfigFile();
-                    CIF_Range = configReference.RangeConversations;
-                    ConversationDelay = configReference.ConversationDelay;
-                    NPCCountdownMultiplier = configReference.NPCCountdownMultiplier;
 
                     rnd = new Random();
-                    PreInitializeOnSettlement();
+                    PreInitializeOnSettlement(configReference);
 
                     InitializeOnSettlement(giveTraitsToNPCs, NPCCountdownMultiplier);
 
@@ -80,6 +78,11 @@ namespace FriendlyLords
 
                     foreach (CustomAgent customAgent in customAgentsList)
                     {
+                        if (customAgent == null)
+                        {
+                            continue;
+                        }
+
                         if (CustomAgentInsideRangeFromPlayer(customAgent) || customAgent.Busy)
                         {
                             customAgent.NearPlayer = CustomAgentIsNearToPlayer(customAgent);
@@ -194,6 +197,20 @@ namespace FriendlyLords
                 {
                     if (customAgentInteractingWithPlayer.customAgentTarget == null)
                     {
+                        foreach (Hero hero in Clan.PlayerClan.Companions)
+                        {
+                            if (customAgentInteractingWithPlayer.selfAgent.Character == hero.CharacterObject)
+                            {
+                                DailyBehaviorGroup behaviorGroup = customAgentInteractingWithPlayer.selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                                var f = behaviorGroup.GetActiveBehavior();
+
+                                if (f != null && f.IsActive)
+                                {
+                                    customAgentInteractingWithPlayer.CompanionFollowingPlayer = true;
+                                }
+                            }
+                        }
+
                         playerStartedASE = true;
                         OnGoingSEs++;
                     }
@@ -209,6 +226,20 @@ namespace FriendlyLords
                 else
                 {
                     customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+
+                    foreach (Hero hero in Clan.PlayerClan.Companions)
+                    {
+                        if (customAgentInteractingWithPlayer.selfAgent.Character == hero.CharacterObject)
+                        {
+                            DailyBehaviorGroup behaviorGroup = customAgentInteractingWithPlayer.selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                            var f = behaviorGroup.GetActiveBehavior();
+                            if (f != null && f.IsActive)
+                            {
+                                customAgentInteractingWithPlayer.CompanionFollowingPlayer = true;
+                            }
+                        }
+                    }
+
                     playerStartedASE = true;
                     OnGoingSEs++;
                 }
@@ -406,14 +437,18 @@ namespace FriendlyLords
             }
         }
 
-        private void PreInitializeOnSettlement()
+        private void PreInitializeOnSettlement(config configReference)
         {
-            CheckIfFileExists();
+            CIF_Range = configReference.RangeConversations;
+            ConversationDelay = configReference.ConversationDelay;
+            NPCCountdownMultiplier = configReference.NPCCountdownMultiplier;
+
+            CheckIfDataFileExists();
             CheckIfSavedSEsFileExists();
 
             CurrentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
             CurrentLocation = CampaignMission.Current.Location.StringId;
-            if (CheckIfSettlementExistsOnFile(CurrentSettlement, CurrentLocation))
+            if (CheckIfSettlementExistsOnDataFile(CurrentSettlement, CurrentLocation))
             {
                 giveTraitsToNPCs = false;
             }
@@ -438,14 +473,19 @@ namespace FriendlyLords
 
                     foreach (Agent agent in Mission.Current.Agents)
                     {
-                        if (agent == null)
-                        {
-                            InformationManager.DisplayMessage(new InformationMessage("Debug: Agent is null"));
-                        }
-
-                        if (agent.IsHuman && agent.Character != null)
+                        if (agent != null && agent.IsHuman && agent.Character != null)
                         {
                             CreateCustomAgent(agent, true, null, _NPCCountdownMultiplier);
+                        }
+                    }
+
+                    var companions = Clan.PlayerClan.Companions;                 
+                    foreach (Hero hero in companions)
+                    {
+                        CustomAgent custom1 = customAgentsList.Find(c => c.selfAgent.Character == hero.CharacterObject);
+                        if (custom1 != null)
+                        {
+                            //custom1.CompanionFollowingPlayer = true;
                         }
                     }
 
@@ -472,7 +512,7 @@ namespace FriendlyLords
 
         private int IncreaseCountdownDependingOnHowManyNPCs()
         {
-            int increaseCountdown = 0;
+            int increaseCountdown;
             if (customAgentsList.Count < 21) { increaseCountdown = 5; }
             else if (customAgentsList.Count >= 21 && customAgentsList.Count <= 51) { increaseCountdown = 3; }
             else { increaseCountdown = 2; }
@@ -516,9 +556,9 @@ namespace FriendlyLords
             return customAgent.EnoughRest;
         }
 
-        public void OnConversationEndWithPlayer(CustomAgent custom)
+        public void OnConversationEndWithPlayer(CustomAgent customAgent)
         {
-            if (custom == null)
+            if (customAgent == null)
             {
                 return;
             }
@@ -527,23 +567,26 @@ namespace FriendlyLords
             playerStartedASE = false;
             customAgentInteractingWithPlayer = null;
 
-            if (custom.customAgentTarget != null && custom.customAgentTarget.Name == Agent.Main.Name)
+            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.Name == Agent.Main.Name)
             {
                 customCharacterReftoCampaignBehaviorBase = null;
                 customCharacterIdRefCampaignBehaviorBase = -1;
                 SetCanResetCBB_refVariables(true);
 
-                custom.Busy = false;
-                custom.IsInitiator = false;
-                custom.EndingSocialExchange = false;
-                custom.TalkingWithPlayer = false;
-                custom.EnoughRest = false;
-                custom.UpdateAllStatus(0, 0, 0, 0, 0, 1);
+                customAgent.Busy = false;
+                customAgent.IsInitiator = false;
+                customAgent.EndingSocialExchange = false;
+                customAgent.TalkingWithPlayer = false;
+                customAgent.EnoughRest = false;
+                customAgent.UpdateAllStatus(0, 0, 0, 0, 0, 1);
 
-                custom.FinalizeSocialExchange();
+                customAgent.FinalizeSocialExchange();
             }
 
-            custom.EndFollowBehavior();
+            if (!customAgent.CompanionFollowingPlayer)
+            {
+                customAgent.EndFollowBehavior();
+            }
         }
 
         private void InitializeEnergyToAgents()
@@ -616,7 +659,8 @@ namespace FriendlyLords
 
         private void LoadDialogsFromJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/npc_conversations.json");
+            string json = ReadJsonDialogs("/npc_conversations.json");
+            
             RootMessageJson myDeserializedClassConversations = JsonConvert.DeserializeObject<RootMessageJson>(json);
 
             Dictionary<string, List<string>> fromIDGetListMessages = new Dictionary<string, List<string>>();
@@ -672,19 +716,19 @@ namespace FriendlyLords
             }
         }
 
-        private void CheckIfFileExists()
+        private void CheckIfDataFileExists()
         {
-            bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
 
             if (!fileExists)
             {
-                FileStream file = File.Create(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+                FileStream file = File.Create(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
                 file.Close();
 
                 string text = "{ " + "SettlementJson" + ": [] }";
                 RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(text);
 
-                File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
 
@@ -725,12 +769,12 @@ namespace FriendlyLords
         private void ResetSavedSEs()
         {
             string text = "{ " + "SEsPerformedList" + ": [] }";
-            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json", text);
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", text);
         }
 
         private static void LoadSavedSEs(CustomAgent customAgent)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
 
             if (myDeserializedClass != null)
@@ -780,33 +824,33 @@ namespace FriendlyLords
 
         public void SaveSavedSEs(CustomAgent customAgent, string socialExchange)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
 
             myDeserializedClass.SEsPerformedList.Add(new SEsPerformed(customAgent.Name, customAgent.Id, socialExchange));
 
-            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         private static void CheckIfSavedSEsFileExists()
         {
-            bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
+            bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             
             if (!fileExists)
             {
-                FileStream file = File.Create(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json");
+                FileStream file = File.Create(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
                 file.Close();
 
                 string text = "{ " + "SEsPerformedList" + ": [] }";
                 SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(text);
 
-                File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
+                File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
 
         private void RandomItem(CustomAgent customAgent)
         {
-            List<String> listItems = new List<string>() { "gem", "gift" };
+            List<String> listItems = new List<string>() { "gem", "gift", "item" };
 
             double temp = rnd.NextDouble();
             if (temp < 0.15)
@@ -818,9 +862,9 @@ namespace FriendlyLords
             }
         }
 
-        private bool CheckIfSettlementExistsOnFile(string _currentSettlementName, string _currentLocationName)
+        private bool CheckIfSettlementExistsOnDataFile(string _currentSettlementName, string _currentLocationName)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             if (myDeserializedClass != null)
@@ -865,7 +909,7 @@ namespace FriendlyLords
 
         private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
@@ -877,12 +921,12 @@ namespace FriendlyLords
 
             myDeserializedClass.SettlementJson.Add(new SettlementJson(CurrentSettlement, CurrentLocation, jsonlist));
 
-            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         private void LoadAllInfoFromJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             try
@@ -891,7 +935,7 @@ namespace FriendlyLords
             }
             catch (Exception e)
             {
-                InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
+                //InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
                 nextRequiredRenown = -1;
             }
             
@@ -923,9 +967,9 @@ namespace FriendlyLords
                             CheckInGameRelationBetweenHeroes(customMain, customAgent);
                             _settlement.CustomAgentJsonList.Add(new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList, customAgent.SocialNetworkBeliefs));
 
-                            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
                         }
-                        File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+                        File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
 
                         foreach (Trait trait in customAgent.TraitList)
                         {
@@ -971,11 +1015,19 @@ namespace FriendlyLords
 
         private void SaveAllInfoToJSON()
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json");
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
-            myDeserializedClass.requiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
-
+            try
+            {
+                myDeserializedClass.requiredRenown = Hero.MainHero.Clan.RenownRequirementForNextTier;
+            }
+            catch (Exception e)
+            {
+                //InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
+                myDeserializedClass.requiredRenown = -1;
+            }
+            
             foreach (SettlementJson item in myDeserializedClass.SettlementJson)
             {
                 if (item.Name == CurrentSettlement && item.LocationWithId == CurrentLocation)
@@ -995,7 +1047,7 @@ namespace FriendlyLords
                 }
             }
 
-            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/Data/data.json", JsonConvert.SerializeObject(myDeserializedClass));
+            File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
 
         public void SaveToJson()
@@ -1298,7 +1350,8 @@ namespace FriendlyLords
             customAgentsList = new List<CustomAgent>();
             battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
 
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/battle_conversations.json");
+            string json = ReadJsonDialogs("/battle_conversations.json");
+
             BattleConversationsJson deserializedBattleClass = JsonConvert.DeserializeObject<BattleConversationsJson>(json);
             if (deserializedBattleClass != null)
             {
@@ -1306,6 +1359,21 @@ namespace FriendlyLords
                 battleDictionarySentences.Add(BattleDictionary.Neutral, deserializedBattleClass.Neutral);
                 battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
             }
+        }
+
+        private static string ReadJsonDialogs(string file)
+        {
+            string json;
+            switch (BannerlordConfig.Language)
+            {
+                case "English":
+                default:
+                    //InformationManager.DisplayMessage(new InformationMessage(BannerlordConfig.Language));
+                    json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Localization/en" + file);
+                    break;
+            }
+
+            return json;
         }
 
         private Dictionary<BattleDictionary, List<string>> battleDictionarySentences { get; set; }
@@ -1333,7 +1401,14 @@ namespace FriendlyLords
 
         private bool CustomAgentIsNearToPlayer(CustomAgent customAgent)
         {
-            return Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0);
+            if (customAgent == null || customAgent.selfAgent == null)
+            {
+                return false;
+            }
+            else
+            {
+                return Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0);
+            }
         }
 
         private bool CustomAgentInsideRangeFromPlayer(CustomAgent customAgent)

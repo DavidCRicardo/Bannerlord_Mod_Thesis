@@ -52,7 +52,15 @@ namespace FriendlyLords
 
         public void ReadJsonFile(CampaignGameStarter campaignGameStarter)
         {
-            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/Data/player_conversations.json");
+            string json;
+            switch (BannerlordConfig.Language)
+            {
+                case "English":
+                default:
+                    json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Localization/en/player_conversations.json");
+                    break;
+            }
+
             CBB_Root myDeserializedCBB = JsonConvert.DeserializeObject<CBB_Root>(json);
 
             if (myDeserializedCBB != null)
@@ -167,8 +175,7 @@ namespace FriendlyLords
                     return true;
                 }
             }
-            else { InformationManager.DisplayMessage(new InformationMessage("Debug: ThisAgentWillInteractWithPlayer - customAgents is null")); }
-            
+                        
             return false;
         }
 

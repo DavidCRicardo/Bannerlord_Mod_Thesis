@@ -621,7 +621,11 @@ namespace FriendlyLords
             customAgent.thirdAgentId = 0;
             customAgent.MarkerTypeRef = 1;
             customAgent.StopAnimation();
-            customAgent.EndFollowBehavior();
+
+            if (customAgent.selfAgent != Agent.Main && !customAgent.CompanionFollowingPlayer)
+            {
+                customAgent.EndFollowBehavior();
+            }
         }    
 
         public bool IsCompleted { get; set; }
