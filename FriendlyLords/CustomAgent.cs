@@ -104,7 +104,7 @@ namespace FriendlyLords
             if (_agent == Agent.Main)
             {
                 this.RunAI = true;
-                Countdown += 15;  
+                Countdown += 5;  
             }
             else
             {
@@ -223,8 +223,8 @@ namespace FriendlyLords
                 if (selfAgent.Character == hero.CharacterObject)
                 {
                     DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-                    var f = behaviorGroup.GetActiveBehavior();
-                    if (f != null && f.IsActive)
+                    AgentBehavior agentBehavior = behaviorGroup.GetActiveBehavior();
+                    if (agentBehavior != null && agentBehavior.IsActive)
                     {
                         CompanionFollowingPlayer = true;
                     }

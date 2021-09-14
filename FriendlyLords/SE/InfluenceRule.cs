@@ -41,7 +41,7 @@ namespace FriendlyLords
                     return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
                 case CustomMissionNameMarkerVM.SEs_Enum.Break:
                     return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
                     return RunRules(Dictionary, true, false, false, false, false, false, false, false, true);
                 case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
                     return -100;

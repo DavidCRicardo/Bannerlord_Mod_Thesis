@@ -72,7 +72,7 @@ namespace FriendlyLords
 
                 if (CharacterObject.OneToOneConversationCharacter == null)
                 {
-                    CheckGratitudeMethod();
+                    CheckAdmirationMethod();
 
                     DecreaseNPCsCountdown(dt);
 
@@ -154,7 +154,7 @@ namespace FriendlyLords
             return myDeserializedClass;
         }
 
-        private void CheckGratitudeMethod()
+        private void CheckAdmirationMethod()
         {
             if (nextRequiredRenown != -1 && (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule))
             {
@@ -172,7 +172,7 @@ namespace FriendlyLords
                                 continue;
                             }
 
-                            item.AddToTriggerRulesList(new TriggerRule(SEs_Enum.Gratitude.ToString(), Agent.Main.Name, 0));
+                            item.AddToTriggerRulesList(new TriggerRule(SEs_Enum.Admiration.ToString(), Agent.Main.Name, 0));
                             ReadyToGiveTriggerRule = false;
                         }
                     }
@@ -306,11 +306,19 @@ namespace FriendlyLords
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (customAgent.RunAI && CustomAgentHasEnoughRest(customAgent) && !customAgent.EnoughRest)
+                if (customAgent.RunAI && CustomAgentHasEnoughRest(customAgent))
                 {
                     if (customAgent.SecsDelay(dt, customAgent.Countdown))
                     {
                         customAgent.EnoughRest = true;
+                        customAgent.Busy = false;
+                    }
+                    else
+                    {
+                        if (customAgent.selfAgent == Agent.Main)
+                        {
+                            customAgent.Busy = true;
+                        }
                     }
                 }
             }
@@ -403,7 +411,7 @@ namespace FriendlyLords
                         }
                     }
                 }
-
+                
                 mostWantedSE mostWanted = mostWantedSEList.Find(mostWantedSE => mostWantedSE.customAgent == c1);
                 if (nextSEList.Count > 0)
                 {
@@ -1084,7 +1092,7 @@ namespace FriendlyLords
 
         public enum SEs_Enum
         {
-            Undefined = -1, Compliment, GiveGift, Gratitude, Jealous, FriendSabotage, Flirt, Bully, RomanticSabotage, AskOut, Break, HaveAChild
+            Undefined = -1, Compliment, GiveGift, Admiration, Jealous, FriendSabotage, Flirt, Bully, RomanticSabotage, AskOut, Break, HaveAChild
         }
 
         #region On Battle

@@ -57,7 +57,7 @@ namespace FriendlyLords
             {
                 case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
                 case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
-                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
                     Intention = IntentionEnum.Positive;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -243,7 +243,7 @@ namespace FriendlyLords
 
                     BreakUpMethod();
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Gratitude)
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Admiration)
                 {
 
                 }
@@ -354,7 +354,7 @@ namespace FriendlyLords
                     CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
                     CustomAgentReceiver.AddItem(tempItem.itemName, 1);
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Gratitude)
+                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Admiration)
                 {
 
                 }

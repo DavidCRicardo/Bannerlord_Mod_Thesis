@@ -126,16 +126,6 @@ namespace FriendlyLords
 
         private void AddSocialAgentsDialogs(CampaignGameStarter campaignGameStarter)
         {
-            /**/
-            //campaignGameStarter.AddPlayerLine("1", "tavernmaid_talk", "tavernmaid_order_teleport", "Can you guide me to a merchant? {GOLD_ICON} ", null, null, 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "tavernmaid_order_teleport", "merchantTurn", "Sure.", null, new ConversationSentence.OnConsequenceDelegate(this.Conversation_tavernmaid_test_on_condition), 100, null);
-            //campaignGameStarter.AddDialogLine("1", "merchantTurn", "close_window", "I am a merchant.", null, null, 100, null);
-
-            //campaignGameStarter.AddPlayerLine("1", "t1", "lord_emergencyCall", "Let's call everyone!", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCall), null, 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall", "close_window", "What happened?[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCall), 100, null);
-            //campaignGameStarter.AddPlayerLine("1", "t2", "lord_emergencyCall2", "Ok, everything is fine!", new ConversationSentence.OnConditionDelegate(Condition_StopEmergencyCall), null, 100, null, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall2", "close_window", "Hum...[rf:idle_angry][ib:nervous]!", null, new ConversationSentence.OnConsequenceDelegate(Consequence_StopEmergencyCall), 100, null);
-            //campaignGameStarter.AddDialogLine("1", "lord_emergencyCall3", "close_window", "So... What's going on?", new ConversationSentence.OnConditionDelegate(Condition_EmergencyCallGoingOn), new ConversationSentence.OnConsequenceDelegate(Consequence_EmergencyCallGoingOn), 101, null);
         }
 
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter)
@@ -167,15 +157,22 @@ namespace FriendlyLords
 
         private bool ThisAgentWillInteractWithPlayer()
         {
-            if (customAgents != null)
+            try
             {
-                customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
-                if (customAgentConversation != null && CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
+                if (customAgents != null)
                 {
-                    return true;
+                    customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
+                    if (customAgentConversation != null && CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
+                    {
+                        return true;
+                    }
                 }
             }
-                        
+            catch (Exception e)
+            {
+
+            }
+                                 
             return false;
         }
 

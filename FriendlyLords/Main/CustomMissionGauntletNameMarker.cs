@@ -193,7 +193,7 @@ namespace FriendlyLords
                     case CustomMissionNameMarkerVM.SEs_Enum.Break:
                         CBB_ref.BreakBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                    case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
                         CBB_ref.GratitudeBool = true;
                         break;
                     default:
@@ -224,8 +224,11 @@ namespace FriendlyLords
                 CBB_ref.HostileOptionExists = false;
                 CBB_ref.auxBool = false;
 
-                CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
-                _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
+                if (CBB_ref.customAgentConversation != null)
+                {
+                    CheckIfThereIsAnyChange(CBB_ref.customAgentConversation);
+                    _dataSource.OnConversationEndWithPlayer(CBB_ref.customAgentConversation);
+                }
             }
         }
 
@@ -497,7 +500,7 @@ namespace FriendlyLords
                 case CustomMissionNameMarkerVM.SEs_Enum.Break:
                     key = DictionaryEnumWithSEs.Break;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Gratitude:
+                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
                     key = DictionaryEnumWithSEs.Gratitude;
                     break;
                 case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
@@ -755,7 +758,6 @@ namespace FriendlyLords
                     string text = "{ }";
                     UserInfoJson myDeserializedClass = JsonConvert.DeserializeObject<UserInfoJson>(text);
                     File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(myDeserializedClass));
-
                 }
             }
         }
@@ -799,12 +801,12 @@ namespace FriendlyLords
 
                         int id = int.Parse(number) + 1;
 
-                        a.Add(id);
+                        usersFiles.Add(id);
                     }
                 }
 
                 int temp = -1;
-                foreach (var item in a)
+                foreach (var item in usersFiles)
                 {
                     if (item > temp)
                     {
@@ -822,7 +824,7 @@ namespace FriendlyLords
 
         }
 
-        private List<int> a = new List<int>();
+        private List<int> usersFiles = new List<int>();
     }
 }
 
