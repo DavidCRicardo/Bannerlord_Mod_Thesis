@@ -218,22 +218,7 @@ namespace FriendlyLords
 
         public void StartSE(CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
         {
-            foreach (Hero hero in Clan.PlayerClan.Companions)
-            {
-                if (selfAgent.Character == hero.CharacterObject)
-                {
-                    DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-                    AgentBehavior agentBehavior = behaviorGroup.GetActiveBehavior();
-                    if (agentBehavior != null && agentBehavior.IsActive)
-                    {
-                        CompanionFollowingPlayer = true;
-                    }
-                    else
-                    {
-                        CompanionFollowingPlayer = false;
-                    }
-                }
-            }
+            //CompanionDebug();
 
             UpdateTarget(_Receiver.Name, _Receiver.Id);
 
@@ -246,7 +231,31 @@ namespace FriendlyLords
 
             Busy = true;
         }
-        
+
+        private void CompanionDebug()
+        {
+            foreach (Hero hero in Clan.PlayerClan.Companions)
+            {
+                if (selfAgent.Character == hero.CharacterObject)
+                {
+                    DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+
+                    var behavior = behaviorGroup.GetBehavior<FollowAgentBehavior>();
+                    if (behavior != null)
+                    {
+                        Vec2 heroVec2Position = Agent.Main.Position.AsVec2 - behavior.Navigator.TargetPosition.AsVec2;
+                        Vec2 rangeVec2 = new Vec2(5f, 5f);
+
+                        if (heroVec2Position.X < rangeVec2.X && heroVec2Position.Y < rangeVec2.Y)
+                        {
+                            this.CompanionFollowingPlayer = true;
+                        }
+                        else { this.CompanionFollowingPlayer = false; }
+                    }
+                }
+            }
+        }
+
         public void CustomAgentWithDesire(float dt, int _conversationDelay, Random rnd, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (NearEnoughToStartConversation)

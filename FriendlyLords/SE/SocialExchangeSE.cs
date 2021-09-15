@@ -154,6 +154,9 @@ namespace FriendlyLords
             else
             {
                 CustomAgentReceiver.SEVolition = ReceiverVolition();
+
+                CustomAgentReceiver.MarkerTypeRef = CustomAgentInitiator.MarkerTypeRef;
+
                 CustomAgentReceiver.AgentGetMessage(false, CustomAgentInitiator, CustomAgentReceiver, Rnd, index, _dialogsDictionary, _CurrentLocation);
 
                 if (CustomAgentReceiver.Message != "")
@@ -171,10 +174,6 @@ namespace FriendlyLords
                 if (ReceptorIsPlayer) 
                 { 
                     CustomAgentInitiator.TalkingWithPlayer = true;
-                    if (CustomAgentInitiator.customAgentTarget.selfAgent != Agent.Main)
-                    {
-
-                    }
                     AgentInitiator.OnUse(AgentReceiver); 
                 }
                 IsCompleted = true;  
@@ -615,17 +614,29 @@ namespace FriendlyLords
             customAgent.FullMessage = null;
             customAgent.Message = "";
             customAgent.Busy = false;
-            customAgent.EnoughRest = false;
+
+            if (customAgent.selfAgent == Agent.Main)
+            {
+                customAgent.UpdateAllStatus(0, 0, 0, 0, 0, 10);
+            }
+            else { customAgent.EnoughRest = false; }
+            
             customAgent.customAgentTarget = null;
             customAgent.thirdAgent = "";
             customAgent.thirdAgentId = 0;
             customAgent.MarkerTypeRef = 1;
             customAgent.StopAnimation();
 
-            if (customAgent.selfAgent != Agent.Main && !customAgent.CompanionFollowingPlayer)
+            customAgent.EndFollowBehavior();
+
+            /*if (customAgent.selfAgent != Agent.Main)
             {
                 customAgent.EndFollowBehavior();
-            }
+                if (!customAgent.CompanionFollowingPlayer)
+                {
+                   customAgent.StartFollowBehavior(customAgent.selfAgent, Agent.Main);
+                }
+            }*/
         }    
 
         public bool IsCompleted { get; set; }

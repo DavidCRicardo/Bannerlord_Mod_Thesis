@@ -197,20 +197,6 @@ namespace FriendlyLords
                 {
                     if (customAgentInteractingWithPlayer.customAgentTarget == null)
                     {
-                        foreach (Hero hero in Clan.PlayerClan.Companions)
-                        {
-                            if (customAgentInteractingWithPlayer.selfAgent.Character == hero.CharacterObject)
-                            {
-                                DailyBehaviorGroup behaviorGroup = customAgentInteractingWithPlayer.selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-                                var f = behaviorGroup.GetActiveBehavior();
-
-                                if (f != null && f.IsActive)
-                                {
-                                    customAgentInteractingWithPlayer.CompanionFollowingPlayer = true;
-                                }
-                            }
-                        }
-
                         playerStartedASE = true;
                         OnGoingSEs++;
                     }
@@ -225,21 +211,6 @@ namespace FriendlyLords
                 }
                 else
                 {
-                    customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
-
-                    foreach (Hero hero in Clan.PlayerClan.Companions)
-                    {
-                        if (customAgentInteractingWithPlayer.selfAgent.Character == hero.CharacterObject)
-                        {
-                            DailyBehaviorGroup behaviorGroup = customAgentInteractingWithPlayer.selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
-                            var f = behaviorGroup.GetActiveBehavior();
-                            if (f != null && f.IsActive)
-                            {
-                                customAgentInteractingWithPlayer.CompanionFollowingPlayer = true;
-                            }
-                        }
-                    }
-
                     playerStartedASE = true;
                     OnGoingSEs++;
                 }
@@ -306,12 +277,19 @@ namespace FriendlyLords
 
             foreach (CustomAgent customAgent in customAgentsList)
             {
-                if (customAgent.RunAI && CustomAgentHasEnoughRest(customAgent))
+                if (customAgent.RunAI)
                 {
-                    if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                    if (CustomAgentHasEnoughRest(customAgent))
                     {
-                        customAgent.EnoughRest = true;
-                        customAgent.Busy = false;
+                        if (customAgent.SecsDelay(dt, customAgent.Countdown))
+                        {
+                            customAgent.EnoughRest = true;
+                            customAgent.Busy = false;
+                        }
+                        else if (customAgent.selfAgent == Agent.Main)
+                        {
+                            customAgent.Busy = false;
+                        }
                     }
                     else
                     {
@@ -319,8 +297,8 @@ namespace FriendlyLords
                         {
                             customAgent.Busy = true;
                         }
-                    }
-                }
+                    }               
+                }            
             }
 
             DesireFormation();
@@ -591,10 +569,12 @@ namespace FriendlyLords
                 customAgent.FinalizeSocialExchange();
             }
 
-            if (!customAgent.CompanionFollowingPlayer)
+            customAgent.EndFollowBehavior();
+            /*if (!customAgent.CompanionFollowingPlayer)
             {
                 customAgent.EndFollowBehavior();
             }
+            else { customAgent.StartFollowBehavior(customAgent.selfAgent, Agent.Main); }*/
         }
 
         private void InitializeEnergyToAgents()
