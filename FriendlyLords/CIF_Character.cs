@@ -14,7 +14,7 @@ namespace FriendlyLords
 {
     public class CIF_Character : CampaignBehaviorBase
     {
-        public Agent agentRef; 
+        public Agent AgentReference; 
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -68,7 +68,7 @@ namespace FriendlyLords
 
         public CIF_Character(Agent _agent, int _id, List<string> _statusList = null, CIFManager.SEs_Enum se_enum = default, float _NPCCountdownMultiplier = 1)
         {
-            this.agentRef = _agent;
+            this.AgentReference = _agent;
             this.Name = _agent.Name;
             this.Id = _id;
 
@@ -235,9 +235,9 @@ namespace FriendlyLords
         {
             foreach (Hero hero in Clan.PlayerClan.Companions)
             {
-                if (agentRef.Character == hero.CharacterObject)
+                if (AgentReference.Character == hero.CharacterObject)
                 {
-                    DailyBehaviorGroup behaviorGroup = agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                    DailyBehaviorGroup behaviorGroup = AgentReference.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
 
                     var behavior = behaviorGroup.GetBehavior<FollowAgentBehavior>();
                     if (behavior != null)
@@ -271,7 +271,7 @@ namespace FriendlyLords
         {
             if (this.Name != Agent.Main.Name && this.customAgentTarget != null)
             {
-                if (this.agentRef.Position.Distance(this.customAgentTarget.agentRef.Position) < 3)
+                if (this.AgentReference.Position.Distance(this.customAgentTarget.AgentReference.Position) < 3)
                 {
                     /* Social Exchange */
                     socialExchangeSE = new CIF_SocialExchange(SocialMove_SE, this, CustomAgentsList);
@@ -386,7 +386,7 @@ namespace FriendlyLords
             if (Message.Contains("{PARTNER}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
-                if (customAgentInitiator.agentRef.IsFemale)
+                if (customAgentInitiator.AgentReference.IsFemale)
                 {
                     builder.Replace("{PARTNER}", "husband");
                 }
@@ -400,7 +400,7 @@ namespace FriendlyLords
             if (Message.Contains("{GENDER}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
-                if (customAgentInitiator.customAgentTarget.agentRef.IsFemale)
+                if (customAgentInitiator.customAgentTarget.AgentReference.IsFemale)
                 {
                     builder.Replace("{GENDER}", "she");
                 }
@@ -484,7 +484,7 @@ namespace FriendlyLords
             IsInitiator = false;
             SocialMove_SE = CIFManager.SEs_Enum.Undefined;
 
-            if (agentRef != Agent.Main)
+            if (AgentReference != Agent.Main)
             {
                 EndFollowBehavior();
             }
@@ -551,7 +551,7 @@ namespace FriendlyLords
             customAgentTarget = GetCustomAgentByName(_targetName, _id);
             IdTarget = _id;
 
-            StartFollowBehavior(agentRef, customAgentTarget.agentRef);
+            StartFollowBehavior(AgentReference, customAgentTarget.AgentReference);
         }
 
         public void StartFollowBehavior(Agent _agent, Agent _agentTarget)
@@ -570,16 +570,16 @@ namespace FriendlyLords
 
         public void EndFollowBehavior()
         {
-            if (agentRef != Agent.Main)
+            if (AgentReference != Agent.Main)
             {
-                agentRef.ResetLookAgent();
+                AgentReference.ResetLookAgent();
 
-                if (agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
+                if (AgentReference.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
                 {
                     return;
                 }
 
-                DailyBehaviorGroup behaviorGroup = agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                DailyBehaviorGroup behaviorGroup = AgentReference.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
                 behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
             }
         }
@@ -799,11 +799,11 @@ namespace FriendlyLords
         #region /* Play Animation / Stop Animation */
         public void PlayAnimation(string _animation)
         {
-            agentRef.SetActionChannel(0, ActionIndexCache.Create(_animation), true);
+            AgentReference.SetActionChannel(0, ActionIndexCache.Create(_animation), true);
         }
         public void StopAnimation()
         {
-            agentRef.SetActionChannel(0, ActionIndexCache.act_none, true);
+            AgentReference.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
 

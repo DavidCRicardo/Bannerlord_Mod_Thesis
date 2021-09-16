@@ -16,11 +16,11 @@ namespace FriendlyLords
 
             if (_customAgentinitiator != null)
             {
-                this.AgentInitiator = _customAgentinitiator.agentRef;
+                this.AgentInitiator = _customAgentinitiator.AgentReference;
                 this.CustomAgentInitiator = _customAgentinitiator;
 
                 this.CustomAgentReceiver = CustomAgentInitiator.customAgentTarget;
-                this.AgentReceiver = CustomAgentReceiver.agentRef;
+                this.AgentReceiver = CustomAgentReceiver.AgentReference;
 
                 this.CustomAgentList = customAgents;
                 this.index = -1;
@@ -135,7 +135,7 @@ namespace FriendlyLords
         public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             //CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
-            CustomAgentInitiator.agentRef.SetLookAgent(AgentReceiver);
+            CustomAgentInitiator.AgentReference.SetLookAgent(AgentReceiver);
 
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
@@ -306,7 +306,7 @@ namespace FriendlyLords
                         SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
                         CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
 
-                        if (CAtoDecrease.agentRef.IsHero && CAtoDecrease.agentRef == Agent.Main)
+                        if (CAtoDecrease.AgentReference.IsHero && CAtoDecrease.AgentReference == Agent.Main)
                         {
                             ChangeHeroRelationInGame(-1, CAtoDecrease);
                         }
@@ -370,7 +370,7 @@ namespace FriendlyLords
 
         private static void ChangeHeroRelationInGame(int value, CIF_Character customAgent)
         {
-            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.agentRef.Character);
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.AgentReference.Character);
             if (hero != null && hero != Hero.MainHero)
             {
                 float relationWithPlayer = hero.GetRelationWithPlayer();
@@ -392,7 +392,7 @@ namespace FriendlyLords
         {
             if (Agent.Main != null)
             {
-                if (customAgentInitiator != customAgent && customAgent.agentRef != Agent.Main && customAgentInitiator.agentRef.Position.Distance(customAgent.agentRef.Position) <= 5)
+                if (customAgentInitiator != customAgent && customAgent.AgentReference != Agent.Main && customAgentInitiator.AgentReference.Position.Distance(customAgent.AgentReference.Position) <= 5)
                 {
                     return true;
                 }
@@ -428,7 +428,7 @@ namespace FriendlyLords
                     {
                         if (beliefWithReceiver.relationship == "Dating") //tem relaçao com o receiver e essa relação é dating? Vai garrear com o Initiator
                         {
-                            TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.agentRef.Name, CustomAgentInitiator.Id);
+                            TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.AgentReference.Name, CustomAgentInitiator.Id);
                             customAgent.AddToTriggerRulesList(triggerRule);
                         }
                         else // tem relaçao Friends
@@ -440,7 +440,7 @@ namespace FriendlyLords
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (CustomAgentInitiator.agentRef == Agent.Main && customAgent.agentRef.IsHero)
+                                if (CustomAgentInitiator.AgentReference == Agent.Main && customAgent.AgentReference.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -452,7 +452,7 @@ namespace FriendlyLords
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (CustomAgentInitiator.agentRef == Agent.Main && customAgent.agentRef.IsHero)
+                                if (CustomAgentInitiator.AgentReference == Agent.Main && customAgent.AgentReference.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -495,7 +495,7 @@ namespace FriendlyLords
             SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
             if (belief == null)
             {
-                List<string> agents = new List<string>() { CustomAgentInitiator.agentRef.Name, CustomAgentReceiver.agentRef.Name };
+                List<string> agents = new List<string>() { CustomAgentInitiator.AgentReference.Name, CustomAgentReceiver.AgentReference.Name };
                 List<int> _ids = new List<int>() { CustomAgentInitiator.Id, CustomAgentReceiver.Id };
 
                 SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _ids, _value);
@@ -522,13 +522,13 @@ namespace FriendlyLords
 
             InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, false, initialValue)
             {
-                SE_Enum_Name = SE_Enum,
+                SE = SE_Enum,
                 RelationIntention = Intention
             };
-            int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
-            finalVolition = CheckMemory(finalVolition, 3);
+            int Volition = ComputeVolitionWithInfluenceRule(IR, CustomAgentInitiator, CustomAgentReceiver);
+            Volition = CheckMemory(Volition, 3);
 
-            CustomAgentInitiator.SEVolition = finalVolition;
+            CustomAgentInitiator.SEVolition = Volition;
 
             return CustomAgentInitiator.SEVolition;
         }
@@ -568,7 +568,7 @@ namespace FriendlyLords
 
             InfluenceRule IR = new InfluenceRule(CustomAgentInitiator, CustomAgentReceiver, true, initialValue)
             {
-                SE_Enum_Name = SE_Enum,
+                SE = SE_Enum,
                 RelationIntention = Intention
             };
             int finalVolition = ComputeVolitionWithInfluenceRule(IR, CustomAgentReceiver, CustomAgentInitiator);
@@ -580,7 +580,7 @@ namespace FriendlyLords
         
         private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CIF_Character agentWhoWillCheck, CIF_Character agentChecked)
         {
-            IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.SE_Enum_Name.ToString()) : 0;
+            IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.SE.ToString()) : 0;
 
             IR.InitialValue += IR.GetValueParticipantsRelation(agentWhoWillCheck, agentChecked);
             IR.InitialValue += IR.SRunRules();
@@ -615,7 +615,7 @@ namespace FriendlyLords
             customAgent.Message = "";
             customAgent.Busy = false;
 
-            if (customAgent.agentRef == Agent.Main)
+            if (customAgent.AgentReference == Agent.Main)
             {
                 customAgent.UpdateAllStatus(0, 0, 0, 0, 0, 10);
             }

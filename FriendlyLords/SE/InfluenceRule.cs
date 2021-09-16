@@ -21,7 +21,7 @@ namespace FriendlyLords
         {
             var Dictionary = GetDictionaryToCheckTraitsValues(RelationIntention);
 
-            switch (SE_Enum_Name)
+            switch (SE)
             {
                 case CIFManager.SEs_Enum.Compliment:
                     return RunRules(Dictionary, true, false, true, false, false, false, false, false, false);
@@ -99,7 +99,7 @@ namespace FriendlyLords
                 sum += CheckCulturesRelationships(Initiator, Receiver, IsPositiveOrRomanticSE);
             }
 
-            sum += CheckMemoryForPreviousSEs(SE_Enum_Name.ToString(), Initiator, Receiver);
+            sum += CheckMemoryForPreviousSEs(SE.ToString(), Initiator, Receiver);
 
             if (NeedsToBeOlderThan18)
             {
@@ -146,10 +146,10 @@ namespace FriendlyLords
 
             if (!Initiator.ItemList.IsEmpty())
             {
-                if (Initiator.agentRef.IsHero)
+                if (Initiator.AgentReference.IsHero)
                 {
                     Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
-                    if (hero != null && hero.IsPlayerCompanion && Receiver.agentRef == Agent.Main && Initiator.ItemList.Count > 0)
+                    if (hero != null && hero.IsPlayerCompanion && Receiver.AgentReference == Agent.Main && Initiator.ItemList.Count > 0)
                     {
                         localSum += 2; // se for companion, só incrementar se o receiver for o player
                     }
@@ -191,9 +191,9 @@ namespace FriendlyLords
         // different genders
         private int MustHaveDifferentGender()
         {
-            if ((Initiator.agentRef.IsFemale && Receiver.agentRef.IsFemale)
+            if ((Initiator.AgentReference.IsFemale && Receiver.AgentReference.IsFemale)
                  ||
-                (!Initiator.agentRef.IsFemale && !Receiver.agentRef.IsFemale))
+                (!Initiator.AgentReference.IsFemale && !Receiver.AgentReference.IsFemale))
             {
                 return -100;
             }
@@ -459,9 +459,9 @@ namespace FriendlyLords
         public int CheckInitiatorAge()
         {
             if (
-                (Initiator.agentRef.Age < 18 && Receiver.agentRef.Age > 18)
+                (Initiator.AgentReference.Age < 18 && Receiver.AgentReference.Age > 18)
                 ||
-                (Initiator.agentRef.Age > 18 && Receiver.agentRef.Age < 18)
+                (Initiator.AgentReference.Age > 18 && Receiver.AgentReference.Age < 18)
                 )
             {
                 return -100;
@@ -475,7 +475,7 @@ namespace FriendlyLords
         public bool IsReacting { get; set; }
         public int InitialValue { get; set; }
         public CIF_SocialExchange.IntentionEnum RelationIntention { get; set; }
-        public CIFManager.SEs_Enum SE_Enum_Name { get; internal set; }
+        public CIFManager.SEs_Enum SE { get; internal set; }
 
         public Dictionary<String, Func<CIF_Character, int>> TraitFunc_Dictionary = new Dictionary<String, Func<CIF_Character, int>>();
         public Dictionary<String, Func<CIF_Character, int>> GetDictionaryToCheckTraitsValues(CIF_SocialExchange.IntentionEnum intention)

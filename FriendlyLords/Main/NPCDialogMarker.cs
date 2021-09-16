@@ -210,7 +210,7 @@ namespace FriendlyLords
                 //{
                     foreach (CIF_Character custom in _dataSource.customAgentsList)
                     {
-                        if (custom.agentRef.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
+                        if (custom.AgentReference.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
                         {
                             //CBB_ref.customAgentConversation = custom;
                             break;
@@ -374,7 +374,7 @@ namespace FriendlyLords
 
         private static void RelationInGameChanges(CIF_Character customAgentConversation, int value)
         {
-            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.agentRef.Character);
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.AgentReference.Character);
             if (hero != null && hero != Hero.MainHero)
             {
                 float relationWithPlayer = hero.GetRelationWithPlayer();
@@ -397,7 +397,7 @@ namespace FriendlyLords
 
         private string GetRelationshipBetweenPlayerAndNPC()
         {
-            CIF_Character AgentPlayer = _dataSource.customAgentsList.Find(c => c.agentRef == Agent.Main);
+            CIF_Character AgentPlayer = _dataSource.customAgentsList.Find(c => c.AgentReference == Agent.Main);
             SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
 
             string localRelation = "";
@@ -432,15 +432,15 @@ namespace FriendlyLords
         private void UpdateRelationWithPlayerChoice(CIF_Character customAgentConversation, string relation, int value, CIFManager.SEs_Enum seEnum)
         {
             CIF_SocialExchange se = InitializeSocialExchange(customAgentConversation, seEnum);
-            se.PlayerConversationWithNPC(relation, value, customAgentConversation.agentRef.IsHero);
+            se.PlayerConversationWithNPC(relation, value, customAgentConversation.AgentReference.IsHero);
 
             _dataSource.SaveToJson();
         }
 
         private CIF_SocialExchange InitializeSocialExchange(CIF_Character customAgentConversation, CIFManager.SEs_Enum seEnum)
         {
-            CIF_Character customAgent = _dataSource.customAgentsList.Find(c => c.agentRef.Name == customAgentConversation.agentRef.Name && c.Id == customAgentConversation.Id);
-            CIF_Character MainCustomAgent = _dataSource.customAgentsList.Find(c => c.agentRef == Agent.Main);
+            CIF_Character customAgent = _dataSource.customAgentsList.Find(c => c.AgentReference.Name == customAgentConversation.AgentReference.Name && c.Id == customAgentConversation.Id);
+            CIF_Character MainCustomAgent = _dataSource.customAgentsList.Find(c => c.AgentReference == Agent.Main);
             MainCustomAgent.customAgentTarget = customAgent;
 
             CIF_SocialExchange se = new CIF_SocialExchange(seEnum, MainCustomAgent, _dataSource.customAgentsList)

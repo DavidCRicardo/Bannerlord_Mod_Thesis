@@ -157,7 +157,7 @@ namespace FriendlyLords
         {
             if (nextRequiredRenown != -1 && (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule))
             {
-                CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.agentRef != Agent.Main);
+                CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.AgentReference != Agent.Main);
                 if (CurrentAgentsWhoAreRunningAI != null && CurrentAgentsWhoAreRunningAI.Count > 0)
                 {
                     ReadyToGiveTriggerRule = true;
@@ -190,7 +190,7 @@ namespace FriendlyLords
         {
             if (!playerStartedASE && customAgentInteractingWithPlayer == null)
             {
-                customAgentInteractingWithPlayer = customAgentsList.Find(c => c.agentRef.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
+                customAgentInteractingWithPlayer = customAgentsList.Find(c => c.AgentReference.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
 
                 if (customAgentInteractingWithPlayer != null)
                 {
@@ -201,7 +201,7 @@ namespace FriendlyLords
                     }
                     else
                     {
-                        if (customAgentInteractingWithPlayer.customAgentTarget.agentRef != Agent.Main)
+                        if (customAgentInteractingWithPlayer.customAgentTarget.AgentReference != Agent.Main)
                         {
                             playerStartedASE = true;
                             OnGoingSEs++;
@@ -226,7 +226,7 @@ namespace FriendlyLords
             {
                 foreach (CIF_Character customAgent in customAgentsList)
                 {
-                    if (customAgent.agentRef.IsHero && customAgent.agentRef != Agent.Main)
+                    if (customAgent.AgentReference.IsHero && customAgent.AgentReference != Agent.Main)
                     {
                         customAgent.ResetSocialExchangesOptions();
                     }
@@ -247,7 +247,7 @@ namespace FriendlyLords
                 SaveAllInfoToJSON();
             }
 
-            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.agentRef == Agent.Main)
+            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.AgentReference == Agent.Main)
             {
                 customCharacterReftoCampaignBehaviorBase = customAgent;
                 customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
@@ -285,14 +285,14 @@ namespace FriendlyLords
                             customAgent.EnoughRest = true;
                             customAgent.Busy = false;
                         }
-                        else if (customAgent.agentRef == Agent.Main)
+                        else if (customAgent.AgentReference == Agent.Main)
                         {
                             customAgent.Busy = false;
                         }
                     }
                     else
                     {
-                        if (customAgent.agentRef == Agent.Main)
+                        if (customAgent.AgentReference == Agent.Main)
                         {
                             customAgent.Busy = true;
                         }
@@ -351,7 +351,7 @@ namespace FriendlyLords
             /* Each NPC will check the environment */
             foreach (CIF_Character c1 in customAgentsList)
             {
-                if (c1.agentRef == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs || !c1.RunAI)
+                if (c1.AgentReference == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs || !c1.RunAI)
                 {
                     continue;
                 }
@@ -467,7 +467,7 @@ namespace FriendlyLords
                     var companions = Clan.PlayerClan.Companions;                 
                     foreach (Hero hero in companions)
                     {
-                        CIF_Character custom1 = customAgentsList.Find(c => c.agentRef.Character == hero.CharacterObject);
+                        CIF_Character custom1 = customAgentsList.Find(c => c.AgentReference.Character == hero.CharacterObject);
                         if (custom1 != null)
                         {
                             //custom1.CompanionFollowingPlayer = true;
@@ -592,7 +592,7 @@ namespace FriendlyLords
 
             foreach (var customAgent in customAgentsList)
             {
-                if (customAgent.agentRef.IsHuman)
+                if (customAgent.AgentReference.IsHuman)
                 {
                     for (int i = 0; i < ListWithAllTraits.Count; i++)
                     {
@@ -737,7 +737,7 @@ namespace FriendlyLords
 
             if (ToPerformSEs)
             {
-                if (customAgentTemp.agentRef.IsHero)
+                if (customAgentTemp.AgentReference.IsHero)
                 {
                     LoadSavedSEs(customAgentTemp);
                 }
@@ -930,7 +930,7 @@ namespace FriendlyLords
             {
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
-                    CIF_Character customMain = customAgentsList.Find(c => c.agentRef == Agent.Main);
+                    CIF_Character customMain = customAgentsList.Find(c => c.AgentReference == Agent.Main);
 
                     foreach (CIF_Character customAgent in customAgentsList)
                     {
@@ -970,7 +970,7 @@ namespace FriendlyLords
 
         private static void CheckInGameRelationBetweenHeroes(CIF_Character customMain, CIF_Character customAgent)
         {
-            int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.agentRef.Character);
+            int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.AgentReference.Character);
             if (indexHero >= 0)
             {
                 Hero hero = Hero.AllAliveHeroes[indexHero];
@@ -1388,13 +1388,13 @@ namespace FriendlyLords
 
         private bool CustomAgentIsNearToPlayer(CIF_Character customAgent)
         {
-            if (customAgent == null || customAgent.agentRef == null)
+            if (customAgent == null || customAgent.AgentReference == null)
             {
                 return false;
             }
             else
             {
-                return Agent.Main.Position.Distance(customAgent.agentRef.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.agentRef, 0);
+                return Agent.Main.Position.Distance(customAgent.AgentReference.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.AgentReference, 0);
             }
         }
 
@@ -1402,7 +1402,7 @@ namespace FriendlyLords
         {
             if (Agent.Main != null)
             {
-                if (Agent.Main.Position.Distance(customAgent.agentRef.Position) <= CIF_Range)
+                if (Agent.Main.Position.Distance(customAgent.AgentReference.Position) <= CIF_Range)
                 {
                     customAgent.RunAI = true;
                     return true;
