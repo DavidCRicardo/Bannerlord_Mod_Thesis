@@ -8,19 +8,19 @@ using TaleWorlds.MountAndBlade;
 
 namespace FriendlyLords
 {
-    public class SocialExchangeSE
+    public class CIF_SocialExchange
     {
-        public SocialExchangeSE(CustomMissionNameMarkerVM.SEs_Enum seEnum, CustomAgent _customAgentinitiator, List<CustomAgent> customAgents)
+        public CIF_SocialExchange(CIFManager.SEs_Enum seEnum, CIF_Character _customAgentinitiator, List<CIF_Character> customAgents)
         {
             SE_Enum = seEnum;
 
             if (_customAgentinitiator != null)
             {
-                this.AgentInitiator = _customAgentinitiator.selfAgent;
+                this.AgentInitiator = _customAgentinitiator.agentRef;
                 this.CustomAgentInitiator = _customAgentinitiator;
 
                 this.CustomAgentReceiver = CustomAgentInitiator.customAgentTarget;
-                this.AgentReceiver = CustomAgentReceiver.selfAgent;
+                this.AgentReceiver = CustomAgentReceiver.agentRef;
 
                 this.CustomAgentList = customAgents;
                 this.index = -1;
@@ -55,9 +55,9 @@ namespace FriendlyLords
         {
             switch (SE_Enum)
             {
-                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
-                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
-                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
+                case CIFManager.SEs_Enum.Compliment:
+                case CIFManager.SEs_Enum.GiveGift:
+                case CIFManager.SEs_Enum.Admiration:
                     Intention = IntentionEnum.Positive;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -66,7 +66,7 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                case CIFManager.SEs_Enum.Jealous:
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -75,7 +75,7 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                case CIFManager.SEs_Enum.FriendSabotage:
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -84,7 +84,7 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                case CIFManager.SEs_Enum.Flirt:
                     Intention = IntentionEnum.Romantic;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -93,7 +93,7 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                case CIFManager.SEs_Enum.Bully:
                     Intention = IntentionEnum.Hostile;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -102,7 +102,7 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_bullied");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                case CIFManager.SEs_Enum.RomanticSabotage:
                     Intention = IntentionEnum.Hostile;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -111,9 +111,9 @@ namespace FriendlyLords
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");
                     }
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
-                case CustomMissionNameMarkerVM.SEs_Enum.Break:
-                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
+                case CIFManager.SEs_Enum.AskOut:
+                case CIFManager.SEs_Enum.Break:
+                case CIFManager.SEs_Enum.HaveAChild:
                     Intention = IntentionEnum.Special;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
@@ -135,7 +135,7 @@ namespace FriendlyLords
         public void OnGoingSocialExchange(Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             //CustomAgentReceiver.selfAgent.SetLookAgent(AgentInitiator);
-            CustomAgentInitiator.selfAgent.SetLookAgent(AgentReceiver);
+            CustomAgentInitiator.agentRef.SetLookAgent(AgentReceiver);
 
             if (auxToCheckWhoIsSpeaking % 2 == 0)
             {
@@ -232,17 +232,17 @@ namespace FriendlyLords
         {
             if (true)
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.AskOut)
+                if (SE_Enum == CIFManager.SEs_Enum.AskOut)
                 {
                     AskOutMethod(false);
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Break)
+                else if (SE_Enum == CIFManager.SEs_Enum.Break)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, 0, -1, -1, 0, 0);
 
                     BreakUpMethod();
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Admiration)
+                else if (SE_Enum == CIFManager.SEs_Enum.Admiration)
                 {
 
                 }
@@ -253,7 +253,7 @@ namespace FriendlyLords
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Bully || SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage)
+                if (SE_Enum == CIFManager.SEs_Enum.Bully || SE_Enum == CIFManager.SEs_Enum.RomanticSabotage)
                 {
                     //Bully or RomanticSabotage
                     CustomAgentInitiator.UpdateAllStatus(0, 0.5, 0, -0.3, 1, 0);
@@ -273,12 +273,12 @@ namespace FriendlyLords
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Jealous)
+                if (SE_Enum == CIFManager.SEs_Enum.Jealous)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
                     CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage)
+                else if (SE_Enum == CIFManager.SEs_Enum.FriendSabotage)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 0, 0);
                     CustomAgentInitiator.AddToTriggerRulesList(new TriggerRule("Bully", CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId));
@@ -289,24 +289,24 @@ namespace FriendlyLords
             }
             else
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Jealous)
+                if (SE_Enum == CIFManager.SEs_Enum.Jealous)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, 0, -0.3, 1, 0);
                     CustomAgentReceiver.UpdateAllStatus(0, 0, -0.2, 0, 0, 0);
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage)
+                else if (SE_Enum == CIFManager.SEs_Enum.FriendSabotage)
                 {
                     CustomAgentInitiator.UpdateAllStatus(0, -1, -0.2, 0, 0, 0);
 
                     //Decreases relation 
-                    CustomAgent CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
+                    CIF_Character CAtoDecrease = CustomAgentReceiver.GetCustomAgentByName(CustomAgentInitiator.thirdAgent, CustomAgentInitiator.thirdAgentId);
 
                     if (CAtoDecrease != null)
                     {
                         SocialNetworkBelief belief = CustomAgentReceiver.SelfGetBeliefWithAgent(CAtoDecrease);
                         CustomAgentReceiver.UpdateBeliefWithNewValue(belief, -1);
 
-                        if (CAtoDecrease.selfAgent.IsHero && CAtoDecrease.selfAgent == Agent.Main)
+                        if (CAtoDecrease.agentRef.IsHero && CAtoDecrease.agentRef == Agent.Main)
                         {
                             ChangeHeroRelationInGame(-1, CAtoDecrease);
                         }
@@ -320,7 +320,7 @@ namespace FriendlyLords
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Flirt)
+                if (SE_Enum == CIFManager.SEs_Enum.Flirt)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Dating", 1);
                 }
@@ -337,13 +337,13 @@ namespace FriendlyLords
         {
             if (CustomAgentReceiver.SE_Accepted)
             {
-                if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Compliment)
+                if (SE_Enum == CIFManager.SEs_Enum.Compliment)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
                     CustomAgentInitiator.UpdateAllStatus(-1, 0, 0, 0, 0, 0);
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.GiveGift)
+                else if (SE_Enum == CIFManager.SEs_Enum.GiveGift)
                 {
                     SocialNetworkBelief belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
@@ -353,7 +353,7 @@ namespace FriendlyLords
                     CustomAgentInitiator.RemoveItem(tempItem.itemName, -1);
                     CustomAgentReceiver.AddItem(tempItem.itemName, 1);
                 }
-                else if (SE_Enum == CustomMissionNameMarkerVM.SEs_Enum.Admiration)
+                else if (SE_Enum == CIFManager.SEs_Enum.Admiration)
                 {
 
                 }
@@ -368,9 +368,9 @@ namespace FriendlyLords
         }
 
 
-        private static void ChangeHeroRelationInGame(int value, CustomAgent customAgent)
+        private static void ChangeHeroRelationInGame(int value, CIF_Character customAgent)
         {
-            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.selfAgent.Character);
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgent.agentRef.Character);
             if (hero != null && hero != Hero.MainHero)
             {
                 float relationWithPlayer = hero.GetRelationWithPlayer();
@@ -388,11 +388,11 @@ namespace FriendlyLords
             }
         }
 
-        private bool InteractionSawByThisNPC(CustomAgent customAgentInitiator, CustomAgent customAgent)
+        private bool InteractionSawByThisNPC(CIF_Character customAgentInitiator, CIF_Character customAgent)
         {
             if (Agent.Main != null)
             {
-                if (customAgentInitiator != customAgent && customAgent.selfAgent != Agent.Main && customAgentInitiator.selfAgent.Position.Distance(customAgent.selfAgent.Position) <= 5)
+                if (customAgentInitiator != customAgent && customAgent.agentRef != Agent.Main && customAgentInitiator.agentRef.Position.Distance(customAgent.agentRef.Position) <= 5)
                 {
                     return true;
                 }
@@ -409,7 +409,7 @@ namespace FriendlyLords
 
         private void UpdateNPCsNearSocialMove() // Independentemente se aceitou ou não
         {
-            foreach (CustomAgent customAgent in CustomAgentList)
+            foreach (CIF_Character customAgent in CustomAgentList)
             {
                 if (customAgent != CustomAgentInitiator && customAgent != CustomAgentReceiver && InteractionSawByThisNPC(CustomAgentInitiator, customAgent)) // ele viu?
                 {
@@ -428,7 +428,7 @@ namespace FriendlyLords
                     {
                         if (beliefWithReceiver.relationship == "Dating") //tem relaçao com o receiver e essa relação é dating? Vai garrear com o Initiator
                         {
-                            TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.selfAgent.Name, CustomAgentInitiator.Id);
+                            TriggerRule triggerRule = new TriggerRule("RomanticSabotage", CustomAgentInitiator.agentRef.Name, CustomAgentInitiator.Id);
                             customAgent.AddToTriggerRulesList(triggerRule);
                         }
                         else // tem relaçao Friends
@@ -440,7 +440,7 @@ namespace FriendlyLords
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (CustomAgentInitiator.selfAgent == Agent.Main && customAgent.selfAgent.IsHero)
+                                if (CustomAgentInitiator.agentRef == Agent.Main && customAgent.agentRef.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -452,7 +452,7 @@ namespace FriendlyLords
 
                                 customAgent.UpdateBeliefWithNewValue(beliefWithInitiator, value);
 
-                                if (CustomAgentInitiator.selfAgent == Agent.Main && customAgent.selfAgent.IsHero)
+                                if (CustomAgentInitiator.agentRef == Agent.Main && customAgent.agentRef.IsHero)
                                 {
                                     ChangeHeroRelationInGame(value, customAgent);
                                 }
@@ -469,7 +469,7 @@ namespace FriendlyLords
 
             UpdateNPCsNearSocialMove();
 
-            foreach (CustomAgent customAgent in CustomAgentList)
+            foreach (CIF_Character customAgent in CustomAgentList)
             {
                 customAgent.UpdateBeliefWithNewRelation("Friends", _belief);
             }
@@ -479,7 +479,7 @@ namespace FriendlyLords
         {
             SocialNetworkBelief _belief = UpdateParticipantNPCBeliefs("Friends", 1);
 
-            foreach (CustomAgent customAgent in CustomAgentList)
+            foreach (CIF_Character customAgent in CustomAgentList)
             {
                 customAgent.UpdateBeliefWithNewRelation("Dating", _belief);
             }
@@ -495,7 +495,7 @@ namespace FriendlyLords
             SocialNetworkBelief belief = CustomAgentInitiator.SelfGetBeliefWithAgent(CustomAgentReceiver);
             if (belief == null)
             {
-                List<string> agents = new List<string>() { CustomAgentInitiator.selfAgent.Name, CustomAgentReceiver.selfAgent.Name };
+                List<string> agents = new List<string>() { CustomAgentInitiator.agentRef.Name, CustomAgentReceiver.agentRef.Name };
                 List<int> _ids = new List<int>() { CustomAgentInitiator.Id, CustomAgentReceiver.Id };
 
                 SocialNetworkBelief newBelief = new SocialNetworkBelief(_relationName, agents, _ids, _value);
@@ -578,7 +578,7 @@ namespace FriendlyLords
             return CustomAgentReceiver.SEVolition;
         }
         
-        private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
+        private int ComputeVolitionWithInfluenceRule(InfluenceRule IR, CIF_Character agentWhoWillCheck, CIF_Character agentChecked)
         {
             IR.InitialValue += (agentWhoWillCheck == CustomAgentInitiator) ? IR.CheckInitiatorTriggerRules(agentWhoWillCheck, agentChecked, IR.SE_Enum_Name.ToString()) : 0;
 
@@ -607,15 +607,15 @@ namespace FriendlyLords
             }
         }
 
-        private void ResetCustomAgentVariables(CustomAgent customAgent)
+        private void ResetCustomAgentVariables(CIF_Character customAgent)
         {
-            customAgent.SocialMove_SE = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
+            customAgent.SocialMove_SE = CIFManager.SEs_Enum.Undefined;
             customAgent.IsInitiator = false;
             customAgent.FullMessage = null;
             customAgent.Message = "";
             customAgent.Busy = false;
 
-            if (customAgent.selfAgent == Agent.Main)
+            if (customAgent.agentRef == Agent.Main)
             {
                 customAgent.UpdateAllStatus(0, 0, 0, 0, 0, 10);
             }
@@ -643,7 +643,7 @@ namespace FriendlyLords
         public bool ReceptorIsPlayer { get; set; }
         public bool ReduceDelay { get; set; }
 
-        public CustomMissionNameMarkerVM.SEs_Enum SE_Enum { get; }
+        public CIFManager.SEs_Enum SE_Enum { get; }
 
         public IntentionEnum Intention { get; private set; }
         public enum IntentionEnum
@@ -660,9 +660,9 @@ namespace FriendlyLords
         private int auxToCheckWhoIsSpeaking { get; set; }
         private int index { get; set; }
 
-        private List<CustomAgent> CustomAgentList { get; set; }
-        public CustomAgent CustomAgentInitiator { get; set; }
-        public CustomAgent CustomAgentReceiver { get; set; }
+        private List<CIF_Character> CustomAgentList { get; set; }
+        public CIF_Character CustomAgentInitiator { get; set; }
+        public CIF_Character CustomAgentReceiver { get; set; }
         private Agent AgentInitiator { get; set; }
         private Agent AgentReceiver { get; set; }
 

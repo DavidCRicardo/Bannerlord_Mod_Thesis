@@ -269,11 +269,11 @@
     <Compile Include="Json\SocialNetworkBelief.cs" />
     <Compile Include="Json\CustomAgentJson.cs" />
     <Compile Include="Json\Item.cs" />
-    <Compile Include="Main\CustomMissionNameMarkerTargetVM.cs" />
-    <Compile Include="Main\CustomMissionNameMarkerVM.cs" />
-    <Compile Include="CustomAgent.cs" />
+    <Compile Include="Main\CIFManagerTarget.cs" />
+    <Compile Include="Main\CIFManager.cs" />
+    <Compile Include="CIF_Character.cs" />
     <Compile Include="Main\CiF_CampaignBehavior_Dialogs.cs" />
-    <Compile Include="Main\CustomMissionGauntletNameMarker.cs" />
+    <Compile Include="Main\NPCDialogMarker.cs" />
     <Compile Include="Json\RootJsonData.cs" />
     <Compile Include="Json\SettlementJson.cs" />
     <Compile Include="Json\MemorySE.cs" />
@@ -281,7 +281,7 @@
     <Compile Include="NPC_NPC_Conversation\RootMessageJson.cs" />
     <Compile Include="SE\mostWantedSE.cs" />
     <Compile Include="SE\NextSE.cs" />
-    <Compile Include="SE\SocialExchangeSE.cs" />
+    <Compile Include="SE\CIF_SocialExchange.cs" />
     <Compile Include="Main\SubModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NPC_NPC_Conversation\DialogsRoot.cs" />

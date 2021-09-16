@@ -9,28 +9,27 @@ using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
-using SandBox;
 
 namespace FriendlyLords
 {
-    public class CustomMissionNameMarkerVM : ViewModel
+    public class CIFManager : ViewModel
     {
-        public CustomMissionNameMarkerVM(Mission mission, Camera missionCamera)
+        public CIFManager(Mission mission, Camera missionCamera)
         {
-            this.Targets = new MBBindingList<CustomMissionNameMarkerTargetVM>();
-            this._distanceComparer = new CustomMissionNameMarkerVM.MarkerDistanceComparer();
+            this.Targets = new MBBindingList<CIFManagerTarget>();
+            this._distanceComparer = new CIFManager.MarkerDistanceComparer();
             this._missionCamera = missionCamera;
             this._mission = mission;
         }
 
         private config configReference { get; set; }
 
-        private List<SocialExchangeSE> SocialExchangesList { get; set; }
+        private List<CIF_SocialExchange> SocialExchangesList { get; set; }
         private List<mostWantedSE> mostWantedSEList { get; set; }
         private List<NextSE> nextSEList { get; set; }
         private NextSE nextSE { get; set; }
 
-        public List<CustomAgent> customAgentsList { get; set; }
+        public List<CIF_Character> customAgentsList { get; set; }
         private List<string> StatusList { get; set; }
 
         private string CurrentSettlement { get; set; }
@@ -42,7 +41,7 @@ namespace FriendlyLords
         private SEs_Enum auxSE;
         private int auxVolition;
 
-        public CustomAgent customAgentInteractingWithPlayer;
+        public CIF_Character customAgentInteractingWithPlayer;
         public bool playerStartedASE;
         private int CIF_Range = 0;
         private Random rnd { get; set; }
@@ -76,7 +75,7 @@ namespace FriendlyLords
 
                     DecreaseNPCsCountdown(dt);
 
-                    foreach (CustomAgent customAgent in customAgentsList)
+                    foreach (CIF_Character customAgent in customAgentsList)
                     {
                         if (customAgent == null)
                         {
@@ -158,12 +157,12 @@ namespace FriendlyLords
         {
             if (nextRequiredRenown != -1 && (Hero.MainHero.Clan.Renown >= nextRequiredRenown || ReadyToGiveTriggerRule))
             {
-                CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.selfAgent != Agent.Main);
+                CurrentAgentsWhoAreRunningAI = customAgentsList.FindAll(c => c.RunAI && c.agentRef != Agent.Main);
                 if (CurrentAgentsWhoAreRunningAI != null && CurrentAgentsWhoAreRunningAI.Count > 0)
                 {
                     ReadyToGiveTriggerRule = true;
 
-                    foreach (CustomAgent item in CurrentAgentsWhoAreRunningAI)
+                    foreach (CIF_Character item in CurrentAgentsWhoAreRunningAI)
                     {
                         if (ReadyToGiveTriggerRule)
                         {
@@ -184,14 +183,14 @@ namespace FriendlyLords
                 }
             }
         }
-        private List<CustomAgent> CurrentAgentsWhoAreRunningAI { get; set; }
+        private List<CIF_Character> CurrentAgentsWhoAreRunningAI { get; set; }
         private bool ReadyToGiveTriggerRule { get; set; }
 
         private void CheckPlayerTalkingWithAgent()
         {
             if (!playerStartedASE && customAgentInteractingWithPlayer == null)
             {
-                customAgentInteractingWithPlayer = customAgentsList.Find(c => c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
+                customAgentInteractingWithPlayer = customAgentsList.Find(c => c.agentRef.Character == CharacterObject.OneToOneConversationCharacter && c.customAgentTarget != null);
 
                 if (customAgentInteractingWithPlayer != null)
                 {
@@ -202,7 +201,7 @@ namespace FriendlyLords
                     }
                     else
                     {
-                        if (customAgentInteractingWithPlayer.customAgentTarget.selfAgent != Agent.Main)
+                        if (customAgentInteractingWithPlayer.customAgentTarget.agentRef != Agent.Main)
                         {
                             playerStartedASE = true;
                             OnGoingSEs++;
@@ -225,9 +224,9 @@ namespace FriendlyLords
             }
             else
             {
-                foreach (CustomAgent customAgent in customAgentsList)
+                foreach (CIF_Character customAgent in customAgentsList)
                 {
-                    if (customAgent.selfAgent.IsHero && customAgent.selfAgent != Agent.Main)
+                    if (customAgent.agentRef.IsHero && customAgent.agentRef != Agent.Main)
                     {
                         customAgent.ResetSocialExchangesOptions();
                     }
@@ -237,7 +236,7 @@ namespace FriendlyLords
             }
         }
 
-        private void CustomAgentGoingToSE(float dt, CustomAgent customAgent, string _CurrentLocation)
+        private void CustomAgentGoingToSE(float dt, CIF_Character customAgent, string _CurrentLocation)
         {
             customAgent.CustomAgentWithDesire(dt, ConversationDelay, rnd, DialogsDictionary, _CurrentLocation);
             if (customAgent.EndingSocialExchange)
@@ -248,7 +247,7 @@ namespace FriendlyLords
                 SaveAllInfoToJSON();
             }
 
-            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.selfAgent == Agent.Main)
+            if (customAgent.customAgentTarget != null && customAgent.customAgentTarget.agentRef == Agent.Main)
             {
                 customCharacterReftoCampaignBehaviorBase = customAgent;
                 customCharacterIdRefCampaignBehaviorBase = customAgent.Id;
@@ -275,7 +274,7 @@ namespace FriendlyLords
                 return;
             }
 
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 if (customAgent.RunAI)
                 {
@@ -286,14 +285,14 @@ namespace FriendlyLords
                             customAgent.EnoughRest = true;
                             customAgent.Busy = false;
                         }
-                        else if (customAgent.selfAgent == Agent.Main)
+                        else if (customAgent.agentRef == Agent.Main)
                         {
                             customAgent.Busy = false;
                         }
                     }
                     else
                     {
-                        if (customAgent.selfAgent == Agent.Main)
+                        if (customAgent.agentRef == Agent.Main)
                         {
                             customAgent.Busy = true;
                         }
@@ -304,7 +303,7 @@ namespace FriendlyLords
             DesireFormation();
         }
 
-        private void UpdateStatus(CustomAgent customAgent)
+        private void UpdateStatus(CIF_Character customAgent)
         {
             double socialTalk = 0;
             double bullyNeed = 0;
@@ -350,9 +349,9 @@ namespace FriendlyLords
             nextSE.ReceiverAgent = null;
 
             /* Each NPC will check the environment */
-            foreach (CustomAgent c1 in customAgentsList)
+            foreach (CIF_Character c1 in customAgentsList)
             {
-                if (c1.selfAgent == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs || !c1.RunAI)
+                if (c1.agentRef == Agent.Main || c1.Busy || !c1.EnoughRest || OnGoingSEs >= MaximumSEs || !c1.RunAI)
                 {
                     continue;
                 }
@@ -363,12 +362,12 @@ namespace FriendlyLords
                 nextSEList.Clear();
 
                 /*Calculate Volitions for the NPCs around*/
-                foreach (CustomAgent c2 in customAgentsList)
+                foreach (CIF_Character c2 in customAgentsList)
                 {
                     if (c1 == c2 || c2.Busy || !c2.RunAI) { continue; } // Player Included because it can be the target for some NPC 
 
                     /* For each Social Exchange */
-                    foreach (SocialExchangeSE se in SocialExchangesList)
+                    foreach (CIF_SocialExchange se in SocialExchangesList)
                     {
                         se.CustomAgentInitiator = c1;
                         se.CustomAgentReceiver = c2;
@@ -451,7 +450,7 @@ namespace FriendlyLords
             {
                 if (customAgentsList == null)
                 {
-                    customAgentsList = new List<CustomAgent>();
+                    customAgentsList = new List<CIF_Character>();
 
                     nextSE = new NextSE(SEs_Enum.Undefined, null, null, 0);
                     mostWantedSEList = new List<mostWantedSE>();
@@ -468,7 +467,7 @@ namespace FriendlyLords
                     var companions = Clan.PlayerClan.Companions;                 
                     foreach (Hero hero in companions)
                     {
-                        CustomAgent custom1 = customAgentsList.Find(c => c.selfAgent.Character == hero.CharacterObject);
+                        CIF_Character custom1 = customAgentsList.Find(c => c.agentRef.Character == hero.CharacterObject);
                         if (custom1 != null)
                         {
                             //custom1.CompanionFollowingPlayer = true;
@@ -508,7 +507,7 @@ namespace FriendlyLords
 
         private void InitializeCountdownToAgents(int _increaseCountdown)
         {
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 customAgent.Countdown += _increaseCountdown;
                 customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
@@ -520,13 +519,13 @@ namespace FriendlyLords
             OnGoingSEs = 0;
             MaximumSEs = CurrentLocation == "center" ? 3 : 2;
 
-            SocialExchangesList = new List<SocialExchangeSE>();
+            SocialExchangesList = new List<CIF_SocialExchange>();
 
             foreach (SEs_Enum SocialExchange_E in Enum.GetValues(typeof(SEs_Enum)))
             {
                 if (SocialExchange_E != SEs_Enum.Undefined)
                 {
-                    SocialExchangesList.Add(new SocialExchangeSE(SocialExchange_E, null, null));
+                    SocialExchangesList.Add(new CIF_SocialExchange(SocialExchange_E, null, null));
                 }
             }
         }
@@ -536,13 +535,13 @@ namespace FriendlyLords
             StatusList = new List<string>() { "SocialTalk", "BullyNeed", "Courage", "Anger", "Shame", "Tiredness" };
         }
 
-        private static bool CustomAgentHasEnoughRest(CustomAgent customAgent)
+        private static bool CustomAgentHasEnoughRest(CIF_Character customAgent)
         {
             customAgent.EnoughRest = customAgent.StatusList.Find(_status => _status.Name == "Tiredness").intensity < 0.5;
             return customAgent.EnoughRest;
         }
 
-        public void OnConversationEndWithPlayer(CustomAgent customAgent)
+        public void OnConversationEndWithPlayer(CIF_Character customAgent)
         {
             if (customAgent == null)
             {
@@ -579,7 +578,7 @@ namespace FriendlyLords
 
         private void InitializeEnergyToAgents()
         {
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 customAgent.UpdateAllStatus(0, 0, 0, 0, 0, rnd.Next(3));
             }
@@ -593,7 +592,7 @@ namespace FriendlyLords
 
             foreach (var customAgent in customAgentsList)
             {
-                if (customAgent.selfAgent.IsHuman)
+                if (customAgent.agentRef.IsHuman)
                 {
                     for (int i = 0; i < ListWithAllTraits.Count; i++)
                     {
@@ -723,9 +722,9 @@ namespace FriendlyLords
         private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null, float _NPCCountdownMultiplier = 1)
         {
             int id = 0;
-            CustomAgent customAgentTemp = new CustomAgent(agent, id, StatusList, SEs_Enum.Undefined, _NPCCountdownMultiplier);
+            CIF_Character customAgentTemp = new CIF_Character(agent, id, StatusList, SEs_Enum.Undefined, _NPCCountdownMultiplier);
 
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 if (customAgent.Name == customAgentTemp.Name && customAgent.Id == customAgentTemp.Id)
                 {
@@ -738,7 +737,7 @@ namespace FriendlyLords
 
             if (ToPerformSEs)
             {
-                if (customAgentTemp.selfAgent.IsHero)
+                if (customAgentTemp.agentRef.IsHero)
                 {
                     LoadSavedSEs(customAgentTemp);
                 }
@@ -760,7 +759,7 @@ namespace FriendlyLords
             File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", text);
         }
 
-        private static void LoadSavedSEs(CustomAgent customAgent)
+        private static void LoadSavedSEs(CIF_Character customAgent)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
@@ -774,30 +773,30 @@ namespace FriendlyLords
                     {
                         foreach (SEsPerformed item in SESavedList)
                         {
-                            var key = CustomAgent.Intentions.Hostile;
+                            var key = CIF_Character.Intentions.Hostile;
                             switch (item.SocialExchange)
                             {            
                                 case "Friendly":
                                 case "Compliment":
-                                    key = CustomAgent.Intentions.Friendly;
+                                    key = CIF_Character.Intentions.Friendly;
                                     break;
                                 
                                 case "UnFriendly":
                                 case "Jealous":
-                                    key = CustomAgent.Intentions.Unfriendly;
+                                    key = CIF_Character.Intentions.Unfriendly;
                                     break;
                                 case "Romantic":
                                 case "Flirt":
-                                    key = CustomAgent.Intentions.Romantic;
+                                    key = CIF_Character.Intentions.Romantic;
                                     break;
                                 case "Hostile":
                                 case "Bully":
-                                    key = CustomAgent.Intentions.Hostile;
+                                    key = CIF_Character.Intentions.Hostile;
                                     break;
                                 case "AskOut":
                                 case "Break":
                                 case "HaveAChild":
-                                    key = CustomAgent.Intentions.Special;
+                                    key = CIF_Character.Intentions.Special;
                                     break;
                                 default:
                                     break;
@@ -810,7 +809,7 @@ namespace FriendlyLords
             }
         }
 
-        public void SaveSavedSEs(CustomAgent customAgent, string socialExchange)
+        public void SaveSavedSEs(CIF_Character customAgent, string socialExchange)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             SEsPerformedToday myDeserializedClass = JsonConvert.DeserializeObject<SEsPerformedToday>(json);
@@ -836,7 +835,7 @@ namespace FriendlyLords
             }
         }
 
-        private void RandomItem(CustomAgent customAgent)
+        private void RandomItem(CIF_Character customAgent)
         {
             List<String> listItems = new List<string>() { "gem", "gift", "item" };
 
@@ -868,7 +867,7 @@ namespace FriendlyLords
             return false;
         }
 
-        private void GenerateRandomTraitsForThisNPC(CustomAgent customAgent)
+        private void GenerateRandomTraitsForThisNPC(CIF_Character customAgent)
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
 
@@ -895,13 +894,13 @@ namespace FriendlyLords
             }
         }
 
-        private void SaveNewAgentsInfoToJSON(List<CustomAgent> customAgentsList)
+        private void SaveNewAgentsInfoToJSON(List<CIF_Character> customAgentsList)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
             RootJsonData myDeserializedClass = JsonConvert.DeserializeObject<RootJsonData>(json);
 
             List<CustomAgentJson> jsonlist = new List<CustomAgentJson>();
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 CustomAgentJson json1 = new CustomAgentJson(customAgent.Name, customAgent.Id, customAgent.TraitList, customAgent.ItemList);
                 jsonlist.Add(json1);
@@ -931,9 +930,9 @@ namespace FriendlyLords
             {
                 if (_settlement.Name == CurrentSettlement && _settlement.LocationWithId == CurrentLocation)
                 {
-                    CustomAgent customMain = customAgentsList.Find(c => c.selfAgent == Agent.Main);
+                    CIF_Character customMain = customAgentsList.Find(c => c.agentRef == Agent.Main);
 
-                    foreach (CustomAgent customAgent in customAgentsList)
+                    foreach (CIF_Character customAgent in customAgentsList)
                     {
                         CustomAgentJson _customAgentJson = _settlement.CustomAgentJsonList.Find(c => c.Name == customAgent.Name && c.Id == customAgent.Id);
                         if (_customAgentJson != null)
@@ -969,9 +968,9 @@ namespace FriendlyLords
             }
         }
 
-        private static void CheckInGameRelationBetweenHeroes(CustomAgent customMain, CustomAgent customAgent)
+        private static void CheckInGameRelationBetweenHeroes(CIF_Character customMain, CIF_Character customAgent)
         {
-            int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.selfAgent.Character);
+            int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.agentRef.Character);
             if (indexHero >= 0)
             {
                 Hero hero = Hero.AllAliveHeroes[indexHero];
@@ -988,7 +987,7 @@ namespace FriendlyLords
             }
         }
 
-        private static SocialNetworkBelief IfBeliefIsNullCreateANewOne(CustomAgent customMain, CustomAgent customAgent, SocialNetworkBelief belief)
+        private static SocialNetworkBelief IfBeliefIsNullCreateANewOne(CIF_Character customMain, CIF_Character customAgent, SocialNetworkBelief belief)
         {
             if (belief == null)
             {
@@ -1022,7 +1021,7 @@ namespace FriendlyLords
                 {
                     foreach (CustomAgentJson _customAgentJson in item.CustomAgentJsonList)
                     {
-                        CustomAgent x = customAgentsList.Find(c => c.Name == _customAgentJson.Name && c.Id == _customAgentJson.Id);
+                        CIF_Character x = customAgentsList.Find(c => c.Name == _customAgentJson.Name && c.Id == _customAgentJson.Id);
                         if (x != null)
                         {
                             _customAgentJson.TraitList = x.TraitList;
@@ -1065,7 +1064,7 @@ namespace FriendlyLords
         }
         private static bool resetVariables { get; set; }
 
-        public CustomAgent customCharacterReftoCampaignBehaviorBase { get; set; }
+        public CIF_Character customCharacterReftoCampaignBehaviorBase { get; set; }
         public int customCharacterIdRefCampaignBehaviorBase { get; set; }
 
         public SEs_Enum SocialExchange_E { get; set; }
@@ -1112,7 +1111,7 @@ namespace FriendlyLords
 
         private void DecreaseCountdownOnBattle(float dt)
         {
-            foreach (CustomAgent customAgent in customAgentsList)
+            foreach (CIF_Character customAgent in customAgentsList)
             {
                 if (customAgent.Message != "" && customAgent.SecsDelay(dt, customAgent.Countdown))
                 {
@@ -1141,7 +1140,7 @@ namespace FriendlyLords
             }
 
             int index = rnd.Next(customAgentsList.Count);
-            CustomAgent customAgent = customAgentsList[index];
+            CIF_Character customAgent = customAgentsList[index];
 
             if (!CustomAgentInsideRangeFromPlayer(customAgent))
             {
@@ -1151,7 +1150,7 @@ namespace FriendlyLords
             CheckIfAgentIsAvailableToSpeak(customAgent);
         }
 
-        private void CheckIfAgentIsAvailableToSpeak(CustomAgent customAgent)
+        private void CheckIfAgentIsAvailableToSpeak(CIF_Character customAgent)
         {
             if (customAgent.IsDead)
             {
@@ -1192,7 +1191,7 @@ namespace FriendlyLords
 
         private void CheckDeadAgentForThisTeam(Team team, bool IsPlayerTeam, int auxInt = 0)
         {
-            CustomAgent customAgentHelper;
+            CIF_Character customAgentHelper;
             int index;
             for (int i = 0; i < team.TeamAgents.Count; i++)
             {
@@ -1219,7 +1218,7 @@ namespace FriendlyLords
             }
         }
 
-        private void NormalizeSpeakers(CustomAgent customAgentHelper)
+        private void NormalizeSpeakers(CIF_Character customAgentHelper)
         {
             if (customAgentHelper.Message != "")
             {
@@ -1236,7 +1235,7 @@ namespace FriendlyLords
             }
         }
 
-        private void GetBattleSentences(CustomAgent customAgent, bool isPlayerTeam, Random rnd)
+        private void GetBattleSentences(CIF_Character customAgent, bool isPlayerTeam, Random rnd)
         {
             foreach (Team team in Mission.Current.Teams)
             {
@@ -1300,7 +1299,7 @@ namespace FriendlyLords
             }        
         }
 
-        private void GetBattleSingleSentence(CustomAgent customAgent, BattleDictionary key, Random rnd)
+        private void GetBattleSingleSentence(CIF_Character customAgent, BattleDictionary key, Random rnd)
         {
             battleDictionarySentences.TryGetValue(key, out List<string> BattleSentences);
 
@@ -1335,7 +1334,7 @@ namespace FriendlyLords
             initialTeamPlayerPower = -1;
             initialTeamOpponentPower = -1;
             rnd = new Random();
-            customAgentsList = new List<CustomAgent>();
+            customAgentsList = new List<CIF_Character>();
             battleDictionarySentences = new Dictionary<BattleDictionary, List<string>>();
 
             string json = ReadJsonDialogs("/battle_conversations.json");
@@ -1375,35 +1374,35 @@ namespace FriendlyLords
         private float teamPlayerPower { get; set; }
         private float teamOpponentPower { get; set; }
 
-        public Dictionary<Enum, CustomAgent.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CustomAgent.Intentions>()
+        public Dictionary<Enum, CIF_Character.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CIF_Character.Intentions>()
         {
-            { SocialExchangeSE.IntentionEnum.Undefined, CustomAgent.Intentions.Undefined  },
-            { SocialExchangeSE.IntentionEnum.Positive , CustomAgent.Intentions.Friendly   },
-            { SocialExchangeSE.IntentionEnum.Negative , CustomAgent.Intentions.Unfriendly },
-            { SocialExchangeSE.IntentionEnum.Romantic , CustomAgent.Intentions.Romantic   },
-            { SocialExchangeSE.IntentionEnum.Hostile  , CustomAgent.Intentions.Hostile    },
-            { SocialExchangeSE.IntentionEnum.Special  , CustomAgent.Intentions.Special    }
+            { CIF_SocialExchange.IntentionEnum.Undefined, CIF_Character.Intentions.Undefined  },
+            { CIF_SocialExchange.IntentionEnum.Positive , CIF_Character.Intentions.Friendly   },
+            { CIF_SocialExchange.IntentionEnum.Negative , CIF_Character.Intentions.Unfriendly },
+            { CIF_SocialExchange.IntentionEnum.Romantic , CIF_Character.Intentions.Romantic   },
+            { CIF_SocialExchange.IntentionEnum.Hostile  , CIF_Character.Intentions.Hostile    },
+            { CIF_SocialExchange.IntentionEnum.Special  , CIF_Character.Intentions.Special    }
         };
 
         #endregion
 
-        private bool CustomAgentIsNearToPlayer(CustomAgent customAgent)
+        private bool CustomAgentIsNearToPlayer(CIF_Character customAgent)
         {
-            if (customAgent == null || customAgent.selfAgent == null)
+            if (customAgent == null || customAgent.agentRef == null)
             {
                 return false;
             }
             else
             {
-                return Agent.Main.Position.Distance(customAgent.selfAgent.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.selfAgent, 0);
+                return Agent.Main.Position.Distance(customAgent.agentRef.Position) < 3 && Agent.Main.CanInteractWithAgent(customAgent.agentRef, 0);
             }
         }
 
-        private bool CustomAgentInsideRangeFromPlayer(CustomAgent customAgent)
+        private bool CustomAgentInsideRangeFromPlayer(CIF_Character customAgent)
         {
             if (Agent.Main != null)
             {
-                if (Agent.Main.Position.Distance(customAgent.selfAgent.Position) <= CIF_Range)
+                if (Agent.Main.Position.Distance(customAgent.agentRef.Position) <= CIF_Range)
                 {
                     customAgent.RunAI = true;
                     return true;
@@ -1420,11 +1419,11 @@ namespace FriendlyLords
 
         private void AddAgentTarget(Agent agent, int id)
         {
-            if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CustomMissionNameMarkerTargetVM t) => t.TargetAgent == agent))
+            if (agent != Agent.Main && agent.Character != null && agent.IsActive() && !this.Targets.Any((CIFManagerTarget t) => t.TargetAgent == agent))
             {
                 if (agent.IsHuman)
                 {
-                    CustomMissionNameMarkerTargetVM item = new CustomMissionNameMarkerTargetVM(agent, id);
+                    CIFManagerTarget item = new CIFManagerTarget(agent, id);
                     this.Targets.Add(item);
                     return;
                 }
@@ -1441,7 +1440,7 @@ namespace FriendlyLords
 
         private void UpdateTargetScreenPositions()
         {
-            foreach (CustomMissionNameMarkerTargetVM missionNameMarkerTargetVM in this.Targets)
+            foreach (CIFManagerTarget missionNameMarkerTargetVM in this.Targets)
             {
                 float a = -100f;
                 float b = -100f;
@@ -1463,7 +1462,7 @@ namespace FriendlyLords
 
         private void UpdateTargetStates(bool state)
         {
-            foreach (CustomMissionNameMarkerTargetVM missionNameMarkerTargetVM in this.Targets)
+            foreach (CIFManagerTarget missionNameMarkerTargetVM in this.Targets)
             {
                 missionNameMarkerTargetVM.IsEnabled = state;
             }
@@ -1471,9 +1470,9 @@ namespace FriendlyLords
 
         public void EnableDataSource()
         {
-            foreach (CustomMissionNameMarkerTargetVM item in this.Targets)
+            foreach (CIFManagerTarget item in this.Targets)
             {
-                CustomAgent customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.Id);
+                CIF_Character customAgent = customAgentsList.Find(c => c.Name == item.Name && c.Id == item.Id);
 
                 if (customAgent != null)
                 {
@@ -1492,7 +1491,7 @@ namespace FriendlyLords
         }
 
         [DataSourceProperty]
-        public MBBindingList<CustomMissionNameMarkerTargetVM> Targets
+        public MBBindingList<CIFManagerTarget> Targets
         {
             get { return this._targets; }
             set
@@ -1531,13 +1530,13 @@ namespace FriendlyLords
         private bool _secondTick = true;
         private readonly Mission _mission;
         private Vec3 _heightOffset = new Vec3(0f, 0f, 2f, -1f);
-        private readonly CustomMissionNameMarkerVM.MarkerDistanceComparer _distanceComparer;
-        private MBBindingList<CustomMissionNameMarkerTargetVM> _targets;
+        private readonly CIFManager.MarkerDistanceComparer _distanceComparer;
+        private MBBindingList<CIFManagerTarget> _targets;
         private bool _isEnabled;
 
-        private class MarkerDistanceComparer : IComparer<CustomMissionNameMarkerTargetVM>
+        private class MarkerDistanceComparer : IComparer<CIFManagerTarget>
         {
-            public int Compare(CustomMissionNameMarkerTargetVM x, CustomMissionNameMarkerTargetVM y)
+            public int Compare(CIFManagerTarget x, CIFManagerTarget y)
             {
                 return y.Distance.CompareTo(x.Distance);
             }

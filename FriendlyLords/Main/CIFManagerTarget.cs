@@ -4,7 +4,7 @@ using TaleWorlds.MountAndBlade;
 
 namespace FriendlyLords
 {
-    public class CustomMissionNameMarkerTargetVM : ViewModel
+    public class CIFManagerTarget : ViewModel
     {
         public bool IsMovingTarget { get; }
         public Agent TargetAgent { get; }
@@ -30,7 +30,7 @@ namespace FriendlyLords
             }
         }
 
-        public CustomMissionNameMarkerTargetVM(Agent agent, int id = -1)
+        public CIFManagerTarget(Agent agent, int id = -1)
         {
             this.Id = id;
             this.Message = "";

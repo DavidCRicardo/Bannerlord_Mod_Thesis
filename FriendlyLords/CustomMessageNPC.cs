@@ -6,7 +6,7 @@ namespace FriendlyLords
 {
     class CustomMessageNPC
     {
-        public CustomMessageNPC(SocialExchangeSE se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation, float receiverVolition = 0)
+        public CustomMessageNPC(CIF_SocialExchange se, Random rnd, bool _isInitiator, CultureCode culture, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation, float receiverVolition = 0)
         {
             SE = se;
             Rnd = rnd;
@@ -55,7 +55,7 @@ namespace FriendlyLords
             IsAccepted = (ReceiverVolition > 0) ? true : false;
         }
 
-        private SocialExchangeSE SE { get; }
+        private CIF_SocialExchange SE { get; }
         private string Message { get; set; }
         private Random Rnd { get; set; }
         private bool IsInitiator { get; }
@@ -67,7 +67,7 @@ namespace FriendlyLords
         private CultureCode CurrentCulture { get; set; }
         private string CurrentLocation { get; set; }
 
-        private string GetAMessage(SocialExchangeSE SE, CultureCode culture, string id, Random rnd)
+        private string GetAMessage(CIF_SocialExchange SE, CultureCode culture, string id, Random rnd)
         {
             if (culture == CultureCode.Invalid)
             {

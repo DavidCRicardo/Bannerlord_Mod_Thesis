@@ -41,7 +41,7 @@ namespace FriendlyLords
         {
             base.OnMissionBehaviourInitialize(mission);
 
-            mission.MissionBehaviours.Add(new CustomMissionGauntletNameMarker(CBBref, mission));           
+            mission.MissionBehaviours.Add(new CIFDialogMarker(CBBref, mission));           
         }
     }
 }

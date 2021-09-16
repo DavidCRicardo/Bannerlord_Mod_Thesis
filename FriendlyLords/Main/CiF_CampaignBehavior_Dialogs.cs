@@ -151,8 +151,8 @@ namespace FriendlyLords
             return rnd.Next(1, 5);
         }
 
-        public CustomAgent customAgentConversation { get; set; }
-        public CustomAgent characterRefWithDesireToPlayer { get; set; }
+        public CIF_Character customAgentConversation { get; set; }
+        public CIF_Character characterRefWithDesireToPlayer { get; set; }
         public int characterIdRefWithDesireToPlayer { get; set; }
 
         private bool ThisAgentWillInteractWithPlayer()
@@ -162,7 +162,7 @@ namespace FriendlyLords
                 if (customAgents != null)
                 {
                     customAgentConversation = customAgents.Find(c => c == characterRefWithDesireToPlayer && c.Id == characterIdRefWithDesireToPlayer);
-                    if (customAgentConversation != null && CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.selfAgent.Character)
+                    if (customAgentConversation != null && CharacterObject.OneToOneConversationCharacter == characterRefWithDesireToPlayer.agentRef.Character)
                     {
                         return true;
                     }
@@ -294,7 +294,7 @@ namespace FriendlyLords
 
         private void PlayerGivesItem()
         {
-            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+            CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
             Item item = customMainAgent.GetItem();
             customAgentConversation.AddItem(item.itemName, item.quantity);
             customMainAgent.RemoveItem(item.itemName, item.quantity);
@@ -312,7 +312,7 @@ namespace FriendlyLords
             HaveAChildInitialMovePerformed = true;
         }
 
-        public List<CustomAgent> customAgents;
+        public List<CIF_Character> customAgents;
 
         private bool CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition()
         {
@@ -330,15 +330,15 @@ namespace FriendlyLords
 
                     if (_currentLocation != "arena" )
                     {
-                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                         if (customAgentConversation != null)
                         {
-                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Friendly);
+                            bool available = CheckIfIsAvailable(CIF_Character.Intentions.Friendly);
                             if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
@@ -375,15 +375,15 @@ namespace FriendlyLords
 
                     if (_currentLocation != "arena")
                     {
-                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                         if (customAgentConversation != null)
                         {
-                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Unfriendly);
+                            bool available = CheckIfIsAvailable(CIF_Character.Intentions.Unfriendly);
                             if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief == null || belief.relationship == "Friends")
                                 {
@@ -404,7 +404,7 @@ namespace FriendlyLords
             return false;
         }
 
-        private bool CheckIfIsAvailable(CustomAgent.Intentions intention)
+        private bool CheckIfIsAvailable(CIF_Character.Intentions intention)
         {
             customAgentConversation.keyValuePairsSEs.TryGetValue(intention, out bool value);
             return value;
@@ -425,15 +425,15 @@ namespace FriendlyLords
 
                 if (_currentLocation != "arena" )
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (customAgentConversation != null && customAgentConversation.selfAgent.Age > 18)
+                    if (customAgentConversation != null && customAgentConversation.agentRef.Age > 18)
                     {
-                        bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                        bool available = CheckIfIsAvailable(CIF_Character.Intentions.Special);
                         if (!available)
                         {
                             customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                            CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                            CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                             SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
 
                             if (belief != null && belief.relationship == "Dating")
@@ -468,15 +468,15 @@ namespace FriendlyLords
 
                     if (_currentLocation != "arena")
                     {
-                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                         if (customAgentConversation != null)
                         {
-                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Romantic);
+                            bool available = CheckIfIsAvailable(CIF_Character.Intentions.Romantic);
                             if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
@@ -513,15 +513,15 @@ namespace FriendlyLords
 
                     if (_currentLocation != "arena")
                     {
-                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                        customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                         if (customAgentConversation != null)
                         {
-                            bool available = CheckIfIsAvailable(CustomAgent.Intentions.Hostile);
+                            bool available = CheckIfIsAvailable(CIF_Character.Intentions.Hostile);
                             if (!available)
                             {
                                 customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                                CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                                CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                                 SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                                 if (belief != null && belief.relationship == "Dating")
                                 {
@@ -554,15 +554,15 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                 if (customAgentConversation != null)
                 {
-                    bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                    bool available = CheckIfIsAvailable(CIF_Character.Intentions.Special);
                     if (!available)
                     {
                         customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                         SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                         if (belief != null && belief.relationship == "Dating" && belief.value <= 0)
                         {
@@ -587,15 +587,15 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                 if (customAgentConversation != null)
                 {
-                    bool available = CheckIfIsAvailable(CustomAgent.Intentions.Special);
+                    bool available = CheckIfIsAvailable(CIF_Character.Intentions.Special);
                     if (!available)
                     {
                         customAgentConversation.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
                         SocialNetworkBelief belief = customMainAgent.SelfGetBeliefWithAgent(customAgentConversation);
                         if (belief != null && belief.relationship == "Friends")
                         {
@@ -623,7 +623,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                 if (customAgentConversation != null)
                 {
@@ -656,11 +656,11 @@ namespace FriendlyLords
             return false;
         }
 
-        private bool NPC_Gender_condition(CustomAgent customAgentConversation)
+        private bool NPC_Gender_condition(CIF_Character customAgentConversation)
         {
-            if (Agent.Main.IsFemale || customAgentConversation.selfAgent.IsFemale)
+            if (Agent.Main.IsFemale || customAgentConversation.agentRef.IsFemale)
             {
-                if (Agent.Main.IsFemale && customAgentConversation.selfAgent.IsFemale)
+                if (Agent.Main.IsFemale && customAgentConversation.agentRef.IsFemale)
                 {
                     return false;
                 }
@@ -684,12 +684,12 @@ namespace FriendlyLords
 
                 if (_currentLocation != "arena")
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
                     if (customAgentConversation != null)
                     {
                         Hero hero = Hero.OneToOneConversationHero;
-                        CustomAgent customMainAgent = customAgents.Find(c => c.selfAgent == Agent.Main);
+                        CIF_Character customMainAgent = customAgents.Find(c => c.agentRef == Agent.Main);
 
                         if (hero != null && hero.IsPlayerCompanion && !customMainAgent.ItemList.IsEmpty())
                         {
@@ -714,9 +714,9 @@ namespace FriendlyLords
 
                 if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)
                 {
-                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.selfAgent.Character == CharacterObject.OneToOneConversationCharacter);
+                    customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.agentRef.Character == CharacterObject.OneToOneConversationCharacter);
 
-                    if (customAgentConversation != null && customAgentConversation.customAgentTarget != null && customAgentConversation.customAgentTarget.selfAgent == Agent.Main)
+                    if (customAgentConversation != null && customAgentConversation.customAgentTarget != null && customAgentConversation.customAgentTarget.agentRef == Agent.Main)
                     {
                         Hero hero = Hero.OneToOneConversationHero;
 

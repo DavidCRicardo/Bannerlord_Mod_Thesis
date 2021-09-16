@@ -3,13 +3,13 @@ namespace FriendlyLords
 {
     public class mostWantedSE
     {
-        public mostWantedSE(CustomAgent _customAgent, NextSE _nextSE)
+        public mostWantedSE(CIF_Character _customAgent, NextSE _nextSE)
         {
             customAgent = _customAgent;
             nextSE = _nextSE;
         }
 
-        public CustomAgent customAgent;
+        public CIF_Character customAgent;
         public NextSE nextSE;
     }
 }

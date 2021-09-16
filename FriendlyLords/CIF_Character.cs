@@ -7,15 +7,14 @@ using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
-using TaleWorlds.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
 namespace FriendlyLords
 {
-    public class CustomAgent : CampaignBehaviorBase
+    public class CIF_Character : CampaignBehaviorBase
     {
-        public Agent selfAgent; 
+        public Agent agentRef; 
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -23,17 +22,17 @@ namespace FriendlyLords
         public List<CultureCode> CulturesFriendly { get; private set; }
         public List<CultureCode> CulturesUnFriendly { get; private set; }
 
-        public CustomAgent customAgentTarget;
+        public CIF_Character customAgentTarget;
         public int IdTarget { get; set; }
 
         public string[] FullMessage { get; set; } 
         public string Message { get; set; } 
         public bool SE_Accepted { get; set; }
         public int SEVolition { get; set; }
-        public List<CustomAgent> CustomAgentsList { get; set; }
+        public List<CIF_Character> CustomAgentsList { get; set; }
 
         public List<mostWantedSE> mostWantedSEList { get; set; }
-        public SocialExchangeSE socialExchangeSE { get; set; }
+        public CIF_SocialExchange socialExchangeSE { get; set; }
 
         public List<Trait> TraitList { get; set; }
         public List<Status> StatusList { get; set; }
@@ -65,11 +64,11 @@ namespace FriendlyLords
         public enum Intentions { Undefined, Friendly, Unfriendly, Romantic, Hostile, Special }
         public Dictionary<Intentions, bool> keyValuePairsSEs { get; set; }
 
-        public CustomMissionNameMarkerVM.SEs_Enum SocialMove_SE { get; set; }
+        public CIFManager.SEs_Enum SocialMove_SE { get; set; }
 
-        public CustomAgent(Agent _agent, int _id, List<string> _statusList = null, CustomMissionNameMarkerVM.SEs_Enum se_enum = default, float _NPCCountdownMultiplier = 1)
+        public CIF_Character(Agent _agent, int _id, List<string> _statusList = null, CIFManager.SEs_Enum se_enum = default, float _NPCCountdownMultiplier = 1)
         {
-            this.selfAgent = _agent;
+            this.agentRef = _agent;
             this.Name = _agent.Name;
             this.Id = _id;
 
@@ -81,7 +80,7 @@ namespace FriendlyLords
             this.Message = "";
             this.SocialMove_SE = se_enum;
 
-            this.CustomAgentsList = new List<CustomAgent>();
+            this.CustomAgentsList = new List<CIF_Character>();
 
             this.TraitList = new List<Trait>();
             this.SocialNetworkBeliefs = new List<SocialNetworkBelief>();
@@ -216,7 +215,7 @@ namespace FriendlyLords
         public override void RegisterEvents() { }
         public override void SyncData(IDataStore dataStore) { }
 
-        public void StartSE(CustomMissionNameMarkerVM.SEs_Enum _seEnum, CustomAgent _Receiver)
+        public void StartSE(CIFManager.SEs_Enum _seEnum, CIF_Character _Receiver)
         {
             //CompanionDebug();
 
@@ -236,9 +235,9 @@ namespace FriendlyLords
         {
             foreach (Hero hero in Clan.PlayerClan.Companions)
             {
-                if (selfAgent.Character == hero.CharacterObject)
+                if (agentRef.Character == hero.CharacterObject)
                 {
-                    DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                    DailyBehaviorGroup behaviorGroup = agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
 
                     var behavior = behaviorGroup.GetBehavior<FollowAgentBehavior>();
                     if (behavior != null)
@@ -272,10 +271,10 @@ namespace FriendlyLords
         {
             if (this.Name != Agent.Main.Name && this.customAgentTarget != null)
             {
-                if (this.selfAgent.Position.Distance(this.customAgentTarget.selfAgent.Position) < 3)
+                if (this.agentRef.Position.Distance(this.customAgentTarget.agentRef.Position) < 3)
                 {
                     /* Social Exchange */
-                    socialExchangeSE = new SocialExchangeSE(SocialMove_SE, this, CustomAgentsList);
+                    socialExchangeSE = new CIF_SocialExchange(SocialMove_SE, this, CustomAgentsList);
                     socialExchangeSE.OnInitialize(rnd);
 
                     if (socialExchangeSE.ReceptorIsPlayer)
@@ -347,7 +346,7 @@ namespace FriendlyLords
             EnoughRest = false;
         }
 
-        public void AgentGetMessage(bool _isInitiator, CustomAgent customAgentInitiator, CustomAgent customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
+        public void AgentGetMessage(bool _isInitiator, CIF_Character customAgentInitiator, CIF_Character customAgentReceptor, Random rnd, int _index, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> _dialogsDictionary, string _CurrentLocation)
         {
             if (_isInitiator)
             {
@@ -375,7 +374,7 @@ namespace FriendlyLords
             MessageBuilderCheck(customAgentInitiator);
         }
 
-        private void MessageBuilderCheck(CustomAgent customAgentInitiator)
+        private void MessageBuilderCheck(CIF_Character customAgentInitiator)
         {
             if (Message.Contains("{PERSON}"))
             {
@@ -387,7 +386,7 @@ namespace FriendlyLords
             if (Message.Contains("{PARTNER}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
-                if (customAgentInitiator.selfAgent.IsFemale)
+                if (customAgentInitiator.agentRef.IsFemale)
                 {
                     builder.Replace("{PARTNER}", "husband");
                 }
@@ -401,7 +400,7 @@ namespace FriendlyLords
             if (Message.Contains("{GENDER}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
-                if (customAgentInitiator.customAgentTarget.selfAgent.IsFemale)
+                if (customAgentInitiator.customAgentTarget.agentRef.IsFemale)
                 {
                     builder.Replace("{GENDER}", "she");
                 }
@@ -427,7 +426,7 @@ namespace FriendlyLords
             }
         }
 
-        public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CustomAgent _customAgent)
+        public void UpdateBeliefWithPlayer(SocialNetworkBelief _belief, bool FromCampaing, CIF_Character _customAgent)
         {
             if (FromCampaing)
             {
@@ -483,9 +482,9 @@ namespace FriendlyLords
         internal void AbortSocialExchange()
         {
             IsInitiator = false;
-            SocialMove_SE = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
+            SocialMove_SE = CIFManager.SEs_Enum.Undefined;
 
-            if (selfAgent != Agent.Main)
+            if (agentRef != Agent.Main)
             {
                 EndFollowBehavior();
             }
@@ -523,10 +522,10 @@ namespace FriendlyLords
 
         public bool StartingASocialExchange;
 
-        public CustomAgent GetCustomAgentByName(string _name, int _id)
+        public CIF_Character GetCustomAgentByName(string _name, int _id)
         {
-            CustomAgent customAgent = null;
-            foreach (CustomAgent item in CustomAgentsList)
+            CIF_Character customAgent = null;
+            foreach (CIF_Character item in CustomAgentsList)
             {
                 if (item.Name == _name && item.Id == _id)
                 {
@@ -552,7 +551,7 @@ namespace FriendlyLords
             customAgentTarget = GetCustomAgentByName(_targetName, _id);
             IdTarget = _id;
 
-            StartFollowBehavior(selfAgent, customAgentTarget.selfAgent);
+            StartFollowBehavior(agentRef, customAgentTarget.agentRef);
         }
 
         public void StartFollowBehavior(Agent _agent, Agent _agentTarget)
@@ -571,16 +570,16 @@ namespace FriendlyLords
 
         public void EndFollowBehavior()
         {
-            if (selfAgent != Agent.Main)
+            if (agentRef != Agent.Main)
             {
-                selfAgent.ResetLookAgent();
+                agentRef.ResetLookAgent();
 
-                if (selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
+                if (agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator == null)
                 {
                     return;
                 }
 
-                DailyBehaviorGroup behaviorGroup = selfAgent.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
+                DailyBehaviorGroup behaviorGroup = agentRef.GetComponent<CampaignAgentComponent>().AgentNavigator.GetBehaviorGroup<DailyBehaviorGroup>();
                 behaviorGroup.RemoveBehavior<FollowAgentBehavior>();
             }
         }
@@ -657,7 +656,7 @@ namespace FriendlyLords
         }
 
         //Get Belief from itself with other
-        public SocialNetworkBelief SelfGetBeliefWithAgent(CustomAgent _otherCustomAgent)
+        public SocialNetworkBelief SelfGetBeliefWithAgent(CIF_Character _otherCustomAgent)
         {
             if (SocialNetworkBeliefs == null)
             {
@@ -678,7 +677,7 @@ namespace FriendlyLords
         }
 
         //Get Belief between 2 other NPCs
-        public SocialNetworkBelief GetBeliefBetween(CustomAgent customAgent1, CustomAgent customAgent2)
+        public SocialNetworkBelief GetBeliefBetween(CIF_Character customAgent1, CIF_Character customAgent2)
         {
             return this.SocialNetworkBeliefs.Find(belief
                 => belief.agents.Contains(customAgent1.Name)
@@ -688,7 +687,7 @@ namespace FriendlyLords
                 );
         }
 
-        public int CheckHowManyTheAgentIsDating(CustomAgent customAgent)
+        public int CheckHowManyTheAgentIsDating(CIF_Character customAgent)
         {
             return customAgent.SocialNetworkBeliefs.Count(
                 belief => belief.relationship == "Dating"
@@ -800,11 +799,11 @@ namespace FriendlyLords
         #region /* Play Animation / Stop Animation */
         public void PlayAnimation(string _animation)
         {
-            selfAgent.SetActionChannel(0, ActionIndexCache.Create(_animation), true);
+            agentRef.SetActionChannel(0, ActionIndexCache.Create(_animation), true);
         }
         public void StopAnimation()
         {
-            selfAgent.SetActionChannel(0, ActionIndexCache.act_none, true);
+            agentRef.SetActionChannel(0, ActionIndexCache.act_none, true);
         }
         #endregion
 

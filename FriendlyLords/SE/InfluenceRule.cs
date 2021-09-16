@@ -9,7 +9,7 @@ namespace FriendlyLords
 {
     class InfluenceRule
     {
-        public InfluenceRule(CustomAgent c1, CustomAgent c2, bool reacting, int initialValue = 0)
+        public InfluenceRule(CIF_Character c1, CIF_Character c2, bool reacting, int initialValue = 0)
         {
             Initiator = c1;
             Receiver = c2;
@@ -23,27 +23,27 @@ namespace FriendlyLords
 
             switch (SE_Enum_Name)
             {
-                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
+                case CIFManager.SEs_Enum.Compliment:
                     return RunRules(Dictionary, true, false, true, false, false, false, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
+                case CIFManager.SEs_Enum.GiveGift:
                     return RunRules(Dictionary, true, true, true, false, false, false, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                case CIFManager.SEs_Enum.Jealous:
                     return RunRules(Dictionary, false, false, true, false, false, false, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                case CIFManager.SEs_Enum.FriendSabotage:
                     return RunRules(Dictionary, false, false, false, false, false, false, true, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                case CIFManager.SEs_Enum.Flirt:
                     return RunRules(Dictionary, true, false, false, true, true, true, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                case CIFManager.SEs_Enum.Bully:
                     return RunRules(Dictionary, false, false, true, true, false, false, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                case CIFManager.SEs_Enum.RomanticSabotage:
                     return RunRules(Dictionary, false, false, false, false, false, false, false, false, true);
-                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                case CIFManager.SEs_Enum.AskOut:
                     return RunRules(Dictionary, true, false, true, false, true, true, false, false, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                case CIFManager.SEs_Enum.Break:
                     return RunRules(Dictionary, false, false, false, true, false, false, false, true, false);
-                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
+                case CIFManager.SEs_Enum.Admiration:
                     return RunRules(Dictionary, true, false, false, false, false, false, false, false, true);
-                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
+                case CIFManager.SEs_Enum.HaveAChild:
                     return -100;
                 default: 
                     return 0;
@@ -51,7 +51,7 @@ namespace FriendlyLords
         }
 
 
-        private int RunRules(Dictionary<String, Func<CustomAgent, int>> Dictionary, bool IsPositiveOrRomanticSE, bool NeedsItem,
+        private int RunRules(Dictionary<String, Func<CIF_Character, int>> Dictionary, bool IsPositiveOrRomanticSE, bool NeedsItem,
              bool NeedsToBeFriendsOrNull, bool NeedsToBeDating, bool MustHaveDifferentGenderBool, bool NeedsToBeOlderThan18,
              bool GetNPCToSabotageBool, bool BreakUpRuleBool, bool NeedsTriggerRule)
         {
@@ -65,7 +65,7 @@ namespace FriendlyLords
             {
                 sum += Initiator.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    Func<CustomAgent, int> TraitFunc;
+                    Func<CIF_Character, int> TraitFunc;
                     if (Dictionary.TryGetValue(t.traitName, out TraitFunc))
                     {
                         acc += TraitFunc(Initiator);
@@ -78,7 +78,7 @@ namespace FriendlyLords
             {
                 sum += Receiver.TraitList.AsParallel().Aggregate(InitialValue, (acc, t) =>
                 {
-                    Func<CustomAgent, int> TraitFunc;
+                    Func<CIF_Character, int> TraitFunc;
                     if (Dictionary.TryGetValue(t.traitName, out TraitFunc))
                     {
                         acc += TraitFunc(Receiver);
@@ -146,10 +146,10 @@ namespace FriendlyLords
 
             if (!Initiator.ItemList.IsEmpty())
             {
-                if (Initiator.selfAgent.IsHero)
+                if (Initiator.agentRef.IsHero)
                 {
                     Hero hero = Hero.FindFirst(h => h.Name.ToString() == Initiator.Name);
-                    if (hero != null && hero.IsPlayerCompanion && Receiver.selfAgent == Agent.Main && Initiator.ItemList.Count > 0)
+                    if (hero != null && hero.IsPlayerCompanion && Receiver.agentRef == Agent.Main && Initiator.ItemList.Count > 0)
                     {
                         localSum += 2; // se for companion, só incrementar se o receiver for o player
                     }
@@ -191,9 +191,9 @@ namespace FriendlyLords
         // different genders
         private int MustHaveDifferentGender()
         {
-            if ((Initiator.selfAgent.IsFemale && Receiver.selfAgent.IsFemale)
+            if ((Initiator.agentRef.IsFemale && Receiver.agentRef.IsFemale)
                  ||
-                (!Initiator.selfAgent.IsFemale && !Receiver.selfAgent.IsFemale))
+                (!Initiator.agentRef.IsFemale && !Receiver.agentRef.IsFemale))
             {
                 return -100;
             }
@@ -252,7 +252,7 @@ namespace FriendlyLords
             }
         }
 
-        private int CheckCulturesRelationships(CustomAgent agent, CustomAgent otherAgent, bool IsPositiveOrRomanticSE)
+        private int CheckCulturesRelationships(CIF_Character agent, CIF_Character otherAgent, bool IsPositiveOrRomanticSE)
         {
             int localsum = 0;
             bool auxBool = false;
@@ -292,7 +292,7 @@ namespace FriendlyLords
             return localsum;
         }
 
-        private int CheckStatus(CustomAgent customAgent)
+        private int CheckStatus(CIF_Character customAgent)
         {
             int localSum = 0;
 
@@ -312,7 +312,7 @@ namespace FriendlyLords
 
             /* SocialTalk Status */
             status = CheckStatusIntensity(customAgent, "SocialTalk");
-            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive)
+            if (RelationIntention == CIF_SocialExchange.IntentionEnum.Positive)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -330,7 +330,7 @@ namespace FriendlyLords
 
             /* Anger Status */
             status = CheckStatusIntensity(customAgent, "Anger");
-            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive || RelationIntention == SocialExchangeSE.IntentionEnum.Romantic)
+            if (RelationIntention == CIF_SocialExchange.IntentionEnum.Positive || RelationIntention == CIF_SocialExchange.IntentionEnum.Romantic)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -345,7 +345,7 @@ namespace FriendlyLords
                     localSum -= 6;
                 }
             }
-            else if (RelationIntention == SocialExchangeSE.IntentionEnum.Negative || RelationIntention == SocialExchangeSE.IntentionEnum.Hostile)
+            else if (RelationIntention == CIF_SocialExchange.IntentionEnum.Negative || RelationIntention == CIF_SocialExchange.IntentionEnum.Hostile)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -362,7 +362,7 @@ namespace FriendlyLords
             }
 
             status = CheckStatusIntensity(customAgent, "BullyNeed");
-            if (RelationIntention == SocialExchangeSE.IntentionEnum.Positive || RelationIntention == SocialExchangeSE.IntentionEnum.Romantic)
+            if (RelationIntention == CIF_SocialExchange.IntentionEnum.Positive || RelationIntention == CIF_SocialExchange.IntentionEnum.Romantic)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -377,7 +377,7 @@ namespace FriendlyLords
                     localSum -= 10;
                 }
             }
-            else if (RelationIntention == SocialExchangeSE.IntentionEnum.Hostile)
+            else if (RelationIntention == CIF_SocialExchange.IntentionEnum.Hostile)
             {
                 if (status.intensity > 0.5 && status.intensity < 1.5)
                 {
@@ -396,7 +396,7 @@ namespace FriendlyLords
             return localSum;
         }
 
-        private int CheckFaithful(CustomAgent customAgent, CustomAgent otherAgent)
+        private int CheckFaithful(CIF_Character customAgent, CIF_Character otherAgent)
         {
             SocialNetworkBelief belief = customAgent.SocialNetworkBeliefs.Find(b => b.relationship == "Dating");
             if (belief != null)
@@ -423,12 +423,12 @@ namespace FriendlyLords
             }
         }
 
-        private Status CheckStatusIntensity(CustomAgent customAgent, string statusName)
+        private Status CheckStatusIntensity(CIF_Character customAgent, string statusName)
         {
             return customAgent.StatusList.Find(s => s.Name == statusName);
         }
 
-        public int GetValueParticipantsRelation(CustomAgent agentWhoWillCheck, CustomAgent agentChecked)
+        public int GetValueParticipantsRelation(CIF_Character agentWhoWillCheck, CIF_Character agentChecked)
         {
             SocialNetworkBelief belief = agentWhoWillCheck.SelfGetBeliefWithAgent(agentChecked); // Relation between the Initiator and the Receiver
             if (belief != null)
@@ -439,7 +439,7 @@ namespace FriendlyLords
             return 0;
         }
 
-        public int CheckInitiatorTriggerRules(CustomAgent agentInitiator, CustomAgent agentReceiver, string relationName)
+        public int CheckInitiatorTriggerRules(CIF_Character agentInitiator, CIF_Character agentReceiver, string relationName)
         {
             if (!agentInitiator.TriggerRuleList.IsEmpty())
             {
@@ -459,9 +459,9 @@ namespace FriendlyLords
         public int CheckInitiatorAge()
         {
             if (
-                (Initiator.selfAgent.Age < 18 && Receiver.selfAgent.Age > 18)
+                (Initiator.agentRef.Age < 18 && Receiver.agentRef.Age > 18)
                 ||
-                (Initiator.selfAgent.Age > 18 && Receiver.selfAgent.Age < 18)
+                (Initiator.agentRef.Age > 18 && Receiver.agentRef.Age < 18)
                 )
             {
                 return -100;
@@ -470,21 +470,21 @@ namespace FriendlyLords
             return 0;
         }
 
-        public CustomAgent Initiator { get; }
-        public CustomAgent Receiver { get; }
+        public CIF_Character Initiator { get; }
+        public CIF_Character Receiver { get; }
         public bool IsReacting { get; set; }
         public int InitialValue { get; set; }
-        public SocialExchangeSE.IntentionEnum RelationIntention { get; set; }
-        public CustomMissionNameMarkerVM.SEs_Enum SE_Enum_Name { get; internal set; }
+        public CIF_SocialExchange.IntentionEnum RelationIntention { get; set; }
+        public CIFManager.SEs_Enum SE_Enum_Name { get; internal set; }
 
-        public Dictionary<String, Func<CustomAgent, int>> TraitFunc_Dictionary = new Dictionary<String, Func<CustomAgent, int>>();
-        public Dictionary<String, Func<CustomAgent, int>> GetDictionaryToCheckTraitsValues(SocialExchangeSE.IntentionEnum intention)
+        public Dictionary<String, Func<CIF_Character, int>> TraitFunc_Dictionary = new Dictionary<String, Func<CIF_Character, int>>();
+        public Dictionary<String, Func<CIF_Character, int>> GetDictionaryToCheckTraitsValues(CIF_SocialExchange.IntentionEnum intention)
         {
             switch (intention)
             {
-                case SocialExchangeSE.IntentionEnum.Positive:
-                case SocialExchangeSE.IntentionEnum.Special:
-                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                case CIF_SocialExchange.IntentionEnum.Positive:
+                case CIF_SocialExchange.IntentionEnum.Special:
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CIF_Character, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
                 { "Charming"  , agent =>  0 },
@@ -498,8 +498,8 @@ namespace FriendlyLords
                     };
 
                 //Flirt & AskOut
-                case SocialExchangeSE.IntentionEnum.Romantic:
-                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                case CIF_SocialExchange.IntentionEnum.Romantic:
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CIF_Character, int>>{
                 { "Friendly"  , agent =>  0 },
                 { "Hostile"   , agent =>  0 },
                 { "Charming"  , agent =>  2 },
@@ -513,9 +513,9 @@ namespace FriendlyLords
                     };
 
                 //Jealous & FriendSabotage & RomanticSabotage & Hostile
-                case SocialExchangeSE.IntentionEnum.Negative:
-                case SocialExchangeSE.IntentionEnum.Hostile:
-                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                case CIF_SocialExchange.IntentionEnum.Negative:
+                case CIF_SocialExchange.IntentionEnum.Hostile:
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CIF_Character, int>>{
                 { "Friendly"  , agent => -2 },
                 { "Hostile"   , agent =>  2 },
                 { "Charming"  , agent =>  0 },
@@ -529,7 +529,7 @@ namespace FriendlyLords
                     };
 
                 default:
-                    return TraitFunc_Dictionary = new Dictionary<string, Func<CustomAgent, int>>{
+                    return TraitFunc_Dictionary = new Dictionary<string, Func<CIF_Character, int>>{
                 { "Friendly"  , agent =>  2 },
                 { "Hostile"   , agent => -2 },
                 { "Charming"  , agent =>  0 },
@@ -544,7 +544,7 @@ namespace FriendlyLords
             }
         }
 
-        private int CheckMemoryForPreviousSEs(string SEName, CustomAgent c1, CustomAgent c2)
+        private int CheckMemoryForPreviousSEs(string SEName, CIF_Character c1, CIF_Character c2)
         {
             int localSum = 0;
             MemorySE memory = GetMemory("Break", c1, c2);
@@ -552,7 +552,7 @@ namespace FriendlyLords
             {
                 localSum -= 2;
             }
-            else if (memory != null && (SocialExchangeSE.IntentionEnum.Hostile == RelationIntention))
+            else if (memory != null && (CIF_SocialExchange.IntentionEnum.Hostile == RelationIntention))
             {
                 localSum += 2;
             }
@@ -578,7 +578,7 @@ namespace FriendlyLords
             return localSum;
         }
 
-        private MemorySE GetMemory(string _SEName, CustomAgent c1, CustomAgent c2)
+        private MemorySE GetMemory(string _SEName, CIF_Character c1, CIF_Character c2)
         {
             MemorySE _memory = c1.MemorySEs.Find(
                             memorySlot =>
@@ -591,7 +591,7 @@ namespace FriendlyLords
             return _memory;
         }
 
-        private int CountMemory(string _SEName, CustomAgent c1, CustomAgent c2)
+        private int CountMemory(string _SEName, CIF_Character c1, CIF_Character c2)
         {
             int _howManyTimes = c1.MemorySEs.Count(
                             memorySlot =>

@@ -2,7 +2,7 @@
 {
     public class NextSE
     {
-        public NextSE(CustomMissionNameMarkerVM.SEs_Enum _se, CustomAgent _Initiator, CustomAgent _Receiver, int _Volition)
+        public NextSE(CIFManager.SEs_Enum _se, CIF_Character _Initiator, CIF_Character _Receiver, int _Volition)
         {
             se = _se;
             InitiatorAgent = _Initiator;
@@ -10,9 +10,9 @@
             Volition = _Volition;
         }
 
-        public CustomMissionNameMarkerVM.SEs_Enum se;
-        public CustomAgent InitiatorAgent;
-        public CustomAgent ReceiverAgent;
+        public CIFManager.SEs_Enum se;
+        public CIF_Character InitiatorAgent;
+        public CIF_Character ReceiverAgent;
         public int Volition;
     }
 }

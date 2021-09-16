@@ -14,11 +14,11 @@ using TaleWorlds.MountAndBlade.View.Missions;
 
 namespace FriendlyLords
 {
-    class CustomMissionGauntletNameMarker : MissionView
+    class CIFDialogMarker : MissionView
     {
         public int ViewOrderPriority { get; }
-        public CustomMissionGauntletNameMarker(CiF_CampaignBehavior_Dialogs CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
-        private CustomMissionNameMarkerVM _dataSource;
+        public CIFDialogMarker(CiF_CampaignBehavior_Dialogs CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
+        private CIFManager _dataSource;
         private CiF_CampaignBehavior_Dialogs CBB_ref;
         private GauntletLayer _gauntletLayer;
         private Mission mission;
@@ -75,7 +75,7 @@ namespace FriendlyLords
         {
             base.OnMissionScreenInitialize();
             
-            _dataSource = new CustomMissionNameMarkerVM(mission, base.MissionScreen.CombatCamera);
+            _dataSource = new CIFManager(mission, base.MissionScreen.CombatCamera);
             this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
@@ -170,30 +170,30 @@ namespace FriendlyLords
 
                 switch (_dataSource.SocialExchange_E)
                 {
-                    case CustomMissionNameMarkerVM.SEs_Enum.Compliment: 
+                    case CIFManager.SEs_Enum.Compliment: 
                         CBB_ref.FriendlyBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.GiveGift: 
+                    case CIFManager.SEs_Enum.GiveGift: 
                         CBB_ref.OfferGift = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
-                    case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                    case CIFManager.SEs_Enum.Jealous:
+                    case CIFManager.SEs_Enum.FriendSabotage:
                         CBB_ref.UnFriendlyBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                    case CIFManager.SEs_Enum.Flirt:
                         CBB_ref.RomanticBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Bully:
-                    case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                    case CIFManager.SEs_Enum.Bully:
+                    case CIFManager.SEs_Enum.RomanticSabotage:
                         CBB_ref.HostileBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                    case CIFManager.SEs_Enum.AskOut:
                         CBB_ref.AskOutPerformed = true; 
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                    case CIFManager.SEs_Enum.Break:
                         CBB_ref.BreakBool = true;
                         break;
-                    case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
+                    case CIFManager.SEs_Enum.Admiration:
                         CBB_ref.GratitudeBool = true;
                         break;
                     default:
@@ -208,9 +208,9 @@ namespace FriendlyLords
             {
                 //if (CBB_ref.customAgentConversation == null) 
                 //{
-                    foreach (CustomAgent custom in _dataSource.customAgentsList)
+                    foreach (CIF_Character custom in _dataSource.customAgentsList)
                     {
-                        if (custom.selfAgent.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
+                        if (custom.agentRef.Character == characterObject && custom == _dataSource.customAgentInteractingWithPlayer)
                         {
                             //CBB_ref.customAgentConversation = custom;
                             break;
@@ -232,7 +232,7 @@ namespace FriendlyLords
             }
         }
 
-        private void CheckIfThereIsAnyChange(CustomAgent customAgentConversation)
+        private void CheckIfThereIsAnyChange(CIF_Character customAgentConversation)
         {
             if (CBB_ref.AskOutPerformed)
             {
@@ -276,7 +276,7 @@ namespace FriendlyLords
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
-                DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CustomMissionNameMarkerVM.SEs_Enum.Break);
+                DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CIFManager.SEs_Enum.Break);
                 UpdateUserInfo(key, 1);
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
@@ -310,24 +310,24 @@ namespace FriendlyLords
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
         }
-        CustomMissionNameMarkerVM.SEs_Enum se_enum { get; set; }
+        CIFManager.SEs_Enum se_enum { get; set; }
 
-        private void CheckOptionToLock(CustomAgent customAgentConversation, string localRelation, int value = 0)
+        private void CheckOptionToLock(CIF_Character customAgentConversation, string localRelation, int value = 0)
         {
             if (localRelation == "AskOut" )
             {
-                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
-                se_enum = CustomMissionNameMarkerVM.SEs_Enum.AskOut;
+                SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Special, true);
+                se_enum = CIFManager.SEs_Enum.AskOut;
             }
             else if (localRelation == "Break")
             {
-                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
-                se_enum = CustomMissionNameMarkerVM.SEs_Enum.Break;
+                SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Special, true);
+                se_enum = CIFManager.SEs_Enum.Break;
             }
             else if (localRelation == "HaveAChild")
             {
-                SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Special, true);
-                se_enum = CustomMissionNameMarkerVM.SEs_Enum.HaveAChild;
+                SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Special, true);
+                se_enum = CIFManager.SEs_Enum.HaveAChild;
             }
             else
             {
@@ -335,26 +335,26 @@ namespace FriendlyLords
                 {
                     if (value > 0)
                     {
-                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Friendly, true);
-                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Compliment;
+                        SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Friendly, true);
+                        se_enum = CIFManager.SEs_Enum.Compliment;
                     }
                     else
                     {
-                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Unfriendly, true);
-                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Jealous;
+                        SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Unfriendly, true);
+                        se_enum = CIFManager.SEs_Enum.Jealous;
                     }
                 }
                 else
                 {
                     if (value > 0)
                     {
-                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Romantic, true);
-                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Flirt;
+                        SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Romantic, true);
+                        se_enum = CIFManager.SEs_Enum.Flirt;
                     }
                     else
                     {
-                        SetOptionAsUnavailable(customAgentConversation, CustomAgent.Intentions.Hostile, true);
-                        se_enum = CustomMissionNameMarkerVM.SEs_Enum.Bully;
+                        SetOptionAsUnavailable(customAgentConversation, CIF_Character.Intentions.Hostile, true);
+                        se_enum = CIFManager.SEs_Enum.Bully;
                     }
                 }
             }
@@ -367,14 +367,14 @@ namespace FriendlyLords
             _dataSource.SaveSavedSEs(customAgentConversation, se_enum.ToString());
         }
 
-        private void SetOptionAsUnavailable(CustomAgent customAgent, CustomAgent.Intentions intention, bool value)
+        private void SetOptionAsUnavailable(CIF_Character customAgent, CIF_Character.Intentions intention, bool value)
         {
             customAgent.keyValuePairsSEs[intention] = value;
         }
 
-        private static void RelationInGameChanges(CustomAgent customAgentConversation, int value)
+        private static void RelationInGameChanges(CIF_Character customAgentConversation, int value)
         {
-            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.selfAgent.Character);
+            Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.agentRef.Character);
             if (hero != null && hero != Hero.MainHero)
             {
                 float relationWithPlayer = hero.GetRelationWithPlayer();
@@ -397,7 +397,7 @@ namespace FriendlyLords
 
         private string GetRelationshipBetweenPlayerAndNPC()
         {
-            CustomAgent AgentPlayer = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
+            CIF_Character AgentPlayer = _dataSource.customAgentsList.Find(c => c.agentRef == Agent.Main);
             SocialNetworkBelief belief = AgentPlayer.SelfGetBeliefWithAgent(CBB_ref.customAgentConversation);
 
             string localRelation = "";
@@ -413,37 +413,37 @@ namespace FriendlyLords
             return localRelation;
         }
 
-        private void DoBreak(CustomAgent customAgentConversation)
+        private void DoBreak(CIF_Character customAgentConversation)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum.Break);
+            CIF_SocialExchange se = InitializeSocialExchange(customAgentConversation, CIFManager.SEs_Enum.Break);
             se.BreakUpMethod();
 
             _dataSource.SaveToJson();
         }
 
-        private void Start_Dating(CustomAgent customAgentConversation)
+        private void Start_Dating(CIF_Character customAgentConversation)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum.AskOut);
+            CIF_SocialExchange se = InitializeSocialExchange(customAgentConversation, CIFManager.SEs_Enum.AskOut);
             se.AskOutMethod(true);
 
             _dataSource.SaveToJson();
         }
 
-        private void UpdateRelationWithPlayerChoice(CustomAgent customAgentConversation, string relation, int value, CustomMissionNameMarkerVM.SEs_Enum seEnum)
+        private void UpdateRelationWithPlayerChoice(CIF_Character customAgentConversation, string relation, int value, CIFManager.SEs_Enum seEnum)
         {
-            SocialExchangeSE se = InitializeSocialExchange(customAgentConversation, seEnum);
-            se.PlayerConversationWithNPC(relation, value, customAgentConversation.selfAgent.IsHero);
+            CIF_SocialExchange se = InitializeSocialExchange(customAgentConversation, seEnum);
+            se.PlayerConversationWithNPC(relation, value, customAgentConversation.agentRef.IsHero);
 
             _dataSource.SaveToJson();
         }
 
-        private SocialExchangeSE InitializeSocialExchange(CustomAgent customAgentConversation, CustomMissionNameMarkerVM.SEs_Enum seEnum)
+        private CIF_SocialExchange InitializeSocialExchange(CIF_Character customAgentConversation, CIFManager.SEs_Enum seEnum)
         {
-            CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
-            CustomAgent MainCustomAgent = _dataSource.customAgentsList.Find(c => c.selfAgent == Agent.Main);
+            CIF_Character customAgent = _dataSource.customAgentsList.Find(c => c.agentRef.Name == customAgentConversation.agentRef.Name && c.Id == customAgentConversation.Id);
+            CIF_Character MainCustomAgent = _dataSource.customAgentsList.Find(c => c.agentRef == Agent.Main);
             MainCustomAgent.customAgentTarget = customAgent;
 
-            SocialExchangeSE se = new SocialExchangeSE(seEnum, MainCustomAgent, _dataSource.customAgentsList)
+            CIF_SocialExchange se = new CIF_SocialExchange(seEnum, MainCustomAgent, _dataSource.customAgentsList)
             {
                 CustomAgentReceiver = customAgent
             };
@@ -464,46 +464,46 @@ namespace FriendlyLords
             CBB_ref.IncreaseRelationshipWithPlayer = false;
             CBB_ref.DecreaseRelationshipWithPlayer = false;
 
-            _dataSource.SocialExchange_E = CustomMissionNameMarkerVM.SEs_Enum.Undefined;
+            _dataSource.SocialExchange_E = CIFManager.SEs_Enum.Undefined;
             _dataSource.customCharacterReftoCampaignBehaviorBase = null;
         }
 
-        private static DictionaryEnumWithSEs ConvertCustomAgentSEToDictionaryEnum(CustomMissionNameMarkerVM.SEs_Enum se)
+        private static DictionaryEnumWithSEs ConvertCustomAgentSEToDictionaryEnum(CIFManager.SEs_Enum se)
         {
             DictionaryEnumWithSEs key;
             switch (se)
             {
-                case CustomMissionNameMarkerVM.SEs_Enum.Compliment:
+                case CIFManager.SEs_Enum.Compliment:
                     key = DictionaryEnumWithSEs.Compliment;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.GiveGift:
+                case CIFManager.SEs_Enum.GiveGift:
                     key = DictionaryEnumWithSEs.GiveGift;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Jealous:
+                case CIFManager.SEs_Enum.Jealous:
                     key = DictionaryEnumWithSEs.Jealous;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.FriendSabotage:
+                case CIFManager.SEs_Enum.FriendSabotage:
                     key = DictionaryEnumWithSEs.FriendSabotage;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Flirt:
+                case CIFManager.SEs_Enum.Flirt:
                     key = DictionaryEnumWithSEs.Flirt;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Bully:
+                case CIFManager.SEs_Enum.Bully:
                     key = DictionaryEnumWithSEs.Bully;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.RomanticSabotage:
+                case CIFManager.SEs_Enum.RomanticSabotage:
                     key = DictionaryEnumWithSEs.RomanticSabotage;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.AskOut:
+                case CIFManager.SEs_Enum.AskOut:
                     key = DictionaryEnumWithSEs.AskOut;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Break:
+                case CIFManager.SEs_Enum.Break:
                     key = DictionaryEnumWithSEs.Break;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.Admiration:
+                case CIFManager.SEs_Enum.Admiration:
                     key = DictionaryEnumWithSEs.Gratitude;
                     break;
-                case CustomMissionNameMarkerVM.SEs_Enum.HaveAChild:
+                case CIFManager.SEs_Enum.HaveAChild:
                     key = DictionaryEnumWithSEs.HaveAChild;
                     break;
                 default:
