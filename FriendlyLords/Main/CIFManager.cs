@@ -922,7 +922,6 @@ namespace FriendlyLords
             }
             catch (Exception e)
             {
-                //InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
                 nextRequiredRenown = -1;
             }
             
@@ -1011,7 +1010,6 @@ namespace FriendlyLords
             }
             catch (Exception e)
             {
-                //InformationManager.DisplayMessage(new InformationMessage(e.ToString()));
                 myDeserializedClass.requiredRenown = -1;
             }
             

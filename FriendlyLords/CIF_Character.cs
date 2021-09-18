@@ -42,9 +42,9 @@ namespace FriendlyLords
         public List<MemorySE> MemorySEs { get; set; }
 
         public bool NearEnoughToStartConversation { get; set; }
-        public bool EnoughRest { get; set; } // is not in cooldown? // enough rest?
-        public bool Busy { get; set; } // Has Target to start a social exchange when close? // or it's interacting?
-        public float Countdown { get; set; } // How much NPC needs to wait to set cooldown as false
+        public bool EnoughRest { get; set; } 
+        public bool Busy { get; set; } 
+        public float Countdown { get; set; } 
 
         public bool EndingSocialExchange { get; set; }
         public bool IsInitiator { get; set; }

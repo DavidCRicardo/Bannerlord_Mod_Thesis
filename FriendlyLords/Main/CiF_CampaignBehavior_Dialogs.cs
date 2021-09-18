@@ -22,9 +22,7 @@ namespace FriendlyLords
         {
         }
 
-        public override void SyncData(IDataStore dataStore)
-        {
-        }
+        public override void SyncData(IDataStore dataStore) { }
 
         private void DailyTick()
         {
@@ -172,7 +170,7 @@ namespace FriendlyLords
             {
 
             }
-                                 
+
             return false;
         }
 
@@ -273,7 +271,6 @@ namespace FriendlyLords
             StartDating = true;
         }
 
-        /* Break */
         public bool DoBreak { get; set; }
         private void Do_BreakUpSE()
         {
@@ -299,11 +296,6 @@ namespace FriendlyLords
             customAgentConversation.AddItem(item.itemName, item.quantity);
             customMainAgent.RemoveItem(item.itemName, item.quantity);
 
-            /*Hero.MainHero.ChangeHeroGold(-5);
-            TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);
-            GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
-            InformationManager.DisplayMessage(new InformationMessage(text.ToString()));*/
-
             InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " receives " + item.itemName));
         }
 
@@ -328,7 +320,7 @@ namespace FriendlyLords
                     string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                     string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                    if (_currentLocation != "arena" )
+                    if (_currentLocation != "arena")
                     {
                         customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.AgentReference.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -423,7 +415,7 @@ namespace FriendlyLords
                 string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
-                if (_currentLocation != "arena" )
+                if (_currentLocation != "arena")
                 {
                     customAgentConversation = customAgents.Find(c => c.NearPlayer == true && c.AgentReference.Character == CharacterObject.OneToOneConversationCharacter);
 
@@ -652,7 +644,7 @@ namespace FriendlyLords
                     }
                 }
             }
-            
+
             return false;
         }
 
@@ -709,7 +701,7 @@ namespace FriendlyLords
         {
             if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null && customAgents != null)
             {
-                    string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
+                string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
                 string _currentLocation = CampaignMission.Current.Location.StringId;
 
                 if (_currentLocation != "arena" && CharacterObject.OneToOneConversationCharacter != null)
@@ -739,15 +731,6 @@ namespace FriendlyLords
             value = MBMath.ClampInt(value, -100, 100);
             CharacterRelationManager.SetHeroRelation(Hero.MainHero, otherHero, value);
         }
-
-        //private void Conversation_tavernmaid_test_on_condition()
-        //{
-        //    //Teleport character near to NPC
-        //    CharacterObject characterObject = CharacterObject.All.FirstOrDefault((CharacterObject k) => k.Occupation == Occupation.Merchant && Settlement.CurrentSettlement == Hero.MainHero.CurrentSettlement && k.Name.ToString() == "Caribos the Mercer");
-        //    Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
-        //    CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
-        //    PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
-        //}
     }
 }
 
@@ -804,3 +787,15 @@ namespace FriendlyLords
 //    return false;
 //}
 //#endregion
+//private void Conversation_tavernmaid_test_on_condition()
+//{
+//    //Teleport character near to NPC
+//    CharacterObject characterObject = CharacterObject.All.FirstOrDefault((CharacterObject k) => k.Occupation == Occupation.Merchant && Settlement.CurrentSettlement == Hero.MainHero.CurrentSettlement && k.Name.ToString() == "Caribos the Mercer");
+//    Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
+//    CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
+//    PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
+//}
+//Hero.MainHero.ChangeHeroGold(-5);
+//TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);
+//GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
+//InformationManager.DisplayMessage(new InformationMessage(text.ToString()));
