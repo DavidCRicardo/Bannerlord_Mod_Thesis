@@ -1083,7 +1083,7 @@ namespace FriendlyLords
                 }
                 else
                 {
-                    if (Hero.MainHero.CurrentSettlement.IsHideout())
+                    if (Hero.MainHero.CurrentSettlement.IsHideout)
                     {
                         return false; // hideout
                     }

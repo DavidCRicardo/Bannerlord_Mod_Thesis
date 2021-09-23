@@ -304,11 +304,11 @@ namespace FriendlyLords
             }
 
             /* Courage Status */
-            status = CheckStatusIntensity(customAgent, "Courage");
-            if (status.intensity > 0.5)
-            {
-                localSum += 2;
-            }
+            //status = CheckStatusIntensity(customAgent, "Courage");
+            //if (status.intensity > 0.5)
+            //{
+            //    localSum += 2;
+            //}
 
             /* SocialTalk Status */
             status = CheckStatusIntensity(customAgent, "SocialTalk");
@@ -374,7 +374,7 @@ namespace FriendlyLords
                 }
                 else if (status.intensity >= 3)
                 {
-                    localSum -= 10;
+                    localSum -= 6;
                 }
             }
             else if (RelationIntention == CIF_SocialExchange.IntentionEnum.Hostile)
