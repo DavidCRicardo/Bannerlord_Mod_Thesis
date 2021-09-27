@@ -516,44 +516,47 @@ namespace FriendlyLords
 
         private void LoadUserInfoFromFile()
         {
-            string json = File.ReadAllText(filePath + fileName);
-
-            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
-            if (deserializedUserInfoClass != null)
+            if (fileName != "")
             {
-                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
-                result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.NCompliment;
-                result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.NGiveGift;
-                result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.NJealous;
-                result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.NFriendSabotage;
-                result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.NFlirt;
-                result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.NBully;
-                result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.NRomanticSabotage;
-                result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.NBreak;
-                result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.NAskOut;
-                result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.NGratitude;
-                result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.NHaveAChild;
-                PlayerOrNPC_Dictionary[false] = result;
+                string json = File.ReadAllText(filePath + fileName);
 
-                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
-                result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.PCompliment;
-                result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.PGiveGift;
-                result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.PJealous;
-                result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.PFriendSabotage;
-                result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.PFlirt;
-                result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.PBully;
-                result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.PRomanticSabotage;
-                result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.PBreak;
-                result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.PAskOut;
-                result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.PGratitude;
-                result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.PHaveAChild;
-                PlayerOrNPC_Dictionary[true] = result;
+                UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+                if (deserializedUserInfoClass != null)
+                {
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
+                    result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.NCompliment;
+                    result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.NGiveGift;
+                    result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.NJealous;
+                    result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.NFriendSabotage;
+                    result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.NFlirt;
+                    result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.NBully;
+                    result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.NRomanticSabotage;
+                    result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.NBreak;
+                    result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.NAskOut;
+                    result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.NGratitude;
+                    result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.NHaveAChild;
+                    PlayerOrNPC_Dictionary[false] = result;
 
-                TotalSEs = deserializedUserInfoClass.TotalSocialExchanges;
-                NPCsInteractedWithPlayer = deserializedUserInfoClass.NPCInteractedWithPlayer;
-                PlayerInteractedWithNPCs = deserializedUserInfoClass.PlayerInteractedWithNPC;
-                NPCsInteractedWithNPCs = deserializedUserInfoClass.NPCsInteractedWithNPC;
-                DaysPassed = deserializedUserInfoClass.DaysPassedInGame;
+                    PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                    result[DictionaryEnumWithSEs.Compliment] = deserializedUserInfoClass.PCompliment;
+                    result[DictionaryEnumWithSEs.GiveGift] = deserializedUserInfoClass.PGiveGift;
+                    result[DictionaryEnumWithSEs.Jealous] = deserializedUserInfoClass.PJealous;
+                    result[DictionaryEnumWithSEs.FriendSabotage] = deserializedUserInfoClass.PFriendSabotage;
+                    result[DictionaryEnumWithSEs.Flirt] = deserializedUserInfoClass.PFlirt;
+                    result[DictionaryEnumWithSEs.Bully] = deserializedUserInfoClass.PBully;
+                    result[DictionaryEnumWithSEs.RomanticSabotage] = deserializedUserInfoClass.PRomanticSabotage;
+                    result[DictionaryEnumWithSEs.Break] = deserializedUserInfoClass.PBreak;
+                    result[DictionaryEnumWithSEs.AskOut] = deserializedUserInfoClass.PAskOut;
+                    result[DictionaryEnumWithSEs.Gratitude] = deserializedUserInfoClass.PGratitude;
+                    result[DictionaryEnumWithSEs.HaveAChild] = deserializedUserInfoClass.PHaveAChild;
+                    PlayerOrNPC_Dictionary[true] = result;
+
+                    TotalSEs = deserializedUserInfoClass.TotalSocialExchanges;
+                    NPCsInteractedWithPlayer = deserializedUserInfoClass.NPCInteractedWithPlayer;
+                    PlayerInteractedWithNPCs = deserializedUserInfoClass.PlayerInteractedWithNPC;
+                    NPCsInteractedWithNPCs = deserializedUserInfoClass.NPCsInteractedWithNPC;
+                    DaysPassed = deserializedUserInfoClass.DaysPassedInGame;
+                }
             }
         }
 
@@ -596,79 +599,82 @@ namespace FriendlyLords
 
         private void SaveUserInfoToFile()
         {
-            string json = File.ReadAllText(filePath + fileName);
-
-            UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
-            if (deserializedUserInfoClass != null)
+            if (fileName != "")
             {
-                deserializedUserInfoClass.NPCInteractedWithPlayer = NPCsInteractedWithPlayer;
-                deserializedUserInfoClass.PlayerInteractedWithNPC = PlayerInteractedWithNPCs;
-                deserializedUserInfoClass.NPCsInteractedWithNPC = NPCsInteractedWithNPCs;
-                deserializedUserInfoClass.TotalSocialExchanges = TotalSEs;
-                deserializedUserInfoClass.DaysPassedInGame = DaysPassed;
+                string json = File.ReadAllText(filePath + fileName);
 
-                PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
-                result.TryGetValue(DictionaryEnumWithSEs.Compliment, out int value);
-                deserializedUserInfoClass.NCompliment = value;
-                result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
-                deserializedUserInfoClass.NGiveGift = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
-                deserializedUserInfoClass.NJealous = value;
-                result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
-                deserializedUserInfoClass.NFriendSabotage = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
-                deserializedUserInfoClass.NFlirt = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
-                deserializedUserInfoClass.NBully = value;
-                result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
-                deserializedUserInfoClass.NRomanticSabotage = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
-                deserializedUserInfoClass.NBreak = value;
-                result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
-                deserializedUserInfoClass.NAskOut = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
-                deserializedUserInfoClass.NGratitude = value;
-                result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
-                deserializedUserInfoClass.NHaveAChild = value;
+                UserInfoJson deserializedUserInfoClass = JsonConvert.DeserializeObject<UserInfoJson>(json);
+                if (deserializedUserInfoClass != null)
+                {
+                    deserializedUserInfoClass.NPCInteractedWithPlayer = NPCsInteractedWithPlayer;
+                    deserializedUserInfoClass.PlayerInteractedWithNPC = PlayerInteractedWithNPCs;
+                    deserializedUserInfoClass.NPCsInteractedWithNPC = NPCsInteractedWithNPCs;
+                    deserializedUserInfoClass.TotalSocialExchanges = TotalSEs;
+                    deserializedUserInfoClass.DaysPassedInGame = DaysPassed;
 
-                deserializedUserInfoClass.NFriendlySEs = deserializedUserInfoClass.NCompliment + deserializedUserInfoClass.NGiveGift + deserializedUserInfoClass.NGratitude;
-                deserializedUserInfoClass.NUnFriendlySEs = deserializedUserInfoClass.NJealous + deserializedUserInfoClass.NFriendSabotage;
-                deserializedUserInfoClass.NRomanticSEs = deserializedUserInfoClass.NFlirt;
-                deserializedUserInfoClass.NHostileSEs = deserializedUserInfoClass.NBully + deserializedUserInfoClass.NRomanticSabotage;
-                deserializedUserInfoClass.NSpecialSEs = deserializedUserInfoClass.NBreak + deserializedUserInfoClass.NAskOut + deserializedUserInfoClass.NHaveAChild;
+                    PlayerOrNPC_Dictionary.TryGetValue(false, out Dictionary<Enum, int> result);
+                    result.TryGetValue(DictionaryEnumWithSEs.Compliment, out int value);
+                    deserializedUserInfoClass.NCompliment = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
+                    deserializedUserInfoClass.NGiveGift = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
+                    deserializedUserInfoClass.NJealous = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
+                    deserializedUserInfoClass.NFriendSabotage = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
+                    deserializedUserInfoClass.NFlirt = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
+                    deserializedUserInfoClass.NBully = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
+                    deserializedUserInfoClass.NRomanticSabotage = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
+                    deserializedUserInfoClass.NBreak = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
+                    deserializedUserInfoClass.NAskOut = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
+                    deserializedUserInfoClass.NGratitude = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
+                    deserializedUserInfoClass.NHaveAChild = value;
 
-                PlayerOrNPC_Dictionary.TryGetValue(true, out result);
-                result.TryGetValue(DictionaryEnumWithSEs.Compliment, out value);
-                deserializedUserInfoClass.PCompliment = value;
-                result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
-                deserializedUserInfoClass.PGiveGift = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
-                deserializedUserInfoClass.PJealous = value;
-                result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
-                deserializedUserInfoClass.PFriendSabotage = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
-                deserializedUserInfoClass.PFlirt = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
-                deserializedUserInfoClass.PBully = value;
-                result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
-                deserializedUserInfoClass.PRomanticSabotage = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
-                deserializedUserInfoClass.PBreak = value;
-                result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
-                deserializedUserInfoClass.PAskOut = value;
-                result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
-                deserializedUserInfoClass.PGratitude = value;
-                result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
-                deserializedUserInfoClass.PHaveAChild = value;
+                    deserializedUserInfoClass.NFriendlySEs = deserializedUserInfoClass.NCompliment + deserializedUserInfoClass.NGiveGift + deserializedUserInfoClass.NGratitude;
+                    deserializedUserInfoClass.NUnFriendlySEs = deserializedUserInfoClass.NJealous + deserializedUserInfoClass.NFriendSabotage;
+                    deserializedUserInfoClass.NRomanticSEs = deserializedUserInfoClass.NFlirt;
+                    deserializedUserInfoClass.NHostileSEs = deserializedUserInfoClass.NBully + deserializedUserInfoClass.NRomanticSabotage;
+                    deserializedUserInfoClass.NSpecialSEs = deserializedUserInfoClass.NBreak + deserializedUserInfoClass.NAskOut + deserializedUserInfoClass.NHaveAChild;
 
-                deserializedUserInfoClass.PFriendlySEs = deserializedUserInfoClass.PCompliment + deserializedUserInfoClass.PGiveGift + deserializedUserInfoClass.PGratitude;
-                deserializedUserInfoClass.PUnFriendlySEs = deserializedUserInfoClass.PJealous + deserializedUserInfoClass.PFriendSabotage;
-                deserializedUserInfoClass.PRomanticSEs = deserializedUserInfoClass.PFlirt;
-                deserializedUserInfoClass.PHostileSEs = deserializedUserInfoClass.PBully + deserializedUserInfoClass.PRomanticSabotage;
-                deserializedUserInfoClass.PSpecialSEs = deserializedUserInfoClass.PBreak + deserializedUserInfoClass.PAskOut + deserializedUserInfoClass.PHaveAChild;
+                    PlayerOrNPC_Dictionary.TryGetValue(true, out result);
+                    result.TryGetValue(DictionaryEnumWithSEs.Compliment, out value);
+                    deserializedUserInfoClass.PCompliment = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.GiveGift, out value);
+                    deserializedUserInfoClass.PGiveGift = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Jealous, out value);
+                    deserializedUserInfoClass.PJealous = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.FriendSabotage, out value);
+                    deserializedUserInfoClass.PFriendSabotage = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Flirt, out value);
+                    deserializedUserInfoClass.PFlirt = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Bully, out value);
+                    deserializedUserInfoClass.PBully = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.RomanticSabotage, out value);
+                    deserializedUserInfoClass.PRomanticSabotage = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Break, out value);
+                    deserializedUserInfoClass.PBreak = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.AskOut, out value);
+                    deserializedUserInfoClass.PAskOut = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.Gratitude, out value);
+                    deserializedUserInfoClass.PGratitude = value;
+                    result.TryGetValue(DictionaryEnumWithSEs.HaveAChild, out value);
+                    deserializedUserInfoClass.PHaveAChild = value;
+
+                    deserializedUserInfoClass.PFriendlySEs = deserializedUserInfoClass.PCompliment + deserializedUserInfoClass.PGiveGift + deserializedUserInfoClass.PGratitude;
+                    deserializedUserInfoClass.PUnFriendlySEs = deserializedUserInfoClass.PJealous + deserializedUserInfoClass.PFriendSabotage;
+                    deserializedUserInfoClass.PRomanticSEs = deserializedUserInfoClass.PFlirt;
+                    deserializedUserInfoClass.PHostileSEs = deserializedUserInfoClass.PBully + deserializedUserInfoClass.PRomanticSabotage;
+                    deserializedUserInfoClass.PSpecialSEs = deserializedUserInfoClass.PBreak + deserializedUserInfoClass.PAskOut + deserializedUserInfoClass.PHaveAChild;
+                }
+
+                File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
             }
-
-            File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
         }
 
         private void UploadFileToFTP()
