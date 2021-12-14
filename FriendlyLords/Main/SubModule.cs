@@ -37,11 +37,12 @@ namespace FriendlyLords
 
         private CiF_CampaignBehavior_Dialogs CBBref;
 
-        public override void OnMissionBehaviourInitialize(Mission mission)
-        {
-            base.OnMissionBehaviourInitialize(mission);
 
-            mission.MissionBehaviours.Add(new CIFDialogMarker(CBBref, mission));           
+        public override void OnMissionBehaviorInitialize(Mission mission)
+        {
+            base.OnMissionBehaviorInitialize(mission);
+
+            mission.MissionBehaviors.Add(new CIFDialogMarker(CBBref, mission));           
         }
     }
 }

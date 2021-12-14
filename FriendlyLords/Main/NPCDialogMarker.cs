@@ -16,8 +16,7 @@ namespace FriendlyLords
 {
     class CIFDialogMarker : MissionView
     {
-        public int ViewOrderPriority { get; }
-        public CIFDialogMarker(CiF_CampaignBehavior_Dialogs CBB, Mission _mission) { this.ViewOrderPriorty = 1; CBB_ref = CBB; mission = _mission; }
+        public CIFDialogMarker(CiF_CampaignBehavior_Dialogs CBB, Mission _mission) { CBB_ref = CBB; mission = _mission; }
         private CIFManager _dataSource;
         private CiF_CampaignBehavior_Dialogs CBB_ref;
         private GauntletLayer _gauntletLayer;
@@ -76,7 +75,7 @@ namespace FriendlyLords
             base.OnMissionScreenInitialize();
             
             _dataSource = new CIFManager(mission, base.MissionScreen.CombatCamera);
-            this._gauntletLayer = new GauntletLayer(this.ViewOrderPriorty, "GauntletLayer");
+            this._gauntletLayer = new GauntletLayer(1, "GauntletLayer", false);
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
 
