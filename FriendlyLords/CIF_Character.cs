@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SandBox;
+using SandBox.Missions.AgentBehaviors;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -7,6 +7,7 @@ using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
+using SandBox.ViewModelCollection.Missions.NameMarker;
 using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
 
@@ -14,6 +15,18 @@ namespace FriendlyLords
 {
     public class CIFManager : ViewModel
     {
+        public CIFManager(Mission mission, Camera missionCamera, Dictionary<Agent, SandBoxUIHelper.IssueQuestFlags> additionalTargetAgents, Dictionary<string, ValueTuple<Vec3, string, string>> additionalGenericTargets)
+
+        {
+            this.Targets = new MBBindingList<CIFManagerTarget>();
+            this._distanceComparer = new CIFManager.MarkerDistanceComparer();
+            this._missionCamera = missionCamera;
+            this._additionalTargetAgents = additionalTargetAgents;
+            this._additionalGenericTargets = additionalGenericTargets;
+            this._genericTargets = new Dictionary<string, MissionNameMarkerTargetVM>();
+            this._mission = mission;
+        }
+
         public CIFManager(Mission mission, Camera missionCamera)
         {
             this.Targets = new MBBindingList<CIFManagerTarget>();
@@ -1443,7 +1456,7 @@ namespace FriendlyLords
                 float a = -100f;
                 float b = -100f;
                 float num = 0f;
-                MBWindowManager.WorldToScreen(this._missionCamera, missionNameMarkerTargetVM.WorldPosition + this._heightOffset, ref a, ref b, ref num);
+                MBWindowManager.WorldToScreenInsideUsableArea(this._missionCamera, missionNameMarkerTargetVM.WorldPosition + this._heightOffset, ref a, ref b, ref num);
                 if (num > 0f)
                 {
                     missionNameMarkerTargetVM.ScreenPosition = new Vec2(a, b);
@@ -1454,6 +1467,18 @@ namespace FriendlyLords
                     missionNameMarkerTargetVM.Distance = -1;
                     missionNameMarkerTargetVM.ScreenPosition = new Vec2(-100f, -100f);
                 }
+
+                /*MBWindowManager.WorldToScreen(this._missionCamera, missionNameMarkerTargetVM.WorldPosition + this._heightOffset, ref a, ref b, ref num);
+                if (num > 0f)
+                {
+                    missionNameMarkerTargetVM.ScreenPosition = new Vec2(a, b);
+                    missionNameMarkerTargetVM.Distance = (int)(missionNameMarkerTargetVM.WorldPosition - this._missionCamera.Position).Length;
+                }
+                else
+                {
+                    missionNameMarkerTargetVM.Distance = -1;
+                    missionNameMarkerTargetVM.ScreenPosition = new Vec2(-100f, -100f);
+                }*/
             }
             this.Targets.Sort(this._distanceComparer);
         }
@@ -1524,6 +1549,9 @@ namespace FriendlyLords
         public Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; private set; }
 
         private readonly Camera _missionCamera;
+        private readonly Dictionary<Agent, SandBoxUIHelper.IssueQuestFlags> _additionalTargetAgents;
+        private readonly Dictionary<string, (Vec3, string, string)> _additionalGenericTargets;
+        private readonly Dictionary<string, MissionNameMarkerTargetVM> _genericTargets;
         private bool _firstTick = true;
         private bool _secondTick = true;
         private readonly Mission _mission;

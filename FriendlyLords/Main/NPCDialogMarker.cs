@@ -1,16 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.MountAndBlade.View.Missions;
+using TaleWorlds.MountAndBlade.View.MissionViews;
 
 namespace FriendlyLords
 {
@@ -23,16 +18,16 @@ namespace FriendlyLords
         private Mission mission;
 
         private bool _firstTick = true;
-        private string fileName = "";
-        private string filePath = "";
+        //private string fileName = "";
+       // private string filePath = "";
 
-        private int TotalSEs;
-        private int NPCsInteractedWithPlayer;
-        private int PlayerInteractedWithNPCs;
-        private int NPCsInteractedWithNPCs;
-        private int DaysPassed;
+        //private int TotalSEs;
+       // private int NPCsInteractedWithPlayer;
+       // private int PlayerInteractedWithNPCs;
+       // private int NPCsInteractedWithNPCs;
+       // private int DaysPassed;
 
-        private List<string> list;
+       // private List<string> list;
 
         private enum DictionaryEnumWithSEs { Undefined, Compliment, GiveGift, Gratitude, Jealous, FriendSabotage, AskOut, Flirt, Bully, RomanticSabotage, Break, HaveAChild }
 
@@ -75,13 +70,15 @@ namespace FriendlyLords
             base.OnMissionScreenInitialize();
             
             _dataSource = new CIFManager(mission, base.MissionScreen.CombatCamera);
+            //_dataSource = new CIFManager(base.Mission, base.MissionScreen.CombatCamera, this._additionalTargetAgents, this._additionalGenericTargets);
+
             this._gauntletLayer = new GauntletLayer(1, "GauntletLayer", false);
             this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
 
-            CheckIfUserFileExists();
+            //CheckIfUserFileExists();
 
-            LoadUserInfoFromFile();
+            //LoadUserInfoFromFile();
 
             try
             {
@@ -104,8 +101,8 @@ namespace FriendlyLords
                 {
                     _dataSource.letsUpdate = false;
 
-                    var result = ConvertCustomAgentSEToDictionaryEnum(_dataSource.SocialExchange_E);
-                    UpdateUserInfo(result, _dataSource.BooleanNumber);
+                    //var result = ConvertCustomAgentSEToDictionaryEnum(_dataSource.SocialExchange_E);
+                   // UpdateUserInfo(result, _dataSource.BooleanNumber);
                 }
 
                 if (_firstTick || CBB_ref.customAgents == null)
@@ -128,16 +125,16 @@ namespace FriendlyLords
                 {
                     _dataSource.ResetSocialExchangesAllNPCsOptions();
                     CBB_ref.ResetSocialExchanges = false;
-                    DaysPassed++;
+                    //DaysPassed++;
 
-                    try
+                    /*try
                     {
                         SaveUserInfoToFile();
                         UploadFileToFTP();
                     }
                     catch (Exception e)
                     {
-                    }
+                    }*/
                     
                 }
             }
@@ -145,13 +142,13 @@ namespace FriendlyLords
 
         public override void OnMissionScreenFinalize()
         {
-            try
+            /*try
             {
                 UploadFileToFTP();
             }
             catch (Exception e)
             {
-            }
+            }*/
             
             base.OnMissionScreenFinalize();
             base.MissionScreen.RemoveLayer(_gauntletLayer);
@@ -275,8 +272,8 @@ namespace FriendlyLords
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
 
-                DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CIFManager.SEs_Enum.Break);
-                UpdateUserInfo(key, 1);
+                //DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CIFManager.SEs_Enum.Break);
+                //UpdateUserInfo(key, 1);
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
@@ -359,9 +356,8 @@ namespace FriendlyLords
             }
 
             //Player fez uma SE com um NPC e vai guardar a info 
-            DictionaryEnumWithSEs SE_Enum = ConvertCustomAgentSEToDictionaryEnum(se_enum);
-            // Save information from dictionary and variables to File
-            UpdateUserInfo(SE_Enum, 1);
+            //Save information from dictionary and variables to File
+            //UpdateUserInfo(ConvertCustomAgentSEToDictionaryEnum(se_enum), 1);
 
             _dataSource.SaveSavedSEs(customAgentConversation, se_enum.ToString());
         }
@@ -382,13 +378,13 @@ namespace FriendlyLords
                 {
                     if (newValue <= 100)
                     {
-                        InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
+                        //InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                         Hero.MainHero.SetPersonalRelation(hero, newValue);
                     }              
                 }
                 else if (value < 0) 
                 {
-                    InformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
+                    //InformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
             }
@@ -513,7 +509,7 @@ namespace FriendlyLords
             return key;
         }
 
-        private void LoadUserInfoFromFile()
+        /*private void LoadUserInfoFromFile()
         {
             if (fileName != "")
             {
@@ -557,9 +553,9 @@ namespace FriendlyLords
                     DaysPassed = deserializedUserInfoClass.DaysPassedInGame;
                 }
             }
-        }
-
-        private void UpdateUserInfo(DictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
+        }*/
+        
+        /*private void UpdateUserInfo(DictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
         {
             Dictionary<Enum, int> result;
             int value;
@@ -594,9 +590,9 @@ namespace FriendlyLords
             TotalSEs = NPCsInteractedWithNPCs + NPCsInteractedWithPlayer + PlayerInteractedWithNPCs;
 
             SaveUserInfoToFile();
-        }
+        }*/
 
-        private void SaveUserInfoToFile()
+        /*private void SaveUserInfoToFile()
         {
             if (fileName != "")
             {
@@ -674,9 +670,9 @@ namespace FriendlyLords
 
                 File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(deserializedUserInfoClass));
             }
-        }
+        }*/
 
-        private void UploadFileToFTP()
+        /*private void UploadFileToFTP()
         {
             string ftpServerIP = "ftp.davidricardo.x10host.com/";
             string ftpUserName = "user@davidricardo.x10host.com";
@@ -732,9 +728,9 @@ namespace FriendlyLords
             {
                 throw ex;
             }
-        }
+        }*/
 
-        private void CheckIfUserFileExists()
+        /*private void CheckIfUserFileExists()
         {
             filePath = BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/";
 
@@ -754,7 +750,9 @@ namespace FriendlyLords
             if (fileName == "")
             {
                 //Create a new file
-                fileName = GetListFiles();
+                //fileName = GetListFiles();
+
+                fileName = "user.json";
 
                 if (fileName != "")
                 {
@@ -765,9 +763,9 @@ namespace FriendlyLords
                     File.WriteAllText(filePath + fileName, JsonConvert.SerializeObject(myDeserializedClass));
                 }
             }
-        }
+        }*/
 
-        private string GetListFiles()
+        /*private string GetListFiles()
         {
             list = new List<string>();
 
@@ -827,19 +825,9 @@ namespace FriendlyLords
                 return "";
             }
 
-        }
+        }*/
 
         private List<int> usersFiles = new List<int>();
+
     }
 }
-
-//private void GiveCourageToCharacter(CustomAgent customAgentConversation)
-//{
-//    CustomAgent customAgent = _dataSource.customAgentsList.Find(c => c.selfAgent.Name == customAgentConversation.selfAgent.Name && c.Id == customAgentConversation.Id);
-//    customAgent.UpdateAllStatus(0, 0, 1, 0, 0, 0);
-//}
-//else if (CBB_ref.giveCourage)
-//{
-//    GiveCourageToCharacter(customAgentConversation);
-//    CBB_ref.giveCourage = false;
-//}

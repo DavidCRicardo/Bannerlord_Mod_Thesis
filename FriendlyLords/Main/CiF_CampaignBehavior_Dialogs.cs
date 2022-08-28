@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using TaleWorlds.Core;
+using TaleWorlds.CampaignSystem.Conversation;
 
 namespace FriendlyLords
 {
