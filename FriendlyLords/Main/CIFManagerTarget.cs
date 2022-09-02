@@ -1,4 +1,5 @@
-﻿using TaleWorlds.CampaignSystem;
+﻿using System;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
@@ -14,22 +15,10 @@ namespace FriendlyLords
         {
             get
             {
-                switch (this.MarkerType)
-                {
-                    case 0:
-                    case 1:
-                    case 2:
-                        return this.TargetAgent.Position;
-                    default:
-                        return Vec3.One;
-                }
-            }
-            set
-            {
-                _worldPosition = value;
+                return this._getPosition();
             }
         }
-
+        private Func<Vec3> _getPosition = () => Vec3.Zero;
         public CIFManagerTarget(Agent agent, int id = -1)
         {
             this.Id = id;
@@ -37,9 +26,51 @@ namespace FriendlyLords
             this.IsMovingTarget = true;
             this.TargetAgent = agent;
             this.Name = agent.Name.ToString();
-            this.MarkerType = 1; // 2 = red . 1 = yellow . 0 = green
+            //this.MarkerType = 1; // 2 = red . 1 = yellow . 0 = green
             CharacterObject characterObject = (CharacterObject)agent.Character;
             if (characterObject != null) { }
+
+            this.NameType = "Normal";
+            //this.IconType = "character";
+
+            this._getPosition = (() => agent.Position);
+        }
+
+        private string _iconType = string.Empty;
+        private string _nameType = string.Empty;
+
+        [DataSourceProperty]
+        public string IconType
+        {
+            get
+            {
+                return this._iconType;
+            }
+            set
+            {
+                if (value != this._iconType)
+                {
+                    this._iconType = value;
+                    base.OnPropertyChangedWithValue(value, "IconType");
+                }
+            }
+        }
+
+        [DataSourceProperty]
+        public string NameType
+        {
+            get
+            {
+                return this._nameType;
+            }
+            set
+            {
+                if (value != this._nameType)
+                {
+                    this._nameType = value;
+                    base.OnPropertyChangedWithValue(value, "NameType");
+                }
+            }
         }
 
         [DataSourceProperty]

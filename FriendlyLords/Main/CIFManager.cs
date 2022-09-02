@@ -517,7 +517,6 @@ namespace FriendlyLords
 
             return increaseCountdown;
         }
-
         private void InitializeCountdownToAgents(int _increaseCountdown)
         {
             foreach (CIF_Character customAgent in customAgentsList)
@@ -526,7 +525,6 @@ namespace FriendlyLords
                 customAgent.Countdown += customAgent.CheckCountdownWithCurrentTraits();
             }
         }
-
         private void InitializeSocialExchanges()
         {
             OnGoingSEs = 0;
@@ -542,18 +540,15 @@ namespace FriendlyLords
                 }
             }
         }
-
         private void InitializeStatusList()
         {
             StatusList = new List<string>() { "SocialTalk", "BullyNeed", "Courage", "Anger", "Shame", "Tiredness" };
         }
-
         private static bool CustomAgentHasEnoughRest(CIF_Character customAgent)
         {
             customAgent.EnoughRest = customAgent.StatusList.Find(_status => _status.Name == "Tiredness").intensity < 0.5;
             return customAgent.EnoughRest;
         }
-
         public void OnConversationEndWithPlayer(CIF_Character customAgent)
         {
             if (customAgent == null)
@@ -634,7 +629,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private List<Trait> InitializeListWithAllTraits()
         {
             List<string> TraitsListString = new List<string>()
@@ -656,7 +650,6 @@ namespace FriendlyLords
 
             return AllTraitList;
         }
-
         private void LoadDialogsFromJSON()
         {
             string json = ReadJsonDialogs("/npc_conversations.json");
@@ -715,7 +708,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private void CheckIfDataFileExists()
         {
             bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
@@ -731,7 +723,6 @@ namespace FriendlyLords
                 File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
-
         private void CreateCustomAgent(Agent agent, bool ToPerformSEs, Random rnd = null, float _NPCCountdownMultiplier = 1)
         {
             int id = 0;
@@ -765,13 +756,11 @@ namespace FriendlyLords
                 customAgentTemp.Countdown = rnd.Next(1, 3);
             }
         }
-
         private void ResetSavedSEs()
         {
             string text = "{ " + "SEsPerformedList" + ": [] }";
             File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", text);
         }
-
         private static void LoadSavedSEs(CIF_Character customAgent)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
@@ -821,7 +810,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         public void SaveSavedSEs(CIF_Character customAgent, string socialExchange)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
@@ -831,7 +819,6 @@ namespace FriendlyLords
 
             File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
-
         private static void CheckIfSavedSEsFileExists()
         {
             bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
@@ -847,7 +834,6 @@ namespace FriendlyLords
                 File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json", JsonConvert.SerializeObject(myDeserializedClass));
             }
         }
-
         private void RandomItem(CIF_Character customAgent)
         {
             List<String> listItems = new List<string>() { "gem", "gift", "item" };
@@ -861,7 +847,6 @@ namespace FriendlyLords
                 customAgent.AddItem(item, 1);
             }
         }
-
         private bool CheckIfSettlementExistsOnDataFile(string _currentSettlementName, string _currentLocationName)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
@@ -879,7 +864,6 @@ namespace FriendlyLords
             }
             return false;
         }
-
         private void GenerateRandomTraitsForThisNPC(CIF_Character customAgent)
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
@@ -906,7 +890,6 @@ namespace FriendlyLords
                 i++;
             }
         }
-
         private void SaveNewAgentsInfoToJSON(List<CIF_Character> customAgentsList)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
@@ -1436,7 +1419,7 @@ namespace FriendlyLords
                 {
                     CIFManagerTarget item = new CIFManagerTarget(agent, id);
                     this.Targets.Add(item);
-                    return;
+                    //return;
                 }
             }
         }
@@ -1467,18 +1450,6 @@ namespace FriendlyLords
                     missionNameMarkerTargetVM.Distance = -1;
                     missionNameMarkerTargetVM.ScreenPosition = new Vec2(-100f, -100f);
                 }
-
-                /*MBWindowManager.WorldToScreen(this._missionCamera, missionNameMarkerTargetVM.WorldPosition + this._heightOffset, ref a, ref b, ref num);
-                if (num > 0f)
-                {
-                    missionNameMarkerTargetVM.ScreenPosition = new Vec2(a, b);
-                    missionNameMarkerTargetVM.Distance = (int)(missionNameMarkerTargetVM.WorldPosition - this._missionCamera.Position).Length;
-                }
-                else
-                {
-                    missionNameMarkerTargetVM.Distance = -1;
-                    missionNameMarkerTargetVM.ScreenPosition = new Vec2(-100f, -100f);
-                }*/
             }
             this.Targets.Sort(this._distanceComparer);
         }
@@ -1502,7 +1473,7 @@ namespace FriendlyLords
                     if (customAgent.Message != "")
                     {
                         item.MarkerType = customAgent.MarkerTypeRef;
-                        item.Message = customAgent.Message;
+                        item.Message = "Hello"; // customAgent.Message;
                         item.IsEnabled = true;
                     }
                     else

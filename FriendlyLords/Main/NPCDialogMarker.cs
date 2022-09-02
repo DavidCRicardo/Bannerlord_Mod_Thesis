@@ -18,52 +18,8 @@ namespace FriendlyLords
         private Mission mission;
 
         private bool _firstTick = true;
-        //private string fileName = "";
-       // private string filePath = "";
-
-        //private int TotalSEs;
-       // private int NPCsInteractedWithPlayer;
-       // private int PlayerInteractedWithNPCs;
-       // private int NPCsInteractedWithNPCs;
-       // private int DaysPassed;
-
-       // private List<string> list;
 
         private enum DictionaryEnumWithSEs { Undefined, Compliment, GiveGift, Gratitude, Jealous, FriendSabotage, AskOut, Flirt, Bully, RomanticSabotage, Break, HaveAChild }
-
-        private Dictionary<bool, Dictionary<Enum, int>> PlayerOrNPC_Dictionary =
-            new Dictionary<bool, Dictionary<Enum, int>>
-            {
-                { false , new Dictionary<Enum, int> { 
-                    { DictionaryEnumWithSEs.Undefined       , 0 },
-                    { DictionaryEnumWithSEs.Compliment      , 0 },
-                    { DictionaryEnumWithSEs.GiveGift        , 0 },
-                    { DictionaryEnumWithSEs.Gratitude       , 0 },
-                    { DictionaryEnumWithSEs.Jealous         , 0 },
-                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
-                    { DictionaryEnumWithSEs.AskOut          , 0 },
-                    { DictionaryEnumWithSEs.Flirt           , 0 },
-                    { DictionaryEnumWithSEs.Bully           , 0 },
-                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
-                    { DictionaryEnumWithSEs.Break           , 0 },
-                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
-                    
-                } },
-                { true , new Dictionary<Enum, int> {
-                    { DictionaryEnumWithSEs.Undefined       , 0 },
-                    { DictionaryEnumWithSEs.Compliment      , 0 },
-                    { DictionaryEnumWithSEs.GiveGift        , 0 },
-                    { DictionaryEnumWithSEs.Gratitude       , 0 },
-                    { DictionaryEnumWithSEs.Jealous         , 0 },
-                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
-                    { DictionaryEnumWithSEs.AskOut          , 0 },
-                    { DictionaryEnumWithSEs.Flirt           , 0 },
-                    { DictionaryEnumWithSEs.Bully           , 0 },
-                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
-                    { DictionaryEnumWithSEs.Break           , 0 },
-                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
-                } },
-            };
 
         public override void OnMissionScreenInitialize()
         {
@@ -73,11 +29,11 @@ namespace FriendlyLords
             //_dataSource = new CIFManager(base.Mission, base.MissionScreen.CombatCamera, this._additionalTargetAgents, this._additionalGenericTargets);
 
             this._gauntletLayer = new GauntletLayer(1, "GauntletLayer", false);
-            this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
+           // this._gauntletLayer.LoadMovie("NameMarkerMessage", this._dataSource);
+            this._gauntletLayer.LoadMovie("NameMarker", this._dataSource);
             base.MissionScreen.AddLayer(this._gauntletLayer);
 
             //CheckIfUserFileExists();
-
             //LoadUserInfoFromFile();
 
             try
@@ -509,6 +465,51 @@ namespace FriendlyLords
             return key;
         }
 
+        //private string fileName = "";
+        // private string filePath = "";
+
+        //private int TotalSEs;
+        // private int NPCsInteractedWithPlayer;
+        // private int PlayerInteractedWithNPCs;
+        // private int NPCsInteractedWithNPCs;
+        // private int DaysPassed;
+
+        // private List<string> list;
+
+        /*private Dictionary<bool, Dictionary<Enum, int>> PlayerOrNPC_Dictionary =
+            new Dictionary<bool, Dictionary<Enum, int>>
+            {
+                { false , new Dictionary<Enum, int> { 
+                    { DictionaryEnumWithSEs.Undefined       , 0 },
+                    { DictionaryEnumWithSEs.Compliment      , 0 },
+                    { DictionaryEnumWithSEs.GiveGift        , 0 },
+                    { DictionaryEnumWithSEs.Gratitude       , 0 },
+                    { DictionaryEnumWithSEs.Jealous         , 0 },
+                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
+                    { DictionaryEnumWithSEs.AskOut          , 0 },
+                    { DictionaryEnumWithSEs.Flirt           , 0 },
+                    { DictionaryEnumWithSEs.Bully           , 0 },
+                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
+                    { DictionaryEnumWithSEs.Break           , 0 },
+                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
+                    
+                } },
+                { true , new Dictionary<Enum, int> {
+                    { DictionaryEnumWithSEs.Undefined       , 0 },
+                    { DictionaryEnumWithSEs.Compliment      , 0 },
+                    { DictionaryEnumWithSEs.GiveGift        , 0 },
+                    { DictionaryEnumWithSEs.Gratitude       , 0 },
+                    { DictionaryEnumWithSEs.Jealous         , 0 },
+                    { DictionaryEnumWithSEs.FriendSabotage  , 0 },
+                    { DictionaryEnumWithSEs.AskOut          , 0 },
+                    { DictionaryEnumWithSEs.Flirt           , 0 },
+                    { DictionaryEnumWithSEs.Bully           , 0 },
+                    { DictionaryEnumWithSEs.RomanticSabotage, 0 },
+                    { DictionaryEnumWithSEs.Break           , 0 },
+                    { DictionaryEnumWithSEs.HaveAChild      , 0 }
+                } },
+            };*/
+
         /*private void LoadUserInfoFromFile()
         {
             if (fileName != "")
@@ -554,7 +555,7 @@ namespace FriendlyLords
                 }
             }
         }*/
-        
+
         /*private void UpdateUserInfo(DictionaryEnumWithSEs dictionaryKey, int WhoWasTheInitiator)
         {
             Dictionary<Enum, int> result;
