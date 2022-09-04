@@ -18,7 +18,6 @@ namespace FriendlyLords
                 return this._getPosition();
             }
         }
-        private Func<Vec3> _getPosition = () => Vec3.Zero;
         public CIFManagerTarget(Agent agent, int id = -1)
         {
             this.Id = id;
@@ -26,19 +25,75 @@ namespace FriendlyLords
             this.IsMovingTarget = true;
             this.TargetAgent = agent;
             this.Name = agent.Name.ToString();
-            //this.MarkerType = 1; // 2 = red . 1 = yellow . 0 = green
+
             CharacterObject characterObject = (CharacterObject)agent.Character;
             if (characterObject != null) { }
 
             this.NameType = "Normal";
-            //this.IconType = "character";
+            this.IconType = "character";
+            this.Message = "Hello";
 
+            this.IsNeutralMessage = true;
+            
+
+            
             this._getPosition = (() => agent.Position);
+            this._getMarkerObjectName = (() => agent.Name);
+
+            this.RefreshValues();
         }
 
         private string _iconType = string.Empty;
         private string _nameType = string.Empty;
 
+        private Func<Vec3> _getPosition = () => Vec3.Zero;
+        private Func<string> _getMarkerObjectName = () => string.Empty;
+
+        private Vec2 _screenPosition;
+        private int _distance;
+        private bool _isEnabled;
+
+        public int Id;
+        public string Name;
+        private string _message;
+
+		private bool _isTracked;
+		private bool _isQuestMainStory;
+        private bool _isFriendly;
+        private bool _isNeutral;
+
+        [DataSourceProperty]
+        public bool IsFriendly
+        {
+            get
+            {
+                return this._isFriendly;
+            }
+            set
+            {
+                if (value != this._isFriendly)
+                {
+                    this._isFriendly = value;
+                    base.OnPropertyChangedWithValue(value, "IsFriendly");
+                }
+            }
+        }
+        [DataSourceProperty]
+        public bool IsNeutralMessage
+        {
+            get
+            {
+                return this._isNeutral;
+            }
+            set
+            {
+                if (value != this._isNeutral)
+                {
+                    this._isNeutral = value;
+                    base.OnPropertyChangedWithValue(value, "IsNeutralMessage");
+                }
+            }
+        }
         [DataSourceProperty]
         public string IconType
         {
@@ -89,7 +144,7 @@ namespace FriendlyLords
                 }
             }
         }
-        
+
         [DataSourceProperty]
         public string Message
         {
@@ -103,22 +158,6 @@ namespace FriendlyLords
                 {
                     this._message = value;
                     base.OnPropertyChangedWithValue(value, "Message");
-                }
-            }
-        }
-        [DataSourceProperty]
-        public int MarkerType
-        {
-            get
-            {
-                return this._markerType;
-            }
-            set
-            {
-                if (value != this._markerType)
-                {
-                    this._markerType = value;
-                    base.OnPropertyChangedWithValue(value, "MarkerType");
                 }
             }
         }
@@ -157,58 +196,7 @@ namespace FriendlyLords
             }
         }
 
-        private Vec3 _worldPosition;
-        private Vec2 _screenPosition;
-        private int _distance;
-        private int _markerType;
-        private bool _isEnabled;
-
-        public int Id;
-        public string Name;
-        private string _message;
-
-		private int _questMarkerType;
-		private int _issueMarkerType;
-		private bool _isTracked;
-		private bool _isAgentInPrison;
-		private bool _isQuestMainStory;
-
-        //
-		[DataSourceProperty]
-		public int QuestMarkerType
-		{
-			get
-			{
-				return this._questMarkerType;
-			}
-			set
-			{
-				if (value != this._questMarkerType)
-				{
-					this._questMarkerType = value;
-					base.OnPropertyChangedWithValue(value, "QuestMarkerType");
-				}
-			}
-		}
-
-		[DataSourceProperty]
-		public int IssueMarkerType
-		{
-			get
-			{
-				return this._issueMarkerType;
-			}
-			set
-			{
-				if (value != this._issueMarkerType)
-				{
-					this._issueMarkerType = value;
-					base.OnPropertyChangedWithValue(value, "IssueMarkerType");
-				}
-			}
-		}
-
-		[DataSourceProperty]
+        [DataSourceProperty]
 		public bool IsTracked
 		{
 			get
@@ -241,23 +229,5 @@ namespace FriendlyLords
 				}
 			}
 		}
-
-		[DataSourceProperty]
-		public bool IsAgentInPrison
-		{
-			get
-			{
-				return this._isAgentInPrison;
-			}
-			set
-			{
-				if (value != this._isAgentInPrison)
-				{
-					this._isAgentInPrison = value;
-					base.OnPropertyChangedWithValue(value, "IsAgentInPrison");
-				}
-			}
-		}
-        //
 	}
 }
