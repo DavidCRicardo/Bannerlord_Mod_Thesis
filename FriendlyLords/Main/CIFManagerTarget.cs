@@ -31,12 +31,11 @@ namespace FriendlyLords
 
             this.NameType = "Normal";
             this.IconType = "character";
-            this.Message = "Hello";
 
-            this.IsNeutralMessage = true;
-            
-
-            
+            this.IsFriendly = false;
+            this.IsEnemy = true;
+            this.IsNeutral = false;   
+        
             this._getPosition = (() => agent.Position);
             this._getMarkerObjectName = (() => agent.Name);
 
@@ -60,7 +59,25 @@ namespace FriendlyLords
 		private bool _isTracked;
 		private bool _isQuestMainStory;
         private bool _isFriendly;
+        private bool _isEnemy;
         private bool _isNeutral;
+
+        [DataSourceProperty]
+        public bool IsNeutral
+        {
+            get
+            {
+                return this._isNeutral;
+            }
+            set
+            {
+                if (value != this._isNeutral)
+                {
+                    this._isNeutral = value;
+                    base.OnPropertyChangedWithValue(value, "IsNeutral");
+                }
+            }
+        }
 
         [DataSourceProperty]
         public bool IsFriendly
@@ -79,6 +96,22 @@ namespace FriendlyLords
             }
         }
         [DataSourceProperty]
+        public bool IsEnemy
+        {
+            get
+            {
+                return this._isEnemy;
+            }
+            set
+            {
+                if (value != this._isEnemy)
+                {
+                    this._isEnemy = value;
+                    base.OnPropertyChangedWithValue(value, "IsEnemy");
+                }
+            }
+        }
+        /*[DataSourceProperty]
         public bool IsNeutralMessage
         {
             get
@@ -93,7 +126,7 @@ namespace FriendlyLords
                     base.OnPropertyChangedWithValue(value, "IsNeutralMessage");
                 }
             }
-        }
+        }*/
         [DataSourceProperty]
         public string IconType
         {

@@ -54,6 +54,7 @@ namespace FriendlyLords
 
         private void SetIntention(bool setMarkerAndAnimation, bool OnSocialExchange)
         {
+            // 2 red negative / 1 yellow neutral / 0 green positive
             switch (SE_Enum)
             {
                 case CIFManager.SEs_Enum.Compliment:
@@ -62,6 +63,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Positive;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
+                        
                         CustomAgentInitiator.MarkerTypeRef = 0;
                         CustomAgentInitiator.PlayAnimation("act_greeting_front_1");
                         CustomAgentReceiver.PlayAnimation("act_greeting_front_2");
@@ -71,6 +73,7 @@ namespace FriendlyLords
                     Intention = IntentionEnum.Negative;
                     if (setMarkerAndAnimation && OnSocialExchange)
                     {
+
                         CustomAgentInitiator.MarkerTypeRef = 2;
                         CustomAgentInitiator.PlayAnimation("act_gossip");
                         CustomAgentReceiver.PlayAnimation("act_gossip_2");

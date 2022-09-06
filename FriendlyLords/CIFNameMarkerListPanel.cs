@@ -131,7 +131,7 @@ namespace FriendlyLords
             {
                 this.TypeVisualWidget.Brush.GlobalColor = this.FriendlyColor;
             }
-            else if (this.IsNeutralMessage)
+            else if (this.IsNeutral)
             {
                 this.TypeVisualWidget.Brush.GlobalColor = this.NeutralColor;
             }
@@ -473,18 +473,18 @@ namespace FriendlyLords
             }
         }
         [DataSourceProperty]
-        public bool IsNeutralMessage
+        public bool IsNeutral
         {
             get
             {
-                return this._isNeutralMessage;
+                return this._isNeutral;
             }
             set
             {
-                if (this._isNeutralMessage != value)
+                if (this._isNeutral != value)
                 {
-                    this._isNeutralMessage = value;
-                    base.OnPropertyChanged(value, "IsNeutralMessage");
+                    this._isNeutral = value;
+                    base.OnPropertyChanged(value, "IsNeutral");
                     this.OnStateChanged();
                 }
             }
@@ -564,7 +564,7 @@ namespace FriendlyLords
         private bool _hasMainQuest;
         private bool _isEnemy;
         private bool _isFriendly;
-        private bool _isNeutralMessage;
+        private bool _isNeutral;
         private bool _isFocused;
     }
 }

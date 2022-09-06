@@ -348,9 +348,6 @@
     <Compile Include="Status.cs" />
     <Compile Include="Json\TriggerRule.cs" />
     <Compile Include="Json\Trait.cs" />
-    <Compile Include="TestingClasses\MyMissionGauntletNameMarkerView.cs" />
-    <Compile Include="TestingClasses\MyMissionNameMarkerTargetVM.cs" />
-    <Compile Include="TestingClasses\MyMissionNameMarkerVM.cs" />
     <Compile Include="UserInfoJson.cs" />
     <Content Include="Readme.txt" />
     <Content Include="SubModule.xml" />

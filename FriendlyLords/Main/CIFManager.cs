@@ -1472,7 +1472,9 @@ namespace FriendlyLords
                 {
                     if (customAgent.Message != "")
                     {
-                        //item.MarkerType = customAgent.MarkerTypeRef;
+                        //item.SetMessageType(customAgent.MarkerTypeRef);
+                        //item.MarkerType = ;
+
                         item.Message = customAgent.Message;
                         item.IsEnabled = true;
                     }
