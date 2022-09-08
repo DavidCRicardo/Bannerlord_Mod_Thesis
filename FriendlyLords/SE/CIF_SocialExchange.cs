@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
 namespace FriendlyLords
@@ -646,7 +644,6 @@ namespace FriendlyLords
         public bool IsCompleted { get; set; }
         public bool ReceptorIsPlayer { get; set; }
         public bool ReduceDelay { get; set; }
-
         public CIFManager.SEs_Enum SE_Enum { get; }
 
         public IntentionEnum Intention { get; private set; }
@@ -663,7 +660,6 @@ namespace FriendlyLords
         private Random Rnd { get; set; }
         private int auxToCheckWhoIsSpeaking { get; set; }
         private int index { get; set; }
-
         private List<CIF_Character> CustomAgentList { get; set; }
         public CIF_Character CustomAgentInitiator { get; set; }
         public CIF_Character CustomAgentReceiver { get; set; }

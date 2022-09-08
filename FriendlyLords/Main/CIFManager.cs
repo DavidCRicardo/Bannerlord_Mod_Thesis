@@ -15,18 +15,6 @@ namespace FriendlyLords
 {
     public class CIFManager : ViewModel
     {
-        public CIFManager(Mission mission, Camera missionCamera, Dictionary<Agent, SandBoxUIHelper.IssueQuestFlags> additionalTargetAgents, Dictionary<string, ValueTuple<Vec3, string, string>> additionalGenericTargets)
-
-        {
-            this.Targets = new MBBindingList<CIFManagerTarget>();
-            this._distanceComparer = new CIFManager.MarkerDistanceComparer();
-            this._missionCamera = missionCamera;
-            this._additionalTargetAgents = additionalTargetAgents;
-            this._additionalGenericTargets = additionalGenericTargets;
-            this._genericTargets = new Dictionary<string, MissionNameMarkerTargetVM>();
-            this._mission = mission;
-        }
-
         public CIFManager(Mission mission, Camera missionCamera)
         {
             this.Targets = new MBBindingList<CIFManagerTarget>();
@@ -61,7 +49,6 @@ namespace FriendlyLords
 
         private int nextRequiredRenown { get; set; }
         public bool StopSEs { get; set; }
-        
         public int ConversationDelay { get; set; }
         public float NPCCountdownMultiplier { get; set; }
 
@@ -906,7 +893,6 @@ namespace FriendlyLords
 
             File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
-
         private void LoadAllInfoFromJSON()
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
@@ -1344,15 +1330,7 @@ namespace FriendlyLords
 
         private static string ReadJsonDialogs(string file)
         {
-            string json;
-            switch (BannerlordConfig.Language)
-            {
-                case "English":
-                default:
-                    //InformationManager.DisplayMessage(new InformationMessage(BannerlordConfig.Language));
-                    json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Localization/en" + file);
-                    break;
-            }
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Dialogues" + file);
 
             return json;
         }
@@ -1474,6 +1452,26 @@ namespace FriendlyLords
                     {
                         //item.SetMessageType(customAgent.MarkerTypeRef);
                         //item.MarkerType = ;
+                        // 2 red negative / 1 yellow neutral / 0 green positive
+
+                        if (customAgent.MarkerTypeRef == 0)
+                        {
+                            item.IsEnemy = false;
+                            item.IsFriendly = true;
+                            item.IsNeutral = false;
+                        }
+                        else if (customAgent.MarkerTypeRef == 1)
+                        {
+                            item.IsEnemy = false;
+                            item.IsFriendly = false;
+                            item.IsNeutral = true;
+                        }
+                        else if (customAgent.MarkerTypeRef == 2)
+                        {
+                            item.IsEnemy = true;
+                            item.IsFriendly = false;
+                            item.IsNeutral = false;
+                        }
 
                         item.Message = customAgent.Message;
                         item.IsEnabled = true;
@@ -1481,6 +1479,10 @@ namespace FriendlyLords
                     else
                     {
                         item.IsEnabled = false;
+
+                        item.IsEnemy = false;
+                        item.IsFriendly = false;
+                        item.IsNeutral = false;
                     }
                 }
             }
@@ -1522,12 +1524,10 @@ namespace FriendlyLords
         public Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> DialogsDictionary { get; private set; }
 
         private readonly Camera _missionCamera;
-        private readonly Dictionary<Agent, SandBoxUIHelper.IssueQuestFlags> _additionalTargetAgents;
-        private readonly Dictionary<string, (Vec3, string, string)> _additionalGenericTargets;
-        private readonly Dictionary<string, MissionNameMarkerTargetVM> _genericTargets;
+        private readonly Mission _mission;
+
         private bool _firstTick = true;
         private bool _secondTick = true;
-        private readonly Mission _mission;
         private Vec3 _heightOffset = new Vec3(0f, 0f, 2f, -1f);
         private readonly CIFManager.MarkerDistanceComparer _distanceComparer;
         private MBBindingList<CIFManagerTarget> _targets;

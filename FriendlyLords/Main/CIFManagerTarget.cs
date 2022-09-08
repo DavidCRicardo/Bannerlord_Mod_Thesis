@@ -33,7 +33,7 @@ namespace FriendlyLords
             this.IconType = "character";
 
             this.IsFriendly = false;
-            this.IsEnemy = true;
+            this.IsEnemy = false;
             this.IsNeutral = false;   
         
             this._getPosition = (() => agent.Position);

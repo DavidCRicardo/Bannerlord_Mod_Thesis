@@ -51,14 +51,7 @@ namespace FriendlyLords
 
         public void ReadJsonFile(CampaignGameStarter campaignGameStarter)
         {
-            string json;
-            switch (BannerlordConfig.Language)
-            {
-                case "English":
-                default:
-                    json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Localization/en/player_conversations.json");
-                    break;
-            }
+            string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Dialogues/player_conversations.json");
 
             CBB_Root myDeserializedCBB = JsonConvert.DeserializeObject<CBB_Root>(json);
 
@@ -734,69 +727,3 @@ namespace FriendlyLords
         }
     }
 }
-
-//#region old
-//public bool giveCourage { get; set; }
-//private void Increase_Courage()
-//{
-//    giveCourage = true;
-//}
-
-//private bool talking_with_NotNegativeTraits()
-//{
-//    if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
-//    {
-//        string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-//        string _currentLocation = CampaignMission.Current.Location.StringId;
-////
-//        CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-//        if (agentConversation != null)
-//        {
-//            CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
-//            customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-//            bool trait = customAgent.TraitList.Exists(t => t.traitName == "Calm" || t.traitName == "Shy" || t.traitName == "Friendly");
-//            if (trait)
-//            {
-//                return true;
-//            }
-//        }
-//    }
-
-//    return false;
-//}
-//private bool talking_with_Charming()
-//{
-//    if (Hero.MainHero.CurrentSettlement != null && CampaignMission.Current.Location != null)
-//    {
-//        string _currentSettlement = Hero.MainHero.CurrentSettlement.Name.ToString();
-//        string _currentLocation = CampaignMission.Current.Location.StringId;
-
-//        CustomAgent agentConversation = customAgents.Find(c => c.selfAgent.Character == Hero.OneToOneConversationHero.CharacterObject);
-//        if (agentConversation != null)
-//        {
-//            CustomAgent customAgent = new CustomAgent(agentConversation.selfAgent, agentConversation.Id);
-//            customAgent.LoadDataFromJsonToAgent(_currentSettlement, _currentLocation);
-//            Trait trait = customAgent.TraitList.Find(t => t.traitName == "Charming");
-//            if (trait != null)
-//            {
-//                return true;
-//            }
-//            else { return false; }
-//        }
-//    }
-
-//    return false;
-//}
-//#endregion
-//private void Conversation_tavernmaid_test_on_condition()
-//{
-//    //Teleport character near to NPC
-//    CharacterObject characterObject = CharacterObject.All.FirstOrDefault((CharacterObject k) => k.Occupation == Occupation.Merchant && Settlement.CurrentSettlement == Hero.MainHero.CurrentSettlement && k.Name.ToString() == "Caribos the Mercer");
-//    Location locationOfCharacter = LocationComplex.Current.GetLocationOfCharacter(characterObject.HeroObject);
-//    CampaignEventDispatcher.Instance.OnPlayerStartTalkFromMenu(characterObject.HeroObject);
-//    PlayerEncounter.LocationEncounter.CreateAndOpenMissionController(locationOfCharacter, null, characterObject, null);
-//}
-//Hero.MainHero.ChangeHeroGold(-5);
-//TextObject text = new TextObject(Hero.MainHero.Name + " offers 5 {GOLD_ICON} to " + customAgentConversation.Name);
-//GameTexts.SetVariable("GOLD_ICON", "{=!}<img src=\"Icons\\Coin@2x\" extend=\"8\">");
-//InformationManager.DisplayMessage(new InformationMessage(text.ToString()));
