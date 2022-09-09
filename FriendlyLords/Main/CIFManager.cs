@@ -8,7 +8,6 @@ using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.CampaignSystem;
 using SandBox.ViewModelCollection.Missions.NameMarker;
-using SandBox.ViewModelCollection;
 using Newtonsoft.Json;
 
 namespace FriendlyLords
@@ -1450,27 +1449,19 @@ namespace FriendlyLords
                 {
                     if (customAgent.Message != "")
                     {
-                        //item.SetMessageType(customAgent.MarkerTypeRef);
-                        //item.MarkerType = ;
-                        // 2 red negative / 1 yellow neutral / 0 green positive
-
-                        if (customAgent.MarkerTypeRef == 0)
+                         // 2 red negative / 1 white neutral / 0 green positive
+                        item.MessageColor = customAgent.MarkerTypeRef;
+                        if (item.MessageColor == 0)
                         {
-                            item.IsEnemy = false;
-                            item.IsFriendly = true;
-                            item.IsNeutral = false;
+                            item.BrushColor = "#4EE04CFF"; // = "Friendly" 
                         }
-                        else if (customAgent.MarkerTypeRef == 1)
+                        else if (item.MessageColor == 1)
                         {
-                            item.IsEnemy = false;
-                            item.IsFriendly = false;
-                            item.IsNeutral = true;
+                            item.BrushColor = "#FFFFFFFF"; // = "Neutral"
                         }
-                        else if (customAgent.MarkerTypeRef == 2)
+                        else
                         {
-                            item.IsEnemy = true;
-                            item.IsFriendly = false;
-                            item.IsNeutral = false;
+                            item.BrushColor = "#ED1C24FF"; // = "Negative" 
                         }
 
                         item.Message = customAgent.Message;

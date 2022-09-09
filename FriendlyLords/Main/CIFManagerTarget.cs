@@ -1,7 +1,10 @@
 ﻿using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.TwoDimension;
 
 namespace FriendlyLords
 {
@@ -34,8 +37,24 @@ namespace FriendlyLords
 
             this.IsFriendly = false;
             this.IsEnemy = false;
-            this.IsNeutral = false;   
-        
+            this.IsNeutral = false;
+
+            this.MessageColor = 1;
+
+            // 2 red negative / 1 white neutral / 0 green positive
+            if (this.MessageColor == 0)
+            {
+                BrushColor = "#4EE04CFF"; // = "Friendly"
+            }
+            else if (this.MessageColor == 1)
+            {
+                BrushColor = "#FFFFFFFF"; // = "Neutral"
+            }
+            else
+            {
+                BrushColor = "#ED1C24FF"; // = "Negative"
+            }
+
             this._getPosition = (() => agent.Position);
             this._getMarkerObjectName = (() => agent.Name);
 
@@ -61,6 +80,41 @@ namespace FriendlyLords
         private bool _isFriendly;
         private bool _isEnemy;
         private bool _isNeutral;
+
+        public int MessageColor
+        {
+            get
+            {
+                return this._messageColor;
+            }
+            set
+            {
+                if (value != this._messageColor)
+                {
+                    this._messageColor = value;
+                    base.OnPropertyChangedWithValue(value, "MessageColor");
+                }
+            }
+        }
+        private int _messageColor;
+
+        private string _brushColor;
+        [DataSourceProperty]
+        public string BrushColor
+        {
+            get
+            {
+                return this._brushColor;
+            }
+            set
+            {
+                if (value != this._brushColor)
+                {
+                    this._brushColor = value;
+                    base.OnPropertyChangedWithValue(value, "BrushColor");
+                }
+            }
+        }
 
         [DataSourceProperty]
         public bool IsNeutral
@@ -111,22 +165,6 @@ namespace FriendlyLords
                 }
             }
         }
-        /*[DataSourceProperty]
-        public bool IsNeutralMessage
-        {
-            get
-            {
-                return this._isNeutral;
-            }
-            set
-            {
-                if (value != this._isNeutral)
-                {
-                    this._isNeutral = value;
-                    base.OnPropertyChangedWithValue(value, "IsNeutralMessage");
-                }
-            }
-        }*/
         [DataSourceProperty]
         public string IconType
         {
