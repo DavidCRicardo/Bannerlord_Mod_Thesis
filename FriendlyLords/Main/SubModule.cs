@@ -6,12 +6,6 @@ namespace FriendlyLords
 {
     public class SubModule : MBSubModuleBase
     {
-        protected override void OnSubModuleLoad()
-        {
-        }
-        protected override void OnApplicationTick(float dt)
-        {
-        }
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
             if (game.GameType is Campaign && gameStarterObject is CampaignGameStarter gameInitializer)
@@ -31,12 +25,6 @@ namespace FriendlyLords
                 gameInitializer.AddBehavior(CBBref);
             }
         }
-        public override void OnGameInitializationFinished(Game game)
-        {
-        }
-
-        private CiF_CampaignBehavior_Dialogs CBBref;
-
 
         public override void OnMissionBehaviorInitialize(Mission mission)
         {
@@ -44,5 +32,7 @@ namespace FriendlyLords
 
             mission.MissionBehaviors.Add(new CIFDialogMarker(CBBref, mission));
         }
+
+        private CiF_CampaignBehavior_Dialogs CBBref;
     }
 }

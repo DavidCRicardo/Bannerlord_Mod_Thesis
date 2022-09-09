@@ -1470,10 +1470,6 @@ namespace FriendlyLords
                     else
                     {
                         item.IsEnabled = false;
-
-                        item.IsEnemy = false;
-                        item.IsFriendly = false;
-                        item.IsNeutral = false;
                     }
                 }
             }

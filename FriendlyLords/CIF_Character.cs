@@ -377,9 +377,12 @@ namespace FriendlyLords
 
         private void MessageBuilderCheck(CIF_Character customAgentInitiator)
         {
+            CheckIfThirdAgentIsEmpty(customAgentInitiator);
+
             if (Message.Contains("{PERSON}"))
             {
                 StringBuilder builder = new StringBuilder(Message);
+
                 builder.Replace("{PERSON}", customAgentInitiator.thirdAgent);
                 Message = builder.ToString();
             }
@@ -424,6 +427,14 @@ namespace FriendlyLords
                 StringBuilder builder = new StringBuilder(Message);
                 builder.Replace("{ITEM}", customAgentInitiator.ItemList[0].itemName);
                 Message = builder.ToString();
+            }
+        }
+
+        private static void CheckIfThirdAgentIsEmpty(CIF_Character customAgentInitiator)
+        {
+            if (customAgentInitiator.thirdAgent == "")
+            {
+                customAgentInitiator.thirdAgent = "that person";
             }
         }
 

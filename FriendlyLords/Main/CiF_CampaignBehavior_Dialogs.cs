@@ -25,13 +25,11 @@ namespace FriendlyLords
 
         public override void SyncData(IDataStore dataStore) { }
 
-        private void DailyTick()
-        {
-            //InformationManager.DisplayMessage(new InformationMessage("Daily Tick"));
-            ResetSocialExchanges = true;
-        }
+        private void DailyTick() { ResetSocialExchanges = true; }
 
         public bool ResetSocialExchanges = false;
+
+        public List<CIF_Character> customAgents;
 
         private String inputToken;
         private String outputToken;
@@ -48,6 +46,11 @@ namespace FriendlyLords
 
         private Dictionary<string, ConversationSentence.OnConditionDelegate> dictionaryConditions;
         private Dictionary<string, ConversationSentence.OnConsequenceDelegate> dictionaryConsequences;
+
+        public CIF_Character customAgentConversation { get; set; }
+        public CIF_Character characterRefWithDesireToPlayer { get; set; }
+        public int characterIdRefWithDesireToPlayer { get; set; }
+        public bool auxBool { get; set; }
 
         public void ReadJsonFile(CampaignGameStarter campaignGameStarter)
         {
@@ -138,15 +141,7 @@ namespace FriendlyLords
             AskOutPerformed = false;
         }
 
-        private int NewRandomValue()
-        {
-            return rnd.Next(1, 5);
-        }
-
-        public CIF_Character customAgentConversation { get; set; }
-        public CIF_Character characterRefWithDesireToPlayer { get; set; }
-        public int characterIdRefWithDesireToPlayer { get; set; }
-
+        private int NewRandomValue() { return rnd.Next(1, 5); }
         private bool ThisAgentWillInteractWithPlayer()
         {
             try
@@ -167,7 +162,6 @@ namespace FriendlyLords
 
             return false;
         }
-
         public bool OfferGift { get; set; }
         private bool OfferGiftNPC()
         {
@@ -178,7 +172,6 @@ namespace FriendlyLords
             }
             else { return false; }
         }
-
         public bool GratitudeBool { get; set; }
         private bool GratitudeNPC()
         {
@@ -190,7 +183,6 @@ namespace FriendlyLords
 
             return false;
         }
-
         public bool FriendlyBool { get; set; }
         private bool FriendlyNPC()
         {
@@ -207,7 +199,6 @@ namespace FriendlyLords
 
             return false;
         }
-
         public bool RomanticBool { get; set; }
         private bool RomanticNPC()
         {
@@ -218,7 +209,6 @@ namespace FriendlyLords
             }
             else { return false; }
         }
-
         public bool UnFriendlyBool { get; set; }
         private bool UnFriendlyNPC()
         {
@@ -235,7 +225,6 @@ namespace FriendlyLords
 
             return false;
         }
-
         public bool HostileBool { get; set; }
         private bool HostileNPC()
         {
@@ -246,7 +235,6 @@ namespace FriendlyLords
             }
             else { return false; }
         }
-
         public bool BreakBool { get; set; }
         private bool BreakNPC()
         {
@@ -260,28 +248,13 @@ namespace FriendlyLords
 
         /* Start Dating aka AskOut */
         public bool StartDating { get; set; }
-        private void Start_Dating()
-        {
-            StartDating = true;
-        }
-
+        private void Start_Dating() { StartDating = true; }
         public bool DoBreak { get; set; }
-        private void Do_BreakUpSE()
-        {
-            DoBreak = true;
-        }
-
+        private void Do_BreakUpSE() { DoBreak = true; }
         public bool IncreaseRelationshipWithPlayer { get; set; }
-        private void Increase_Relation()
-        {
-            IncreaseRelationshipWithPlayer = true;
-        }
-
+        private void Increase_Relation() { IncreaseRelationshipWithPlayer = true; }
         public bool DecreaseRelationshipWithPlayer { get; set; }
-        private void Decrease_Relation()
-        {
-            DecreaseRelationshipWithPlayer = true;
-        }
+        private void Decrease_Relation() { DecreaseRelationshipWithPlayer = true; }
 
         private void PlayerGivesItem()
         {
@@ -293,13 +266,7 @@ namespace FriendlyLords
             InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " receives " + item.itemName));
         }
 
-        private void PlayerPerformHaveAChildSE()
-        {
-            HaveAChildInitialMovePerformed = true;
-        }
-
-        public List<CIF_Character> customAgents;
-
+        private void PlayerPerformHaveAChildSE() { HaveAChildInitialMovePerformed = true; }
         private bool CheckIfPlayerHasFriendOrNullRelationForFriendlySEWithNPC_condition()
         {
             if (FriendlyOptionExists || customAgents == null)
@@ -395,8 +362,6 @@ namespace FriendlyLords
             customAgentConversation.keyValuePairsSEs.TryGetValue(intention, out bool value);
             return value;
         }
-
-        public bool auxBool { get; set; }
         private bool CheckIfPlayerCanAskOutWithNPC_condition()
         {
             if (AskOutPerformed || auxBool)
@@ -479,7 +444,6 @@ namespace FriendlyLords
             {
                 value--;
             }
-
             return false;
         }
 
@@ -638,7 +602,6 @@ namespace FriendlyLords
                     }
                 }
             }
-
             return false;
         }
 
