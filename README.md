@@ -7,5 +7,5 @@ The goal is to improve the NPCs and Player interactions between themselves in Ba
 Developed by David Ricardo - 2021
 
 
-> If you are using this code, I just ask to be credited.
-> Thank you.
+If you are using this code, I just ask to be credited.
+Thank you.
