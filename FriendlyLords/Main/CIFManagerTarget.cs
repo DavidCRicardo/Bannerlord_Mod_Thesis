@@ -25,22 +25,20 @@ namespace FriendlyLords
             this.Name = agent.Name.ToString();
 
             CharacterObject characterObject = (CharacterObject)agent.Character;
-            if (characterObject != null) { }
 
             this.MessageColor = 1;
 
-            // 2 red negative / 1 white neutral / 0 green positive
             if (this.MessageColor == 0)
             {
-                BrushColor = "#4EE04CFF"; // = "Friendly"
+                BrushColor = "#4EE04CFF"; // = "Positive" - Green
             }
             else if (this.MessageColor == 1)
             {
-                BrushColor = "#FFFFFFFF"; // = "Neutral"
+                BrushColor = "#FFFFFFFF"; // = "Neutral" - White
             }
             else
             {
-                BrushColor = "#ED1C24FF"; // = "Negative"
+                BrushColor = "#ED1C24FF"; // = "Negative" - Red
             }
 
             this._getPosition = (() => agent.Position);

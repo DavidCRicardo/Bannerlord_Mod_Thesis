@@ -432,7 +432,7 @@ namespace FriendlyLords
 
         private static void CheckIfThirdAgentIsEmpty(CIF_Character customAgentInitiator)
         {
-            if (customAgentInitiator.thirdAgent == "")
+            if (customAgentInitiator.thirdAgent == null)
             {
                 customAgentInitiator.thirdAgent = "that person";
             }

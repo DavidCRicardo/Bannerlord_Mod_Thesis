@@ -90,7 +90,7 @@ namespace FriendlyLords
                                 CustomAgentGoingToSE(dt, customAgent, CurrentLocation);
                             }
 
-                            if (SecsDelay(dt, 1))
+                            if (SecsDelay2(dt, 1))
                             {
                                 UpdateStatus(customAgent);
                             }
@@ -569,7 +569,6 @@ namespace FriendlyLords
             }
             else { customAgent.StartFollowBehavior(customAgent.selfAgent, Agent.Main); }*/
         }
-
         private void InitializeEnergyToAgents()
         {
             foreach (CIF_Character customAgent in customAgentsList)
@@ -577,7 +576,6 @@ namespace FriendlyLords
                 customAgent.UpdateAllStatus(0, 0, 0, 0, 0, rnd.Next(3));
             }
         }
-
         private void InitializeTraitsToAgents()
         {
             List<Trait> ListWithAllTraits = InitializeListWithAllTraits();
@@ -658,7 +656,6 @@ namespace FriendlyLords
 
             DialogsDictionary = fromSEGetCulture;
         }
-
         private void ReadAndGetDialogsFrom(RootMessageJson myDeserializedClassConversations, ref Dictionary<string, List<string>> fromIDGetListMessages, ref Dictionary<string, Dictionary<string, List<string>>> fromCultureCodeGetID, Dictionary<string, Dictionary<string, Dictionary<string, List<string>>>> fromSEGetCulture, string _currentLocation)
         {
             foreach (DialogsRoot dialogsRoot in myDeserializedClassConversations.SocialExchangeListFromJson)
@@ -696,6 +693,12 @@ namespace FriendlyLords
         }
         private void CheckIfDataFileExists()
         {
+            bool directoryExists = Directory.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved");
+            if (!directoryExists)
+            {
+                Directory.CreateDirectory(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved");
+            }
+
             bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
 
             if (!fileExists)
@@ -947,7 +950,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private static void CheckInGameRelationBetweenHeroes(CIF_Character customMain, CIF_Character customAgent)
         {
             int indexHero = Hero.AllAliveHeroes.FindIndex(h => h.CharacterObject == customAgent.AgentReference.Character);
@@ -966,7 +968,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private static SocialNetworkBelief IfBeliefIsNullCreateANewOne(CIF_Character customMain, CIF_Character customAgent, SocialNetworkBelief belief)
         {
             if (belief == null)
@@ -979,7 +980,6 @@ namespace FriendlyLords
 
             return belief;
         }
-
         private void SaveAllInfoToJSON()
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json");
@@ -1015,12 +1015,10 @@ namespace FriendlyLords
 
             File.WriteAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/data.json", JsonConvert.SerializeObject(myDeserializedClass));
         }
-
         public void SaveToJson()
         {
             SaveAllInfoToJSON();
         }
-
         public bool SecsDelay(float dt, int seconds)
         {
             dtControl = dtControl + dt;
@@ -1032,7 +1030,17 @@ namespace FriendlyLords
             return false;
         }
         private float dtControl;
-
+        public bool SecsDelay2(float dt, int seconds)
+        {
+            dtControl2 = dtControl2 + dt;
+            if (dtControl2 >= seconds)
+            {
+                dtControl2 = 0;
+                return true;
+            }
+            return false;
+        }
+        private float dtControl2;
         public void SetCanResetCBB_refVariables(bool value)
         {
             resetVariables = value;
@@ -1042,12 +1050,9 @@ namespace FriendlyLords
             return resetVariables;
         }
         private static bool resetVariables { get; set; }
-
         public CIF_Character customCharacterReftoCampaignBehaviorBase { get; set; }
         public int customCharacterIdRefCampaignBehaviorBase { get; set; }
-
         public SEs_Enum SocialExchange_E { get; set; }
-
         public enum SEs_Enum
         {
             Undefined = -1, Compliment, GiveGift, Admiration, Jealous, FriendSabotage, Flirt, Bully, RomanticSabotage, AskOut, Break, HaveAChild
@@ -1087,7 +1092,6 @@ namespace FriendlyLords
                 else { return false; }
             }
         }
-
         private void DecreaseCountdownOnBattle(float dt)
         {
             foreach (CIF_Character customAgent in customAgentsList)
@@ -1106,7 +1110,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private void OnBattle()
         {
             int auxCountPlayerTeam = 0;
@@ -1128,7 +1131,6 @@ namespace FriendlyLords
 
             CheckIfAgentIsAvailableToSpeak(customAgent);
         }
-
         private void CheckIfAgentIsAvailableToSpeak(CIF_Character customAgent)
         {
             if (customAgent.IsDead)
@@ -1151,7 +1153,6 @@ namespace FriendlyLords
                 GetBattleSentences(customAgent, customAgent.IsPlayerTeam, rnd);
             }
         }
-
         private void CheckDeadAgentsFromBothTeams(ref int auxCountOpponentTeam)
         {
             bool auxBool;
@@ -1167,7 +1168,6 @@ namespace FriendlyLords
                 CheckDeadAgentForThisTeam(team, auxBool, auxCountOpponentTeam);
             }
         }
-
         private void CheckDeadAgentForThisTeam(Team team, bool IsPlayerTeam, int auxInt = 0)
         {
             CIF_Character customAgentHelper;
@@ -1196,7 +1196,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private void NormalizeSpeakers(CIF_Character customAgentHelper)
         {
             if (customAgentHelper.Message != "")
@@ -1213,7 +1212,6 @@ namespace FriendlyLords
                 customAgentHelper.Message = "";
             }
         }
-
         private void GetBattleSentences(CIF_Character customAgent, bool isPlayerTeam, Random rnd)
         {
             foreach (Team team in Mission.Current.Teams)
@@ -1277,7 +1275,6 @@ namespace FriendlyLords
                 }
             }        
         }
-
         private void GetBattleSingleSentence(CIF_Character customAgent, BattleDictionary key, Random rnd)
         {
             battleDictionarySentences.TryGetValue(key, out List<string> BattleSentences);
@@ -1285,7 +1282,6 @@ namespace FriendlyLords
             int index = rnd.Next(BattleSentences.Count);
             customAgent.Message = BattleSentences[index];
         }
-
         private void InitializeOnBattle(Random rnd)
         {
             CheckIfSavedSEsFileExists();
@@ -1305,7 +1301,6 @@ namespace FriendlyLords
                 }
             }
         }
-
         private void PreInitializeOnBattle()
         {
             OtherTeamCurrentSpeakers = 0;
@@ -1326,14 +1321,12 @@ namespace FriendlyLords
                 battleDictionarySentences.Add(BattleDictionary.Losing, deserializedBattleClass.Losing);
             }
         }
-
         private static string ReadJsonDialogs(string file)
         {
             string json = File.ReadAllText(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Dialogues" + file);
 
             return json;
         }
-
         private Dictionary<BattleDictionary, List<string>> battleDictionarySentences { get; set; }
         private enum BattleDictionary { Losing, Winning, Neutral }
         private int OtherTeamLimitSpeakers { get; set; }
@@ -1344,7 +1337,6 @@ namespace FriendlyLords
         private float initialTeamOpponentPower { get; set; }
         private float teamPlayerPower { get; set; }
         private float teamOpponentPower { get; set; }
-
         public Dictionary<Enum, CIF_Character.Intentions> dictionaryWithSEsToGauntlet = new Dictionary<Enum, CIF_Character.Intentions>()
         {
             { CIF_SocialExchange.IntentionEnum.Undefined, CIF_Character.Intentions.Undefined  },
@@ -1354,7 +1346,6 @@ namespace FriendlyLords
             { CIF_SocialExchange.IntentionEnum.Hostile  , CIF_Character.Intentions.Hostile    },
             { CIF_SocialExchange.IntentionEnum.Special  , CIF_Character.Intentions.Special    }
         };
-
         #endregion
 
         private bool CustomAgentIsNearToPlayer(CIF_Character customAgent)
@@ -1449,19 +1440,18 @@ namespace FriendlyLords
                 {
                     if (customAgent.Message != "")
                     {
-                         // 2 red negative / 1 white neutral / 0 green positive
                         item.MessageColor = customAgent.MarkerTypeRef;
                         if (item.MessageColor == 0)
                         {
-                            item.BrushColor = "#4EE04CFF"; // = "Friendly" 
+                            item.BrushColor = "#4EE04CFF"; // = "Positive" - Green
                         }
                         else if (item.MessageColor == 1)
                         {
-                            item.BrushColor = "#FFFFFFFF"; // = "Neutral"
+                            item.BrushColor = "#FFFFFFFF"; // = "Neutral" - White
                         }
                         else
                         {
-                            item.BrushColor = "#ED1C24FF"; // = "Negative" 
+                            item.BrushColor = "#ED1C24FF"; // = "Negative" - Red
                         }
 
                         item.Message = customAgent.Message;

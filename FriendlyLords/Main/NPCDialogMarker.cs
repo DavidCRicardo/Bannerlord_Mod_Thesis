@@ -197,9 +197,6 @@ namespace FriendlyLords
                 }
 
                 InformationManager.DisplayMessage(new InformationMessage(Agent.Main.Name + " is broke up with " + customAgentConversation.Name));
-
-                //DictionaryEnumWithSEs key = ConvertCustomAgentSEToDictionaryEnum(CIFManager.SEs_Enum.Break);
-                //UpdateUserInfo(key, 1);
             }
             else if (CBB_ref.IncreaseRelationshipWithPlayer && CBB_ref.customAgentConversation != null)
             {
