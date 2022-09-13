@@ -682,11 +682,5 @@ namespace FriendlyLords
             }
             return false;
         }
-
-        public void SetPersonalRelation(Hero otherHero, int value)
-        {
-            value = MBMath.ClampInt(value, -100, 100);
-            CharacterRelationManager.SetHeroRelation(Hero.MainHero, otherHero, value);
-        }
     }
 }

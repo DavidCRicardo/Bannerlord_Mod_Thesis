@@ -265,7 +265,7 @@ namespace FriendlyLords
 
         public bool letsUpdate;
         public int BooleanNumber;
-
+        private float dtControlSEs = 0;
         private void DecreaseNPCsCountdown(float dt)
         {
             if (OnGoingSEs >= MaximumSEs)

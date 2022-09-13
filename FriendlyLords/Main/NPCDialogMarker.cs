@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.Core;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.View.MissionViews;
 
@@ -203,13 +205,7 @@ namespace FriendlyLords
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
                 int value = 1;
 
-                if (_dataSource.playerStartedASE)
-                {
-                    CheckOptionToLock(customAgentConversation, localRelation, value);
-                }
-
-                RelationInGameChanges(customAgentConversation, value);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value, se_enum);          
+                UpdateDialogLineAndRelation(customAgentConversation, localRelation, value);
 
                 CBB_ref.IncreaseRelationshipWithPlayer = false;
             }
@@ -218,17 +214,23 @@ namespace FriendlyLords
                 string localRelation = GetRelationshipBetweenPlayerAndNPC();
                 int value = -1;
 
-                if (_dataSource.playerStartedASE)
-                {
-                    CheckOptionToLock(customAgentConversation, localRelation, value);
-                }
-
-                RelationInGameChanges(customAgentConversation, value);
-                UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value, se_enum);
+                UpdateDialogLineAndRelation(customAgentConversation, localRelation, value);
 
                 CBB_ref.DecreaseRelationshipWithPlayer = false;
             }
         }
+
+        private void UpdateDialogLineAndRelation(CIF_Character customAgentConversation, string localRelation, int value)
+        {
+            if (_dataSource.playerStartedASE)
+            {
+                CheckOptionToLock(customAgentConversation, localRelation, value);
+            }
+
+            RelationInGameChanges(customAgentConversation, value);
+            UpdateRelationWithPlayerChoice(customAgentConversation, localRelation, value, se_enum);
+        }
+
         CIFManager.SEs_Enum se_enum { get; set; }
 
         private void CheckOptionToLock(CIF_Character customAgentConversation, string localRelation, int value = 0)
@@ -278,10 +280,6 @@ namespace FriendlyLords
                 }
             }
 
-            //Player fez uma SE com um NPC e vai guardar a info 
-            //Save information from dictionary and variables to File
-            //UpdateUserInfo(ConvertCustomAgentSEToDictionaryEnum(se_enum), 1);
-
             _dataSource.SaveSavedSEs(customAgentConversation, se_enum.ToString());
         }
 
@@ -295,19 +293,19 @@ namespace FriendlyLords
             Hero hero = Hero.FindFirst(h => h.CharacterObject == customAgentConversation.AgentReference.Character);
             if (hero != null && hero != Hero.MainHero)
             {
-                float relationWithPlayer = hero.GetRelationWithPlayer();
-                int newValue = (int)(relationWithPlayer + value);
-                if (value > 0)
+                int relationWithOtherHero = Hero.MainHero.GetRelation(hero);
+                int newValue = relationWithOtherHero + value;
+                if (value > 0) // Positive SE performed by Player
                 {
                     if (newValue <= 100)
                     {
-                        //InformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
+                        MBInformationManager.AddQuickInformation(new TextObject("Your relation is increased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                         Hero.MainHero.SetPersonalRelation(hero, newValue);
                     }              
                 }
-                else if (value < 0) 
+                else if (value < 0) // Negative SE performed by Player
                 {
-                    //InformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
+                    MBInformationManager.AddQuickInformation(new TextObject("Your relation is decreased by " + value + " to " + newValue + " with " + hero.Name + "."), 0, hero.CharacterObject);
                     Hero.MainHero.SetPersonalRelation(hero, newValue);
                 }
             }
