@@ -810,6 +810,12 @@ namespace FriendlyLords
         }
         private static void CheckIfSavedSEsFileExists()
         {
+            bool directoryExists = Directory.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved");
+            if (!directoryExists)
+            {
+                Directory.CreateDirectory(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved");
+            }
+
             bool fileExists = File.Exists(BasePath.Name + "/Modules/FriendlyLords/ModuleData/Saved/saved_SEs.json");
             
             if (!fileExists)
